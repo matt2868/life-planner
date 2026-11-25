@@ -10,5 +10,8 @@
     <string name="widget_general_desc">Your general list. Ticked items drop off.</string>
     <string name="widget_desc">Today\'s to-dos with your work and general lists.</string>
     <string name="widget_setup">Open Planner to get started</string>
+    <string name="widget_title_today">Today</string>
+    <string name="widget_title_work">Work</string>
+    <string name="widget_title_general">General</string>
     <string name="add_todo">Add a to-do</string>
 </resources>

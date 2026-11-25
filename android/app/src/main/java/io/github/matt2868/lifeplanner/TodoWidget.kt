@@ -8,10 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.view.View
 import android.widget.RemoteViews
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 /** One provider per list, so each can be placed (or stacked) on its own. */
 class TodoWidget : BaseTodoWidget("all")
@@ -74,12 +72,36 @@ abstract class BaseTodoWidget(private val mode: String) : AppWidgetProvider() {
             cls: Class<out AppWidgetProvider>
         ): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget)
+            val look = WidgetLook.load(context)
+            look.tint(views, R.id.bg) { it.bg }
+            look.tint(views, R.id.add_bg) { it.acc }
+            look.tint(views, R.id.add_icon) { it.accInk }
+            look.text(views, R.id.sub) { it.ink2 }
+            look.text(views, R.id.empty) { it.ink2 }
+
             val title = when (mode) {
-                "work" -> "Work"
-                "gen" -> "General"
-                else -> LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.UK))
+                "work" -> context.getString(R.string.widget_title_work)
+                "gen" -> context.getString(R.string.widget_title_general)
+                else -> context.getString(R.string.widget_title_today)
             }
-            views.setTextViewText(R.id.title, title)
+            val art = TitleArt.bitmap(context, title)
+            if (art != null) {
+                views.setImageViewBitmap(R.id.title_img, art)
+                views.setContentDescription(R.id.title_img, title)
+                views.setViewVisibility(R.id.title_img, View.VISIBLE)
+                views.setViewVisibility(R.id.title, View.GONE)
+                look.tint(views, R.id.title_img) { it.ink }
+            } else {
+                views.setTextViewText(R.id.title, title)
+                look.text(views, R.id.title) { it.ink }
+            }
+            val sub = WidgetStore.summary(context, mode)
+            views.setTextViewText(R.id.sub, sub)
+            views.setViewVisibility(R.id.sub, if (sub.isEmpty()) View.GONE else View.VISIBLE)
+            views.setTextViewText(
+                R.id.empty,
+                if (WidgetStore.isSetup(context)) context.getString(R.string.widget_setup) else ""
+            )
 
             val service = Intent(context, TodoWidgetService::class.java).apply {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
@@ -108,7 +130,7 @@ abstract class BaseTodoWidget(private val mode: String) : AppWidgetProvider() {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 .putExtra(MainActivity.EXTRA_ACTION, addAction)
             val code = providers.indexOfFirst { it.second == mode } * 10
-            views.setOnClickPendingIntent(R.id.title, PendingIntent.getActivity(context, 1 + code, open, flags))
+            views.setOnClickPendingIntent(R.id.head, PendingIntent.getActivity(context, 1 + code, open, flags))
             views.setOnClickPendingIntent(R.id.empty, PendingIntent.getActivity(context, 3 + code, open, flags))
             views.setOnClickPendingIntent(R.id.add, PendingIntent.getActivity(context, 2 + code, add, flags))
             return views

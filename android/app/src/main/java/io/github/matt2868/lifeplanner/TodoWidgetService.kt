@@ -5,10 +5,10 @@ import android.content.Intent
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.StrikethroughSpan
+import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import android.widget.RemoteViewsService.RemoteViewsFactory
-import androidx.core.content.ContextCompat
 
 /** Supplies the rows of the widget's list. */
 class TodoWidgetService : RemoteViewsService() {
@@ -17,10 +17,12 @@ class TodoWidgetService : RemoteViewsService() {
 
     private class Factory(private val context: Context, private val mode: String) : RemoteViewsFactory {
         private var rows: List<Row> = emptyList()
+        private var look: WidgetLook = WidgetLook.load(context)
 
         override fun onCreate() {}
         override fun onDataSetChanged() {
             rows = WidgetStore.rows(context, mode)
+            look = WidgetLook.load(context)
         }
         override fun onDestroy() {}
         override fun getCount(): Int = rows.size
@@ -31,6 +33,7 @@ class TodoWidgetService : RemoteViewsService() {
             if (row.type == WidgetStore.HEADER) {
                 return RemoteViews(context.packageName, R.layout.widget_header).apply {
                     setTextViewText(R.id.text, row.text)
+                    look.text(this, R.id.text) { it.acc }
                 }
             }
             val views = RemoteViews(context.packageName, R.layout.widget_item)
@@ -40,11 +43,14 @@ class TodoWidgetService : RemoteViewsService() {
                 }
             } else row.text
             views.setTextViewText(R.id.text, text)
-            views.setTextColor(
-                R.id.text,
-                ContextCompat.getColor(context, if (row.done) R.color.w_ink2 else R.color.w_ink)
-            )
-            views.setImageViewResource(R.id.check, if (row.done) R.drawable.ic_check_on else R.drawable.ic_check_off)
+            look.text(views, R.id.text) { if (row.done) it.ink2 else it.ink }
+            views.setImageViewResource(R.id.box, if (row.done) R.drawable.w_box_fill else R.drawable.w_box)
+            look.tint(views, R.id.box) { if (row.done) it.ink else it.ink2 }
+            views.setViewVisibility(R.id.tick, if (row.done) View.VISIBLE else View.GONE)
+            look.tint(views, R.id.tick) { it.bg }
+            val next = rows.getOrNull(position + 1)
+            views.setViewVisibility(R.id.divider, if (next == null || next.type == WidgetStore.HEADER) View.INVISIBLE else View.VISIBLE)
+            look.tint(views, R.id.divider) { it.line }
             val fill = Intent().putExtra("kind", row.kind).putExtra("date", row.date).putExtra("id", row.id)
             views.setOnClickFillInIntent(R.id.row, fill)
             return views

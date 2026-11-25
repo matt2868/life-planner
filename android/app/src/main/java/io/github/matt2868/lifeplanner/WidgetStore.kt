@@ -4,6 +4,8 @@ import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class Row(
     val type: Int,
@@ -81,27 +83,53 @@ object WidgetStore {
         if (now && kind == "day" && date == LocalDate.now().toString()) Reminders.markFilledToday(context)
     }
 
-    /** Empty means the planner hasn't been set up, so the widget shows its prompt instead. */
+    fun look(context: Context): JSONObject? = data(context)?.optJSONObject("look")
+
+    /** True until the planner has been set up (or the app has never been opened). */
+    fun isSetup(context: Context): Boolean = data(context)?.optBoolean("setup") ?: true
+
+    /** The small line under the widget title. */
+    fun summary(context: Context, mode: String): String {
+        val d = data(context)
+        val date = LocalDate.now().format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.UK))
+        val ready = d != null && !d.optBoolean("setup")
+        when (mode) {
+            "work" -> return if (ready) "${open(d?.optJSONArray("work"))} open" else ""
+            "gen" -> return if (ready) "${open(d?.optJSONArray("general"))} open" else ""
+        }
+        if (!ready) return date
+        val today = d?.optJSONObject("days")?.optJSONArray(LocalDate.now().toString())
+        val total = today?.length() ?: 0
+        if (mode != "day" || total == 0) return date
+        return "$date · ${total - open(today)} of $total done"
+    }
+
+    private fun open(arr: JSONArray?): Int {
+        if (arr == null) return 0
+        var n = 0
+        for (i in 0 until arr.length()) if (arr.optJSONObject(i)?.optBoolean("d") == false) n++
+        return n
+    }
+
+    /** Empty means nothing to show; the widget then shows its empty view. */
     fun rows(context: Context, mode: String = "all"): List<Row> {
         val d = data(context) ?: return emptyList()
         if (d.optBoolean("setup")) return emptyList()
         val today = LocalDate.now().toString()
         val todays = items(d.optJSONObject("days")?.optJSONArray(today), "day", today, keepDone = true)
         val work = items(d.optJSONArray("work"), "work", "", keepDone = false)
+        val general = items(d.optJSONArray("general"), "gen", "", keepDone = false)
         when (mode) {
-            "day" -> return todays.ifEmpty { listOf(Row(HEADER, "Nothing planned today. Tap + to add one.")) }
-            "work" -> return work.ifEmpty { listOf(Row(HEADER, "No work to-dos. Tap + to add one.")) }
-            "gen" -> return items(d.optJSONArray("general"), "gen", "", keepDone = false)
-                .ifEmpty { listOf(Row(HEADER, "Nothing on the list. Tap + to add one.")) }
+            "day" -> return todays
+            "work" -> return work
+            "gen" -> return general
         }
         val out = mutableListOf<Row>()
-        out.add(Row(HEADER, "Today"))
-        if (todays.isEmpty()) out.add(Row(HEADER, "Nothing planned. Tap + to add a to-do.")) else out.addAll(todays)
+        out.addAll(todays)
         if (work.isNotEmpty()) {
             out.add(Row(HEADER, "Work"))
             out.addAll(work)
         }
-        val general = items(d.optJSONArray("general"), "gen", "", keepDone = false)
         if (general.isNotEmpty()) {
             out.add(Row(HEADER, "General"))
             out.addAll(general)

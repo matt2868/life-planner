@@ -418,6 +418,12 @@ details.card[open]>summary{margin-bottom:8px}
 .dsec .add .ibtn{width:40px;height:40px}
 .dsec textarea{min-height:84px;overflow:hidden}
 .addb{background:var(--acc);color:var(--acc-ink)}
+.plusb{width:40px;height:40px;border-radius:50%}
+.plusb svg{width:20px;height:20px}
+.ch .plusb{width:32px;height:32px;margin:-4px 0}
+.ch .plusb svg{width:18px;height:18px}
+.lhead .plusb{width:44px;height:44px}
+.pnav .plusb{margin-left:4px}
 .addb:hover{background:var(--acc)}
 .carry{margin-top:6px}
 .hchips{display:flex;flex-wrap:wrap;gap:6px;padding-top:2px}
@@ -550,7 +556,7 @@ const UPDATE_REPO='matt2868/life-planner';
 let S=null,mode='loading',syncState='loading';
 const T0=TODAY();
 const ui={tab:'calendar',sel:T0,month:T0.slice(0,7),colorBy:'all',anim:true,gtOpen:true,
-list:null,ltab:{},lstate:{},tdDay:'',hsel:'all',hweek:'',hyear:+T0.slice(0,4),lq:'',lsort:'recent',
+list:null,ltab:{},lstate:{},tdDay:'',adding:null,hsel:'all',hweek:'',hyear:+T0.slice(0,4),lq:'',lsort:'recent',
 sp:'month',smonth:T0.slice(0,7),syear:+T0.slice(0,4),strk:null,
 gyear:+T0.slice(0,4),wk:'month',wmonth:T0.slice(0,7),wyear:+T0.slice(0,4),snoozed:'',update:0};
 
@@ -821,10 +827,14 @@ catch(x){err.textContent=typeof x==='string'?x:'Something went wrong. Try again.
 
 /* ---------- home-screen widget (Android app only) ---------- */
 let wT=null;
+const WCOLS=[['bg','--bg'],['card','--card'],['panel','--panel'],['ink','--ink'],['ink2','--ink2'],['line','--line'],['acc','--acc'],['accInk','--acc-ink']];
+function hexOf(c){const m=(c||'').match(/[\d.]+/g);return m?'#'+m.slice(0,3).map(x=>Math.round(+x).toString(16).padStart(2,'0')).join(''):''}
+function widgetLook(){const l=(S&&S.config.look)||{},out={mode:['light','dark'].includes(l.appearance)?l.appearance:'auto'};
+for(const sch of ['light','dark']){const e=D.createElement('i');e.style.cssText=`position:absolute;visibility:hidden;color-scheme:${sch}`;D.body.appendChild(e);const g={};for(const [k,v] of WCOLS){e.style.color=`var(${v})`;g[k]=hexOf(getComputedStyle(e).color)}e.remove();out[sch]=g}return out}
 function widgetSync(){if(!APP||!S||mode==='loading')return;clearTimeout(wT);wT=setTimeout(()=>{try{
-if(mode==='example'){APP.setWidgetData(JSON.stringify({v:1,setup:true}));return}
+const look=widgetLook();if(mode==='example'){APP.setWidgetData(JSON.stringify({v:1,setup:true,look}));return}
 const t=TODAY(),days={},li=x=>({id:x.id,x:x.x,d:!!x.d});for(let i=0;i<7;i++){const k=addDays(t,i),d=dayGet(k);days[k]=(d?.t||[]).filter(x=>!x.m).map(li)}
-APP.setWidgetData(JSON.stringify({v:2,days,work:S.work.items.map(li),general:S.todos.items.map(li)}));
+APP.setWidgetData(JSON.stringify({v:2,days,work:S.work.items.map(li),general:S.todos.items.map(li),look}));
 if(typeof APP.setFilled==='function')APP.setFilled(lastFilled())}catch(e){}},400)}
 function applyWidgetActions(){if(!APP||!S||mode==='example'||mode==='loading')return;let acts=[];try{acts=JSON.parse(APP.takeWidgetActions()||'[]')}catch(e){}
 if(!Array.isArray(acts)||!acts.length)return;
@@ -835,7 +845,7 @@ async function checkUpdate(){if(!APP||!/^\d+$/.test(APP_VERSION))return;try{cons
 window.__resume=()=>{applyWidgetActions();if(mode==='github')syncNow();checkDay();if(mode==='local')rolloverCheck()};
 window.__pause=()=>{saveLocalNow();if(mode==='github'&&dirty.size)pushAll()};
 window.__back=()=>{if($('#wov').classList.contains('open')){closeWrapped();return true}if($('#ov').classList.contains('open')){closeSheet();return true}if(ui.tab!=='calendar'){ui.tab='calendar';history.replaceState(null,'','#calendar');render();return true}return false};
-window.__openAdd=kind=>{closeSheet();closeWrapped();ui.tab='todo';history.replaceState(null,'','#todo');ui.tdDay=TODAY();render();const id=kind==='work'?'#wk-new':kind==='gen'?'#gt-new':'#td-new';setTimeout(()=>{const i=$(id);if(i){i.scrollIntoView({block:'center'});i.focus()}},80)};
+window.__openAdd=kind=>{closeSheet();closeWrapped();ui.tab='todo';history.replaceState(null,'','#todo');ui.tdDay=TODAY();ui.adding=kind==='work'?'wk':kind==='gen'?'gt':'td:'+TODAY();render();const id=kind==='work'?'#wk-new':kind==='gen'?'#gt-new':'#td-new';setTimeout(()=>{const i=$(id);if(i){i.scrollIntoView({block:'center'});i.focus()}},80)};
 
 /* ---------- boot ---------- */
 let pendingRender=false;
@@ -897,7 +907,7 @@ const carry=k===today?prevUnfinished(k):null;
 const words=(d?.n||'').trim()?d.n.trim().split(/\s+/).length:0;
 el.innerHTML=`<div class="dhead"><h2 class="serif"><span class="lg">${rel?rel+',':WDL[dt.getDay()]} ${dt.getDate()} ${MON[dt.getMonth()]}</span><span class="sh">${rel?rel+',':WDL[dt.getDay()].slice(0,3)} ${dt.getDate()} ${MON3[dt.getMonth()]}</span></h2><button class="ibtn" data-a="dprev" aria-label="Previous day">${ICON.l}</button><button class="ibtn" data-a="dnext" aria-label="Next day">${ICON.r}</button></div>
 <section class="card dsec"><div class="ch"><h3>Scores</h3>${sc!=null?`<span class="cnt">Day score ${Math.round(sc*100)}%</span>`:''}</div>${ts.map(t=>scoreRow(t,d)).join('')}</section>
-<section class="card dsec"><div class="ch"><h3>To-do</h3>${real.length?`<span class="cnt">${done} of ${real.length} done</span>`:''}</div><ul class="todo compact">${items.map(it=>todoLi(it,'td',k)).join('')}</ul>${carry?carryBtn(carry,k):''}<form class="add" data-f="td" data-k="${k}"><input id="td-new" placeholder="Add a to-do" enterkeyhint="done" autocomplete="off" aria-label="New to-do"><button class="ibtn addb" aria-label="Add to-do">${ICON.plus}</button></form></section>
+<section class="card dsec"><div class="ch"><h3>To-do</h3>${real.length?`<span class="cnt">${done} of ${real.length} done</span>`:''}${plusBtn('td:'+k,'Add to-do')}</div><ul class="todo compact">${items.map(it=>todoLi(it,'td',k)).join('')}</ul>${addForm('td:'+k,'td','td-new','New to-do',` data-k="${k}"`)}${carry?carryBtn(carry,k):''}</section>
 <section class="card dsec"><div class="ch"><h3>Notes</h3><span class="cnt" id="wc">${plural(words,'word')}</span></div><textarea id="note" data-in="note" rows="3" aria-label="Notes for this day">${esc(d?.n||'')}</textarea></section>`;
 grow($('#note',el));sortable($('.todo',el),ids=>reorderDay(k,ids))}
 function grow(t){if(!t)return;t.style.height='auto';t.style.height=Math.max(t.scrollHeight+2,84)+'px'}
@@ -912,14 +922,19 @@ function todoLi(it,kind,k){const dk=k?` data-k="${k}"`:'';return `<li class="${i
 function setScore(tid,v){const d=dayEnsure(ui.sel);if(v==null)delete d.s[tid];else d.s[tid]=v;dayDone(ui.sel)}
 function pickDay(k){ui.sel=k;if(k.slice(0,7)!==ui.month){ui.month=k.slice(0,7);ui.anim=true}renderCal();renderDay()}
 
+/* ---------- add buttons ---------- */
+let lastAddClose={key:'',t:0};
+function plusBtn(key,label,act='add-open'){return `<button class="ibtn addb plusb" data-a="${act}" data-key="${esc(key)}" aria-label="${esc(label)}">${ICON.plus}</button>`}
+function addForm(key,f,id,label,attrs='',cls=''){return ui.adding===key?`<form class="add${cls}" data-f="${f}" data-key="${esc(key)}"${attrs}><input id="${id}" enterkeyhint="done" autocomplete="off" aria-label="${esc(label)}"></form>`:''}
+function focusAdd(key){const i=$(`form.add[data-key="${CSS.escape(key)}"] input`);if(i){i.focus({preventScroll:true});i.scrollIntoView({block:'nearest'})}}
 /* ---------- to-do tab ---------- */
 const TLK={gt:'todos',wk:'work'};
 function listPanel(kind,title,ph){const key=TLK[kind],L=S[key].items,open=L.filter(x=>!x.d),done=L.filter(x=>x.d);
-return `<section class="tpanel"><div class="tph"><h2 class="serif">${title}</h2><span class="cnt">${open.length} open</span></div><form class="add top" data-f="${kind}"><input id="${kind}-new" placeholder="${ph}" enterkeyhint="done" autocomplete="off" aria-label="${ph}"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form><ul class="todo" id="td-${kind}">${open.map(it=>todoLi(it,kind)).join('')}</ul>${done.length?`<details class="done"><summary>Done (${done.length})</summary><ul class="todo">${done.map(it=>todoLi(it,kind)).join('')}</ul><button class="btn sm" data-a="lt-clear" data-kind="${kind}">Clear done</button></details>`:''}</section>`}
+return `<section class="tpanel"><div class="tph"><h2 class="serif">${title}</h2><span class="cnt">${open.length} open</span>${plusBtn(kind,ph)}</div><ul class="todo" id="td-${kind}">${open.map(it=>todoLi(it,kind)).join('')}</ul>${addForm(kind,kind,kind+'-new',ph)}${done.length?`<details class="done"><summary>Done (${done.length})</summary><ul class="todo">${done.map(it=>todoLi(it,kind)).join('')}</ul><button class="btn sm" data-a="lt-clear" data-kind="${kind}">Clear done</button></details>`:''}</section>`}
 function viewTodo(v){const today=TODAY();if(!ui.tdDay)ui.tdDay=today;const k=ui.tdDay,d=dayGet(k),dt=parseK(k);
 const items=d?.t||[],real=items.filter(x=>!x.m),done=real.filter(x=>x.d).length,carry=k===today?prevUnfinished(k):null;
 const rel=k===today?'Today':k===addDays(today,-1)?'Yesterday':k===addDays(today,1)?'Tomorrow':WDL[dt.getDay()];
-v.innerHTML=`<div class="tdview"><section class="tpanel"><div class="tph"><h2 class="serif">${rel}<span class="dsub">${dt.getDate()} ${MON3[dt.getMonth()]}</span></h2><div class="pnav"><button class="ibtn" data-a="tdprev" aria-label="Previous day">${ICON.l}</button>${k!==today?'<button class="btn sm" data-a="tdtoday">Today</button>':''}<button class="ibtn" data-a="tdnext" aria-label="Next day">${ICON.r}</button></div></div>${real.length?`<p class="cnt tdcount">${done} of ${real.length} done</p>`:''}<form class="add top" data-f="td" data-k="${k}"><input id="td-new" placeholder="Add a to-do for ${k===today?'today':esc(fmtShort(k))}" enterkeyhint="done" autocomplete="off" aria-label="New to-do"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form><ul class="todo" id="td-day">${items.map(it=>todoLi(it,'td',k)).join('')}</ul>${carry?carryBtn(carry,k):''}</section><div class="tright">${listPanel('wk','Work','Add a work to-do')}${listPanel('gt','General','Add a to-do')}</div></div>`;
+v.innerHTML=`<div class="tdview"><section class="tpanel"><div class="tph"><h2 class="serif">${rel}<span class="dsub">${dt.getDate()} ${MON3[dt.getMonth()]}</span></h2><div class="pnav"><button class="ibtn" data-a="tdprev" aria-label="Previous day">${ICON.l}</button>${k!==today?'<button class="btn sm" data-a="tdtoday">Today</button>':''}<button class="ibtn" data-a="tdnext" aria-label="Next day">${ICON.r}</button>${plusBtn('td:'+k,'Add to-do')}</div></div>${real.length?`<p class="cnt tdcount">${done} of ${real.length} done</p>`:''}<ul class="todo" id="td-day">${items.map(it=>todoLi(it,'td',k)).join('')}</ul>${addForm('td:'+k,'td','td-new','New to-do',` data-k="${k}"`)}${carry?carryBtn(carry,k):''}</section><div class="tright">${listPanel('wk','Work','Add a work to-do')}${listPanel('gt','General','Add a to-do')}</div></div>`;
 sortable($('#td-day',v),ids=>reorderDay(k,ids));for(const kind of ['wk','gt'])sortable($('#td-'+kind,v),ids=>reorderList(kind,ids))}
 function reorderDay(k,ids){const d=dayGet(k);if(d){const next=reorderSubset(d.t,ids);if(next){d.t=next;dayDone(k)}}refreshDay()}
 function reorderList(kind,ids){const key=TLK[kind],L=S[key],next=reorderSubset(L.items,ids);if(next){L.items=next;save('meta/'+key)}render()}
@@ -1065,7 +1080,7 @@ const pal=PALETTES.some(p=>p[0]===l.palette)?l.palette:'ink',ap=['light','dark']
 if(pal==='ink')delete r.dataset.palette;else r.dataset.palette=pal;
 if(ap)r.dataset.theme=ap;else delete r.dataset.theme;
 const dark=ap?ap==='dark':matchMedia('(prefers-color-scheme: dark)').matches,key=pal+'|'+ap+'|'+dark;
-if(key===lookKey)return;lookKey=key;
+if(key===lookKey)return;lookKey=key;widgetSync();
 requestAnimationFrame(()=>{try{const c=getComputedStyle(D.body).backgroundColor.match(/\d+/g).map(Number);const m=D.querySelector('meta[name=theme-color]');if(m)m.content='#'+c.slice(0,3).map(x=>x.toString(16).padStart(2,'0')).join('');if(APP&&typeof APP.setChrome==='function')APP.setChrome(dark,(255<<24|c[0]<<16|c[1]<<8|c[2])|0)}catch(e){}})}
 function setLook(p){S.config.look={...(S.config.look||{}),...p};save('meta/config');applyLook()}
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{lookKey='';applyLook()});
@@ -1090,15 +1105,15 @@ const cnt=l=>doneTab(l)||lType(l)==='archive'?l.items.filter(i=>!i.done).length:
 const nav=`<nav class="lnav" aria-label="Lists">${ord.map(id=>{const l=S.lists[id];return `<button class="${ui.list===id?'on':''}" data-a="lsel" data-id="${esc(id)}"><i class="dot" style="background:var(--c${l.c||1})"></i><span class="ln">${esc(l.name)}</span><span class="n">${cnt(l)}</span></button>`}).join('')}<button class="newl" data-a="list-new">${ICON.plus} New list</button></nav>`;
 let body='';
 if(ui.list){const l=S.lists[ui.list],ty=lType(l),t=curTab(l),st=ty==='archive'?arState(l):'';
-const head=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${ty==='archive'&&st==='done'?`<button class="btn pri" data-a="ar-log">${ICON.plus} Add</button>`:''}</div>`;
+const head=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${ty==='archive'&&st==='done'?plusBtn('','Add to '+l.states.done,'ar-log'):curTab(l)==='done'?'':plusBtn('li:'+l.id,'Add to '+(ty==='archive'?l.states.todo:l.name))}</div>`;
 const states=ty==='archive'?`<div class="segbar" role="group" aria-label="Section">${[['todo',l.states.todo],['done',l.states.done]].map(([k,lb])=>`<button class="${st===k?'on':''}" data-a="lstate" data-s="${k}">${esc(lb)} <span class="muted">${l.items.filter(i=>k==='done'?i.done:!i.done).length}</span></button>`).join('')}</div>`:'';
 const tabBtn=(id,label,c,extra='',real=false)=>`<button class="ltab${t===id?' on':''}" role="tab" aria-selected="${t===id}" data-a="ltab" data-t="${esc(id)}"${real?` data-id="${esc(id)}"`:''}${c?` style="--tc:var(--c${c})"`:''}>${extra}${label}<span>${visibleIn(l,id).length}</span></button>`;
 const tabs=`<div class="ltabs" id="ltabs" role="tablist" aria-label="Tabs in ${esc(l.name)}">${tabBtn('all','All',0)}${l.tabs.map(tb=>tabBtn(tb.id,esc(tb.name),tb.c,'<i class="dot"></i>',true)).join('')}${doneTab(l)?tabBtn('done',esc(l.done.name),l.done.c,ICON.tick):''}<button class="ltab add" data-a="tab-new" aria-label="New tab">${ICON.plus}</button>${t!=='all'?'<button class="ltab add" data-a="tab-edit">Edit tab</button>':''}</div>`;
 const tname=t==='all'||t==='done'?l.name:tabOf(l,t).name;
-const quick=`<form class="add top" data-f="li"><input id="li-new" placeholder="Add to ${esc(ty==='archive'?l.states.todo:tname)}" enterkeyhint="done" autocomplete="off" aria-label="Add to ${esc(tname)}"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form>`;
+const quick=addForm('li:'+l.id,'li','li-new','Add to '+tname);
 if(ty==='archive'&&st==='done'){const sorts=[['recent','Newest'],['old','Oldest'],...(l.rate?[['rating','Highest rated']]:[]),['title','A to Z']];if(!sorts.some(s=>s[0]===ui.lsort))ui.lsort='recent';
 body=head+states+tabs+`<div class="lctl"><input id="lq" data-in="lq" type="search" placeholder="Search" value="${esc(ui.lq)}" aria-label="Search"><select id="lsort" data-ch="lsort" aria-label="Sort">${sorts.map(([k,lb])=>`<option value="${k}"${ui.lsort===k?' selected':''}>${lb}</option>`).join('')}</select></div><div class="items" id="litems"></div>`}
-else body=head+states+tabs+(t==='done'?'':quick)+'<div id="litems"></div>'}
+else body=head+states+tabs+'<div id="litems"></div>'+(t==='done'?'':quick)}
 v.innerHTML=`<div class="pg"><div class="lview">${nav}<div class="lbody">${body}</div></div></div>`;
 sortable($('.lnav',v),ids=>{S.config.listOrder=reorderIds(S.config.listOrder,ids);save('meta/config');render()});
 if(ui.list){const l=S.lists[ui.list];sortable($('#ltabs',v),ids=>{const next=reorderSubset(l.tabs,ids);if(next){l.tabs=next;save('lists/'+l.id)}render()});renderItems()}}
@@ -1454,6 +1469,7 @@ tdtoday:()=>{ui.tdDay=TODAY();render()},
 hday:b=>{const h=hab(b.dataset.id);if(!h)return;const multi=h.per==='day'&&(h.n||1)>1;setHabit(b.dataset.k,h.id,n=>multi?(n>=h.n?0:n+1):(n?0:1));refreshDay()},
 hplus:b=>{const h=hab(b.dataset.id);if(!h)return;const multi=h.per==='day'&&(h.n||1)>1;setHabit(TODAY(),h.id,n=>multi?n+1:(n?0:1));render()},
 hminus:b=>{const h=hab(b.dataset.id);if(!h)return;setHabit(TODAY(),h.id,n=>n-1);render()},
+'add-open':b=>{const key=b.dataset.key;if(lastAddClose.key===key&&Date.now()-lastAddClose.t<600)return;ui.adding=key;if(ui.tab==='calendar')renderDay();else render();focusAdd(key)},
 hsel:b=>{ui.hsel=b.dataset.id;render();if(b.dataset.scroll)setTimeout(()=>$('#hbottom')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'}),30)},
 hwprev:()=>{ui.hweek=addDays(ui.hweek||pStart('week',TODAY()),-7);render()},
 hwnext:()=>{const n=addDays(ui.hweek||pStart('week',TODAY()),7);ui.hweek=n>pStart('week',TODAY())?'':n;render()},
@@ -1501,6 +1517,8 @@ D.addEventListener('click',e=>{if(Date.now()-dragJust<450){e.preventDefault();e.
 const FORMS={
 td:f=>{const inp=$('#td-new',f),x=inp.value.trim();if(!x)return;const k=f.dataset.k||ui.sel,d=dayEnsure(k);d.t.push({id:uid(),x,d:false});dayDone(k);refreshDay();$('#td-new')?.focus()},
 gt:f=>listAdd('gt',f),wk:f=>listAdd('wk',f),li:f=>liAdd(f)};
+D.addEventListener('focusout',e=>{const i=e.target;if(!(i instanceof HTMLInputElement)||!i.matches('form.add[data-key] input'))return;const f=i.closest('form');setTimeout(()=>{if(!f.isConnected||f.contains(D.activeElement)||i.value.trim())return;if(ui.adding===f.dataset.key){ui.adding=null;lastAddClose={key:f.dataset.key,t:Date.now()}}f.remove()},150)});
+D.addEventListener('keydown',e=>{if(e.key==='Escape'&&e.target.matches?.('form.add[data-key] input')){e.target.value='';e.target.blur()}});
 D.addEventListener('submit',e=>{const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();FORMS[f.dataset.f]?.(f)});
 D.addEventListener('input',e=>{const t=e.target;
 if(t.dataset.in==='note'){grow(t);const d=dayEnsure(ui.sel);d.n=t.value;dayDone(ui.sel);const w=t.value.trim()?t.value.trim().split(/\s+/).length:0;const wc=$('#wc');if(wc)wc.textContent=plural(w,'word')}

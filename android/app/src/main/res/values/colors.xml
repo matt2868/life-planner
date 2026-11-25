@@ -7,4 +7,5 @@
     <color name="w_ink2">#5B606D</color>
     <color name="w_acc">#3037C4</color>
     <color name="w_acc_ink">#FFFFFF</color>
+    <color name="w_line">#E1E3EA</color>
 </resources>

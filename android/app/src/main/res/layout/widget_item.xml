@@ -3,27 +3,57 @@
     android:id="@+id/row"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:minHeight="40dp"
-    android:orientation="horizontal"
-    android:paddingTop="3dp"
-    android:paddingBottom="3dp">
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="44dp"
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp">
+
+        <FrameLayout
+            android:layout_width="22dp"
+            android:layout_height="22dp">
+
+            <ImageView
+                android:id="@+id/box"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                android:src="@drawable/w_box"
+                android:tint="@color/w_ink2" />
+
+            <ImageView
+                android:id="@+id/tick"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                android:src="@drawable/w_tick"
+                android:tint="@color/w_bg"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@color/w_ink"
+            android:textSize="15sp" />
+    </LinearLayout>
 
     <ImageView
-        android:id="@+id/check"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
         android:importantForAccessibility="no"
-        android:src="@drawable/ic_check_off" />
-
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_weight="1"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:textColor="@color/w_ink"
-        android:textSize="15sp" />
+        android:scaleType="fitXY"
+        android:src="@drawable/w_rect"
+        android:tint="@color/w_line" />
 </LinearLayout>
