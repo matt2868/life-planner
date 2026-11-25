@@ -12,7 +12,7 @@ class Bridge(private val context: Context, activity: MainActivity) {
     @JavascriptInterface
     fun setWidgetData(json: String) {
         WidgetStore.setData(context, json)
-        TodoWidget.refreshAll(context)
+        BaseTodoWidget.refreshAll(context)
     }
 
     @JavascriptInterface
@@ -30,6 +30,11 @@ class Bridge(private val context: Context, activity: MainActivity) {
 
     @JavascriptInterface
     fun notificationsAllowed(): Boolean = NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+    @JavascriptInterface
+    fun setChrome(dark: Boolean, color: Int) {
+        activityRef.get()?.setChrome(dark, color)
+    }
 
     @JavascriptInterface
     fun requestNotifications() {

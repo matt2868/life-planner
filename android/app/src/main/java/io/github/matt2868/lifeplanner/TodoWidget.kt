@@ -13,11 +13,17 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-/** Home-screen widget: today's to-dos and open general to-dos, tick to complete. */
-class TodoWidget : AppWidgetProvider() {
+/** One provider per list, so each can be placed (or stacked) on its own. */
+class TodoWidget : BaseTodoWidget("all")
+class TodayWidget : BaseTodoWidget("day")
+class WorkWidget : BaseTodoWidget("work")
+class GeneralWidget : BaseTodoWidget("gen")
+
+/** Home-screen to-do widget. Mode "all" shows today, work and general together. */
+abstract class BaseTodoWidget(private val mode: String) : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        update(context, manager, ids)
+        update(context, manager, ids, mode, this::class.java)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -33,33 +39,58 @@ class TodoWidget : AppWidgetProvider() {
     companion object {
         const val ACTION_TOGGLE = "io.github.matt2868.lifeplanner.TOGGLE"
 
+        private val providers: List<Pair<Class<out AppWidgetProvider>, String>> = listOf(
+            TodoWidget::class.java to "all",
+            TodayWidget::class.java to "day",
+            WorkWidget::class.java to "work",
+            GeneralWidget::class.java to "gen"
+        )
+
         fun refreshAll(context: Context) {
             val manager = AppWidgetManager.getInstance(context)
-            val ids = manager.getAppWidgetIds(ComponentName(context, TodoWidget::class.java))
-            if (ids.isNotEmpty()) update(context, manager, ids)
+            for ((cls, mode) in providers) {
+                val ids = manager.getAppWidgetIds(ComponentName(context, cls))
+                if (ids.isNotEmpty()) update(context, manager, ids, mode, cls)
+            }
         }
 
         @Suppress("DEPRECATION")
-        private fun update(context: Context, manager: AppWidgetManager, ids: IntArray) {
-            for (id in ids) manager.updateAppWidget(id, build(context, id))
+        private fun update(
+            context: Context,
+            manager: AppWidgetManager,
+            ids: IntArray,
+            mode: String,
+            cls: Class<out AppWidgetProvider>
+        ) {
+            for (id in ids) manager.updateAppWidget(id, build(context, id, mode, cls))
             manager.notifyAppWidgetViewDataChanged(ids, R.id.list)
         }
 
         @Suppress("DEPRECATION")
-        private fun build(context: Context, widgetId: Int): RemoteViews {
+        private fun build(
+            context: Context,
+            widgetId: Int,
+            mode: String,
+            cls: Class<out AppWidgetProvider>
+        ): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget)
-            val label = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.UK))
-            views.setTextViewText(R.id.title, label)
+            val title = when (mode) {
+                "work" -> "Work"
+                "gen" -> "General"
+                else -> LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.UK))
+            }
+            views.setTextViewText(R.id.title, title)
 
             val service = Intent(context, TodoWidgetService::class.java).apply {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+                putExtra("mode", mode)
                 data = Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
             }
             views.setRemoteAdapter(R.id.list, service)
             views.setEmptyView(R.id.list, R.id.empty)
 
             val mutable = if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_MUTABLE else 0
-            val toggle = Intent(context, TodoWidget::class.java).setAction(ACTION_TOGGLE)
+            val toggle = Intent(context, cls).setAction(ACTION_TOGGLE)
             views.setPendingIntentTemplate(
                 R.id.list,
                 PendingIntent.getBroadcast(context, 0, toggle, PendingIntent.FLAG_UPDATE_CURRENT or mutable)
@@ -68,12 +99,18 @@ class TodoWidget : AppWidgetProvider() {
             val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             val open = Intent(context, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            val addAction = when (mode) {
+                "work" -> "add-work"
+                "gen" -> "add-gen"
+                else -> "add"
+            }
             val add = Intent(context, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                .putExtra(MainActivity.EXTRA_ACTION, "add")
-            views.setOnClickPendingIntent(R.id.title, PendingIntent.getActivity(context, 1, open, flags))
-            views.setOnClickPendingIntent(R.id.empty, PendingIntent.getActivity(context, 3, open, flags))
-            views.setOnClickPendingIntent(R.id.add, PendingIntent.getActivity(context, 2, add, flags))
+                .putExtra(MainActivity.EXTRA_ACTION, addAction)
+            val code = providers.indexOfFirst { it.second == mode } * 10
+            views.setOnClickPendingIntent(R.id.title, PendingIntent.getActivity(context, 1 + code, open, flags))
+            views.setOnClickPendingIntent(R.id.empty, PendingIntent.getActivity(context, 3 + code, open, flags))
+            views.setOnClickPendingIntent(R.id.add, PendingIntent.getActivity(context, 2 + code, add, flags))
             return views
         }
     }

@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Planner</string>
-    <string name="widget_name">Planner to-dos</string>
-    <string name="widget_desc">Today\'s to-dos and your general list. Tick them off from the home screen.</string>
+    <string name="widget_name">All to-dos</string>
+    <string name="widget_today">Today\'s to-dos</string>
+    <string name="widget_work">Work to-dos</string>
+    <string name="widget_general">General to-dos</string>
+    <string name="widget_today_desc">Today\'s to-do list. Tick things off from the home screen.</string>
+    <string name="widget_work_desc">Your work list. Ticked items drop off.</string>
+    <string name="widget_general_desc">Your general list. Ticked items drop off.</string>
+    <string name="widget_desc">Today\'s to-dos with your work and general lists.</string>
     <string name="widget_setup">Open Planner to get started</string>
     <string name="add_todo">Add a to-do</string>
 </resources>

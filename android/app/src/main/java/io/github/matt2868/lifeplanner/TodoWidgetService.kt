@@ -12,14 +12,15 @@ import androidx.core.content.ContextCompat
 
 /** Supplies the rows of the widget's list. */
 class TodoWidgetService : RemoteViewsService() {
-    override fun onGetViewFactory(intent: Intent): RemoteViewsFactory = Factory(applicationContext)
+    override fun onGetViewFactory(intent: Intent): RemoteViewsFactory =
+        Factory(applicationContext, intent.getStringExtra("mode") ?: "all")
 
-    private class Factory(private val context: Context) : RemoteViewsFactory {
+    private class Factory(private val context: Context, private val mode: String) : RemoteViewsFactory {
         private var rows: List<Row> = emptyList()
 
         override fun onCreate() {}
         override fun onDataSetChanged() {
-            rows = WidgetStore.rows(context)
+            rows = WidgetStore.rows(context, mode)
         }
         override fun onDestroy() {}
         override fun getCount(): Int = rows.size

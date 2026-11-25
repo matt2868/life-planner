@@ -38,6 +38,40 @@
         </receiver>
 
         <receiver
+            android:name=".TodayWidget"
+            android:exported="false"
+            android:label="@string/widget_today">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_today" />
+        </receiver>
+        <receiver
+            android:name=".WorkWidget"
+            android:exported="false"
+            android:label="@string/widget_work">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_work" />
+        </receiver>
+        <receiver
+            android:name=".GeneralWidget"
+            android:exported="false"
+            android:label="@string/widget_general">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_general" />
+        </receiver>
+
+        <receiver
             android:name=".ReminderReceiver"
             android:exported="true">
             <intent-filter>

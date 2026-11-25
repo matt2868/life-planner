@@ -82,15 +82,21 @@ object WidgetStore {
     }
 
     /** Empty means the planner hasn't been set up, so the widget shows its prompt instead. */
-    fun rows(context: Context): List<Row> {
+    fun rows(context: Context, mode: String = "all"): List<Row> {
         val d = data(context) ?: return emptyList()
         if (d.optBoolean("setup")) return emptyList()
         val today = LocalDate.now().toString()
+        val todays = items(d.optJSONObject("days")?.optJSONArray(today), "day", today, keepDone = true)
+        val work = items(d.optJSONArray("work"), "work", "", keepDone = false)
+        when (mode) {
+            "day" -> return todays.ifEmpty { listOf(Row(HEADER, "Nothing planned today. Tap + to add one.")) }
+            "work" -> return work.ifEmpty { listOf(Row(HEADER, "No work to-dos. Tap + to add one.")) }
+            "gen" -> return items(d.optJSONArray("general"), "gen", "", keepDone = false)
+                .ifEmpty { listOf(Row(HEADER, "Nothing on the list. Tap + to add one.")) }
+        }
         val out = mutableListOf<Row>()
         out.add(Row(HEADER, "Today"))
-        val todays = items(d.optJSONObject("days")?.optJSONArray(today), "day", today, keepDone = true)
         if (todays.isEmpty()) out.add(Row(HEADER, "Nothing planned. Tap + to add a to-do.")) else out.addAll(todays)
-        val work = items(d.optJSONArray("work"), "work", "", keepDone = false)
         if (work.isNotEmpty()) {
             out.add(Row(HEADER, "Work"))
             out.addAll(work)

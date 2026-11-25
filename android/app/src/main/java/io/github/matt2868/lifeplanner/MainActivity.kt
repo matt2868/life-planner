@@ -27,6 +27,7 @@ import androidx.webkit.WebViewAssetLoader
 /** Hosts the planner page (assets/www/index.html) full screen and links it to the widget. */
 class MainActivity : ComponentActivity() {
     private lateinit var web: WebView
+    private lateinit var root: FrameLayout
     private var pageReady = false
     private var pendingAction: String? = null
 
@@ -48,7 +49,7 @@ class MainActivity : ComponentActivity() {
             Configuration.UI_MODE_NIGHT_YES
         val background = if (night) 0xFF111317.toInt() else 0xFFFFFFFF.toInt()
 
-        val root = FrameLayout(this)
+        root = FrameLayout(this)
         root.setBackgroundColor(background)
         web = WebView(this)
         web.setBackgroundColor(background)
@@ -138,7 +139,25 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun runAction(action: String) {
-        if (action == "add") web.evaluateJavascript("window.__openAdd&&window.__openAdd()", null)
+        val kind = when (action) {
+            "add-work" -> "work"
+            "add-gen" -> "gen"
+            "add" -> "day"
+            else -> return
+        }
+        web.evaluateJavascript("window.__openAdd&&window.__openAdd('$kind')", null)
+    }
+
+    /** Matches the bars and background behind the page to the chosen theme. */
+    fun setChrome(dark: Boolean, color: Int) {
+        runOnUiThread {
+            root.setBackgroundColor(color)
+            web.setBackgroundColor(color)
+            WindowInsetsControllerCompat(window, root).apply {
+                isAppearanceLightStatusBars = !dark
+                isAppearanceLightNavigationBars = !dark
+            }
+        }
     }
 
     override fun onResume() {
