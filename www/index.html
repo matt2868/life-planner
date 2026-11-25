@@ -353,6 +353,39 @@ details.card[open]>summary{margin-bottom:8px}
 .tabtag{display:inline-flex;align-items:center;gap:4px;font-weight:600;color:var(--ink);margin-right:2px}
 .item .tabtag{margin-right:6px}
 .lrow.ticked .chk{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.lnav button .ln{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lnav button .n{flex:none}
+@media(min-width:760px){.lnav button{width:100%}}
+.markd{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-weight:700;font-size:14px;white-space:nowrap;flex:none}
+.markd .ic{width:16px;height:16px;stroke-width:2.6}
+.dntitle{font-weight:700;font-size:18px;margin:0 0 12px}
+.lbody>.segbar{justify-self:start}
+.todo li,.lrow,.lnav button,.ltab,.hcard{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.drag{box-shadow:0 8px 22px rgb(0 0 0/.22)!important;position:relative;z-index:3;opacity:.96}
+.todo li.drag{background:var(--bg);border-radius:10px}
+@media(min-width:760px){.hview{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}}
+.hsum .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+.hsum .tile,.hbottom .tile{background:var(--bg)}
+.hwk{margin:14px 0 6px}
+.hgrid{display:grid;grid-template-columns:minmax(5.5em,8.5em) repeat(7,minmax(0,1fr)) minmax(2.4em,auto);gap:4px;align-items:center}
+.hd{display:grid;justify-items:center;font-size:13px;color:var(--ink2);line-height:1.15}
+.hd b{font-size:14px;color:var(--ink);font-weight:600;min-width:22px;text-align:center;border-radius:99px}
+.hd.now b{background:var(--ink);color:var(--bg)}
+.hnm{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;min-width:0}
+.hnm span{overflow:hidden;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.hcell{height:34px;border-radius:8px;border:1px solid var(--line);background:var(--bg);display:grid;place-items:center;font-weight:800;font-size:13px;padding:0;color:#fff}
+.hcell .ic{width:16px;height:16px;stroke-width:2.8}
+.hcell.on{background:var(--tc);border-color:transparent}
+.hcell.dk.on{color:#0b0b0b}
+.hcell.now{border:2px solid var(--ink)}
+.hcell:disabled{opacity:.3}
+.hp{font-size:13px;font-weight:700;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hbottom .ltabs{margin-bottom:4px}
+.hbottom .tiles{margin-bottom:10px}
+.mstrip{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;height:84px;margin-top:14px}
+.mcol{display:grid;grid-template-rows:minmax(0,1fr) auto;justify-items:center;gap:2px}
+.mcol i{align-self:end;width:100%;max-width:26px;border-radius:4px 4px 0 0;min-height:2px}
+.mcol b{font-size:13px;color:var(--ink2);font-weight:600}
 /* compact day page */
 .daycol{gap:8px;padding:12px}
 .dhead h2{font-size:clamp(22px,3vw,28px)}
@@ -509,7 +542,7 @@ const UPDATE_REPO='matt2868/life-planner';
 let S=null,mode='loading',syncState='loading';
 const T0=TODAY();
 const ui={tab:'calendar',sel:T0,month:T0.slice(0,7),colorBy:'all',anim:true,gtOpen:true,
-list:null,ltab:{},tdDay:'',hsel:null,hyear:+T0.slice(0,4),lq:'',lsort:'recent',
+list:null,ltab:{},lstate:{},tdDay:'',hsel:'all',hweek:'',hyear:+T0.slice(0,4),lq:'',lsort:'recent',
 sp:'month',smonth:T0.slice(0,7),syear:+T0.slice(0,4),strk:null,
 gyear:+T0.slice(0,4),wk:'month',wmonth:T0.slice(0,7),wyear:+T0.slice(0,4),snoozed:'',update:0};
 
@@ -532,7 +565,9 @@ l.items.forEach(it=>{if(it.st!=null){if(l.type==='tick'){it.done=it.st==='done';
 delete l.kind;migrated.add(id)}
 if(!l.c)l.c=[1,2,3,5,7,6,8,4][n%8];l.rate=[0,5,10].includes(+l.rate)?+l.rate:0;if(l.cby!=='rating')l.cby='tab';
 l.tabs=Array.isArray(l.tabs)?l.tabs.filter(t=>t&&t.id):[];l.tabs.forEach((t,k)=>{t.name=t.name||'Tab';t.c=+t.c||((k%8)+1)});
-l.done=l.done&&typeof l.done==='object'?l.done:{};if(!['tab','strike'].includes(l.done.mode))l.done.mode='tab';l.done.name=l.done.name||'Done';l.done.c=+l.done.c||6});
+l.done=l.done&&typeof l.done==='object'?l.done:{};if(!['tab','strike'].includes(l.done.mode))l.done.mode='tab';l.done.name=l.done.name||'Done';l.done.c=+l.done.c||6;
+l.states=l.states&&typeof l.states==='object'?l.states:{};l.states.todo=l.states.todo||'To do';l.states.done=l.states.done||'Done';
+if(l.type==='archive'&&l.items.some(it=>it.done==null)){l.items.forEach(it=>{if(it.done==null)it.done=!!it.d});migrated.add(id)}});
 c.listOrder=(Array.isArray(c.listOrder)?c.listOrder:[]).filter(id=>st.lists[id]);
 for(const id of Object.keys(st.lists))if(!c.listOrder.includes(id))c.listOrder.push(id);
 st.todos=st.todos&&Array.isArray(st.todos.items)?st.todos:{items:[]};st.work=st.work&&Array.isArray(st.work.items)?st.work:{items:[]};
@@ -567,10 +602,13 @@ if(k===today){d.h={hb2:1};d.s={prod:4,sleep:7.5};d.n='';d.t=[{id:uid(),x:'Plan n
 const mk=k.slice(0,7);(st.months[mk]=st.months[mk]||{days:{}}).days[k]=d}
 const dt=(m,dd)=>`${y}-${p2(m)}-${p2(dd)}`;
 const mkList=(id,name,type,c,rate,cby,tabs,rows,done)=>{const tb=tabs.map(([n,tc])=>({id:uid(),name:n,c:tc}));
-st.lists[id]={id,name,type,c,rate,cby,tabs:tb,done:done||{mode:'tab',name:'Done',c:6},items:rows.map(([t,s,r,d,n,dn,tab])=>({id:uid(),t,s:s||'',r:r||0,d:d||'',n:n||'',done:!!dn,tab:tab!=null&&tb[tab]?tb[tab].id:'',u:d?parseK(d).getTime():Date.now(),a:d||today}))};st.config.listOrder.push(id)};
+st.lists[id]={id,name,type,c,rate,cby,tabs:tb,done:done||{mode:'tab',name:'Done',c:6},items:rows.map(([t,s,r,d,n,dn,tab])=>({id:uid(),t,s:s||'',r:r||0,d:d||'',n:n||'',done:type==='archive'?!!d:!!dn,tab:tab!=null&&tb[tab]?tb[tab].id:'',u:d?parseK(d).getTime():Date.now(),a:d||today}))};st.config.listOrder.push(id)};
 mkList('books','Books','archive',1,5,'rating',[],[['The Left Hand of Darkness','Ursula K. Le Guin',5,dt(1,24),'Better second time round.'],['Piranesi','Susanna Clarke',5,dt(2,19)],['The Overstory','Richard Powers',4,dt(3,30),'Slow start, huge payoff.'],['A Psalm for the Wild-Built','Becky Chambers',4,dt(5,4)],['Entangled Life','Merlin Sheldrake',4,dt(6,22)],['Project Hail Mary','Andy Weir',5,dt(8,9)],['The Remains of the Day','Kazuo Ishiguro',4,dt(9,14)],['Tomorrow, and Tomorrow, and Tomorrow','Gabrielle Zevin',3,dt(10,27)]]);
 mkList('games','Games','archive',8,5,'tab',[['Switch 2',8],['PC',1]],[['Pokémon Legends: Z-A','',4,dt(11,2),'',0,0],['Mario Kart World','',4,dt(7,12),'',0,0],['Balatro','',5,dt(2,2),'One more run.',0,1],['Outer Wilds','',5,dt(4,12),'',0,1],['Hades II','',4,dt(8,30),'',0,1]]);
 mkList('films','Films','archive',2,10,'rating',[],[['Paddington 2','2017',9,dt(1,3)],['Past Lives','2023',8,dt(2,8)],['Perfect Days','2023',9,dt(3,15),'Quietly perfect.'],['Arrival','2016',9,dt(5,2)],['The Holdovers','2023',8,dt(7,19)],['Dune: Part Two','2024',7,dt(11,8)]]);
+st.lists.books.items.push(...[['Middlemarch','George Eliot'],['The Wager','David Grann']].map(([t,s])=>({id:uid(),t,s,r:0,d:'',n:'',done:false,tab:'',u:Date.now(),a:today})));st.lists.books.states={todo:'To read',done:'Read'};
+st.lists.films.items.push(...[['Seven Samurai','1954'],['Spirited Away','2001'],['Aftersun','2022']].map(([t,s])=>({id:uid(),t,s,r:0,d:'',n:'',done:false,tab:'',u:Date.now(),a:today})));st.lists.films.states={todo:'To watch',done:'Watched'};
+st.lists.games.items.push({id:uid(),t:'Disco Elysium',s:'',r:0,d:'',n:'',done:false,tab:st.lists.games.tabs[1].id,u:Date.now(),a:today});st.lists.games.states={todo:'Backlog',done:'Played'};
 mkList('presents','Present ideas','ordered',5,0,'tab',[['Mum',5],['Dad',1],['Sam',3]],[['Fountain pen','','','','A green Lamy Safari',0,0],['Bird feeder camera','','','','',0,1],['Pottery class','','','','',0,0],['Hiking socks','','','','',0,1],['Cookbook','','','','',0,2],['Board game','','','','',0,2]]);
 mkList('shiny','Shiny hunts','tick',7,0,'tab',[['Scarlet',2],['Violet',7],['Legends: Z-A',3]],[['Ralts','Masuda method · 1,840 encounters','',dt(2,11),'',1,0],['Gible','Masuda method','',dt(7,28),'',1,0],['Larvitar','Mass outbreaks','','','',0,1],['Eevee','Mass outbreaks','',dt(4,3),'',1,1],['Dratini','Respawns','',dt(11,4),'',1,2],['Beldum','Respawns · 950 so far','','','',0,2]],{mode:'tab',name:'Caught',c:6});
 mkList('places','Places to visit','tick',3,0,'tab',[],[['Isle of Skye'],['Northumberland coast','Dark sky park too'],['Edinburgh in August','','',dt(8,15),'',1]],{mode:'strike',name:'Done',c:6});
@@ -613,7 +651,7 @@ const listOrder=()=>S.config.listOrder.filter(id=>S.lists[id]);
 /* ---------- goals ---------- */
 function goalUnit(g,n){const one=n===1;if(g.kind==='list'){return (S.lists[g.listId]?.name||'items').toLowerCase()}if(g.kind==='tracker')return one?'day':'days';return g.unit||''}
 function goalVal(g,mk){const pre=mk||String(g.year);
-if(g.kind==='list'){const l=S.lists[g.listId];return l?l.items.filter(i=>i.d&&i.d.startsWith(pre)&&(lType(l)==='archive'||i.done)).length:0}
+if(g.kind==='list'){const l=S.lists[g.listId];return l?l.items.filter(i=>i.done&&i.d&&i.d.startsWith(pre)).length:0}
 if(g.kind==='tracker'){const t=trk(g.trackerId);if(!t)return 0;let c=0;for(const [k2,m] of Object.entries(S.months)){if(!k2.startsWith(pre.slice(0,7)))continue;for(const d of Object.values(m.days||{}))if(good(t,val(d,t),g.threshold))c++}return c}
 if(g.kind==='manual'){const ci=g.checkins||{};if(mk)return +(ci[mk.slice(5)]?.v)||0;return Object.values(ci).reduce((a,c)=>a+(+c.v||0),0)}
 return null}
@@ -752,10 +790,10 @@ const [tx,c]=map[s]||map.loading;el.textContent=tx;el.style.setProperty('--sd',c
 function ago(t){const s=(Date.now()-t)/1000;if(s<60)return 'just now';if(s<3600)return `${Math.round(s/60)} min ago`;if(s<86400)return `${Math.round(s/3600)} h ago`;return fmtShort(ymd(new Date(t)))}
 function syncSection(){
 if(mode==='github')return `<p>Syncing with <b>${esc(cfg.repo)}</b>.${meta.last?` Last synced ${esc(ago(meta.last))}.`:''}${dirty.size?` ${plural(dirty.size,'file')} waiting to upload.`:''}</p><div class="row"><button class="btn" data-a="sync-now">Sync now</button><button class="btn" data-a="setup">Change repo or token</button><button class="btn danger" data-a="unsync">Stop syncing</button></div>`;
-if(mode==='local')return `<p>Saved on this device only. Connect a private GitHub repo to sync between devices and keep a copy safe.</p><button class="btn pri" data-a="setup">Sync with GitHub</button>`;
-return `<p>You’re looking at example data. Nothing is saved.</p><button class="btn pri" data-a="setup">Set up my planner</button>`}
+if(mode==='local')return `<p>On this device only.</p><button class="btn pri" data-a="setup">Sync with GitHub</button>`;
+return `<button class="btn pri" data-a="setup">Set up my planner</button>`}
 function setupSheet(first){
-const body=`<p style="margin:0 0 12px">Your planner saves to a private GitHub repo, so it syncs between your phone and computer and there’s always a copy.</p>
+const body=`
 <form id="sf"><div class="f"><label for="s-repo">Data repo</label><input id="s-repo" placeholder="your-github-name/life-planner-data" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(cfg.repo||'')}"></div>
 <div class="f"><label for="s-tok">Token</label><input id="s-tok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…"></div>
 <details class="f how"><summary>How to set this up</summary><ol>
@@ -793,7 +831,7 @@ window.__openAdd=kind=>{closeSheet();closeWrapped();ui.tab='todo';history.replac
 
 /* ---------- boot ---------- */
 let pendingRender=false;
-function softRender(){const a=D.activeElement;if(a&&a.matches('input,textarea,select')&&a.closest('#view,#ov')){pendingRender=true;return}render()}
+function softRender(){const a=D.activeElement;if(a&&a.matches('input,textarea,select')&&a.closest('#view,#ov')){if(a.id&&a.matches('input')&&!a.value&&a.closest('#view')){const id=a.id;render();const n=D.getElementById(id);if(n)n.focus({preventScroll:true});return}pendingRender=true;return}render()}
 D.addEventListener('focusout',()=>{if(pendingRender){setTimeout(()=>{const a=D.activeElement;if(!(a&&a.matches('input,textarea,select'))){pendingRender=false;render()}},0)}});
 function boot(){
 if(cfg.mode==='github'||cfg.mode==='local'){const st=store.get(K.state);S=normalize(st&&st.config?st:(cfg.mode==='github'?emptyState():blankState()));mode=cfg.mode}
@@ -814,7 +852,7 @@ renderBanner();
 ({calendar:viewCalendar,todo:viewTodo,habits:viewHabits,lists:viewLists,stats:viewStats,goals:viewGoals}[ui.tab]||viewCalendar)(v)}
 function renderBanner(){const b=$('#banner');if(!b)return;let h='';
 if(ui.update)h+=`<div class="bn ex"><span>Version ${ui.update} of the app is ready to install.</span><a class="btn sm pri" href="https://github.com/${UPDATE_REPO}/releases/latest/download/life-planner.apk">Download</a></div>`;
-if(S&&mode==='example')h+=`<div class="bn ex"><span>Example data, so you can see how it works. Nothing is saved until you set up.</span><button class="btn sm pri" data-a="setup">Set up my planner</button></div>`;
+if(S&&mode==='example')h+=`<div class="bn ex"><span>Example data</span><button class="btn sm pri" data-a="setup">Set up my planner</button></div>`;
 if(mode==='github'&&(syncState==='auth'||syncState==='noaccess'))h+=`<div class="bn ex"><span>${syncState==='auth'?'GitHub stopped accepting your token, so changes are only on this device for now.':'Your token can’t save to the repo, so changes are only on this device for now.'}</span><button class="btn sm pri" data-a="setup">Update token</button></div>`;
 const due=S&&mode!=='loading'&&dueCheckins();
 if(due&&ui.snoozed!==due.mk)h+=`<div class="bn ci"><span><b>${MON[+due.mk.slice(5)-1]} check-in.</b> ${plural(due.goals.length,'goal')} to rate.</span><button class="btn sm inv" data-a="ci-start">Check in</button><button class="btn sm ghost" data-a="snooze">Later</button></div>`;
@@ -840,21 +878,20 @@ function monthSummary(y,m,n,today){const from=`${ui.month}-01`;let to=`${ui.mont
 const ts=trks();let logged=0,days=0,td=0,notes=0;
 eachDay(from,to,k=>{days++;const d=dayGet(k);if(hasEntry(d))logged++;if(d){td+=d.t.filter(x=>x.d&&!x.m).length;if((d.n||'').trim())notes++}});
 const cur=ui.month===today.slice(0,7);
-return `<div class="msum"><h3>${MON[m-1]}${cur?' so far':''}</h3>${ts.map(t=>{const s=trackerStats(t,from,to);return `<div class="mrow"><span class="nm"><i class="dot" style="background:var(--c${t.c})"></i>${esc(t.name)}</span><span class="track"><b style="width:${s.nm==null?0:Math.round(s.nm*100)}%;background:var(--c${t.c})"></b></span><span class="v">${t.type==='scale'&&s.n?`${s.main} avg`:esc(s.main)}</span></div>`}).join('')}<p class="mfoot">${logged} of ${plural(days,'day')} logged · ${plural(td,'to-do')} done · ${plural(notes,'note')}</p>${ui.colorBy==='all'?'<p class="mfoot">Deeper shading on the calendar means a higher day score.</p>':''}</div>`}
+return `<div class="msum"><h3>${MON[m-1]}${cur?' so far':''}</h3>${ts.map(t=>{const s=trackerStats(t,from,to);return `<div class="mrow"><span class="nm"><i class="dot" style="background:var(--c${t.c})"></i>${esc(t.name)}</span><span class="track"><b style="width:${s.nm==null?0:Math.round(s.nm*100)}%;background:var(--c${t.c})"></b></span><span class="v">${t.type==='scale'&&s.n?`${s.main} avg`:esc(s.main)}</span></div>`}).join('')}<p class="mfoot">${logged} of ${plural(days,'day')} logged · ${plural(td,'to-do')} done · ${plural(notes,'note')}</p></div>`}
 function prevUnfinished(k){for(let i=1;i<=7;i++){const pk=addDays(k,-i),d=dayGet(pk);if(d){const u=d.t.filter(x=>!x.d&&!x.m&&!x.p);if(u.length)return {k:pk,items:u}}}return null}
 function renderDay(){const el=$('#daycol');if(!el)return;
-const k=ui.sel,d=dayGet(k),dt=parseK(k),today=TODAY(),ts=trks(),hs=habitsActive();
+const k=ui.sel,d=dayGet(k),dt=parseK(k),today=TODAY(),ts=trks();
 const rel=k===today?'Today':k===addDays(today,-1)?'Yesterday':k===addDays(today,1)?'Tomorrow':'';
 const sc=dayScore(d);
 const items=d?.t||[],real=items.filter(x=>!x.m),done=real.filter(x=>x.d).length;
 const carry=k===today?prevUnfinished(k):null;
 const words=(d?.n||'').trim()?d.n.trim().split(/\s+/).length:0;
 el.innerHTML=`<div class="dhead"><h2 class="serif"><span class="lg">${rel?rel+',':WDL[dt.getDay()]} ${dt.getDate()} ${MON[dt.getMonth()]}</span><span class="sh">${rel?rel+',':WDL[dt.getDay()].slice(0,3)} ${dt.getDate()} ${MON3[dt.getMonth()]}</span></h2><button class="ibtn" data-a="dprev" aria-label="Previous day">${ICON.l}</button><button class="ibtn" data-a="dnext" aria-label="Next day">${ICON.r}</button></div>
-<section class="card dsec"><div class="ch"><h3>Scores</h3>${sc!=null?`<span class="cnt">Day score ${Math.round(sc*100)}%</span>`:''}</div>${ts.map(t=>scoreRow(t,d)).join('')||'<p class="muted">No trackers yet. Add some in settings.</p>'}</section>
-${hs.length?`<section class="card dsec"><div class="ch"><h3>Habits</h3></div><div class="hchips">${hs.map(h=>habitChip(h,d,k)).join('')}</div></section>`:''}
+<section class="card dsec"><div class="ch"><h3>Scores</h3>${sc!=null?`<span class="cnt">Day score ${Math.round(sc*100)}%</span>`:''}</div>${ts.map(t=>scoreRow(t,d)).join('')}</section>
 <section class="card dsec"><div class="ch"><h3>To-do</h3>${real.length?`<span class="cnt">${done} of ${real.length} done</span>`:''}</div><ul class="todo compact">${items.map(it=>todoLi(it,'td',k)).join('')}</ul>${carry?carryBtn(carry,k):''}<form class="add" data-f="td" data-k="${k}"><input id="td-new" placeholder="Add a to-do" enterkeyhint="done" autocomplete="off" aria-label="New to-do"><button class="ibtn addb" aria-label="Add to-do">${ICON.plus}</button></form></section>
-<section class="card dsec"><div class="ch"><h3>Notes</h3><span class="cnt" id="wc">${plural(words,'word')}</span></div><textarea id="note" data-in="note" rows="3" placeholder="What did you get up to? Anything on your mind?" aria-label="Notes for this day">${esc(d?.n||'')}</textarea></section>`;
-grow($('#note',el))}
+<section class="card dsec"><div class="ch"><h3>Notes</h3><span class="cnt" id="wc">${plural(words,'word')}</span></div><textarea id="note" data-in="note" rows="3" aria-label="Notes for this day">${esc(d?.n||'')}</textarea></section>`;
+grow($('#note',el));sortable($('.todo',el),ids=>reorderDay(k,ids))}
 function grow(t){if(!t)return;t.style.height='auto';t.style.height=Math.max(t.scrollHeight+2,84)+'px'}
 function carryBtn(carry,k){return `<button class="btn carry" data-a="carry" data-k="${carry.k}" data-to="${k}">Bring over ${plural(carry.items.length,'unfinished to-do')} from ${carry.k===addDays(k,-1)?'yesterday':WDL[parseK(carry.k).getDay()]}</button>`}
 function refreshDay(){if(ui.tab==='calendar'){renderCal();renderDay()}else render()}
@@ -863,18 +900,21 @@ if(t.type==='scale')ctl=`<div class="seg${dk}${(t.max||5)>5?' ten':''}" style="-
 else if(t.type==='check')ctl=`<div class="seg yn${dk}" style="--tc:var(--c${t.c})" role="group" aria-label="${nm}"><button data-a="score" data-t="${id}" data-v="n" class="${v===false?'on':''}" aria-pressed="${v===false}">No</button><button data-a="score" data-t="${id}" data-v="y" class="${v===true?'on':''}" aria-pressed="${v===true}">Yes</button></div>`;
 else ctl=`<div class="num"><button class="ibtn" data-a="numstep" data-t="${id}" data-d="-1" aria-label="Less ${nm}">−</button><input id="num-${id}" data-in="num" data-t="${id}" type="number" inputmode="decimal" step="${t.step||0.5}" min="0" value="${v??''}" placeholder="–" aria-label="${nm}${t.unit?' in '+esc(t.unit):''}"><button class="ibtn" data-a="numstep" data-t="${id}" data-d="1" aria-label="More ${nm}">+</button><span class="unit">${esc(t.unit||'')}${t.target?` <span class="muted">/ ${fmtNum(t.target)}</span>`:''}</span></div>`;
 return `<div class="trow"><span class="tn"><i class="dot" style="background:var(--c${t.c})"></i>${nm}</span>${ctl}</div>`}
-function todoLi(it,kind,k){const dk=k?` data-k="${k}"`:'';return `<li class="${it.d?'done':''}${it.m?' moved':''}"><button class="chk" data-a="${kind}-tog" data-id="${esc(it.id)}"${dk} aria-pressed="${!!it.d}" aria-label="${it.d?'Mark not done':'Mark done'}"${it.m?' disabled':''}>${ICON.tick}</button><span class="tx">${esc(it.x)}${it.m?` <em>moved to ${/^\d/.test(it.m)?fmtShort(it.m):it.m==='work'?'Work':'General'}</em>`:''}</span><button class="del" data-a="${kind}-del" data-id="${esc(it.id)}"${dk} aria-label="Delete">${ICON.x}</button></li>`}
+function todoLi(it,kind,k){const dk=k?` data-k="${k}"`:'';return `<li class="${it.d?'done':''}${it.m?' moved':''}" data-id="${esc(it.id)}"><button class="chk" data-a="${kind}-tog" data-id="${esc(it.id)}"${dk} aria-pressed="${!!it.d}" aria-label="${it.d?'Mark not done':'Mark done'}"${it.m?' disabled':''}>${ICON.tick}</button><span class="tx">${esc(it.x)}${it.m?` <em>moved to ${/^\d/.test(it.m)?fmtShort(it.m):it.m==='work'?'Work':'General'}</em>`:''}</span><button class="del" data-a="${kind}-del" data-id="${esc(it.id)}"${dk} aria-label="Delete">${ICON.x}</button></li>`}
 function setScore(tid,v){const d=dayEnsure(ui.sel);if(v==null)delete d.s[tid];else d.s[tid]=v;dayDone(ui.sel)}
 function pickDay(k){ui.sel=k;if(k.slice(0,7)!==ui.month){ui.month=k.slice(0,7);ui.anim=true}renderCal();renderDay()}
 
 /* ---------- to-do tab ---------- */
 const TLK={gt:'todos',wk:'work'};
 function listPanel(kind,title,ph){const key=TLK[kind],L=S[key].items,open=L.filter(x=>!x.d),done=L.filter(x=>x.d);
-return `<section class="tpanel"><div class="tph"><h2 class="serif">${title}</h2><span class="cnt">${open.length} open</span></div><form class="add top" data-f="${kind}"><input id="${kind}-new" placeholder="${ph}" enterkeyhint="done" autocomplete="off" aria-label="${ph}"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form><ul class="todo">${open.map(it=>todoLi(it,kind)).join('')}</ul>${open.length?'':'<p class="muted tdempty">All clear.</p>'}${done.length?`<details class="done"><summary>Done (${done.length})</summary><ul class="todo">${done.map(it=>todoLi(it,kind)).join('')}</ul><button class="btn sm" data-a="lt-clear" data-kind="${kind}">Clear done</button></details>`:''}</section>`}
+return `<section class="tpanel"><div class="tph"><h2 class="serif">${title}</h2><span class="cnt">${open.length} open</span></div><form class="add top" data-f="${kind}"><input id="${kind}-new" placeholder="${ph}" enterkeyhint="done" autocomplete="off" aria-label="${ph}"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form><ul class="todo" id="td-${kind}">${open.map(it=>todoLi(it,kind)).join('')}</ul>${done.length?`<details class="done"><summary>Done (${done.length})</summary><ul class="todo">${done.map(it=>todoLi(it,kind)).join('')}</ul><button class="btn sm" data-a="lt-clear" data-kind="${kind}">Clear done</button></details>`:''}</section>`}
 function viewTodo(v){const today=TODAY();if(!ui.tdDay)ui.tdDay=today;const k=ui.tdDay,d=dayGet(k),dt=parseK(k);
 const items=d?.t||[],real=items.filter(x=>!x.m),done=real.filter(x=>x.d).length,carry=k===today?prevUnfinished(k):null;
 const rel=k===today?'Today':k===addDays(today,-1)?'Yesterday':k===addDays(today,1)?'Tomorrow':WDL[dt.getDay()];
-v.innerHTML=`<div class="tdview"><section class="tpanel"><div class="tph"><h2 class="serif">${rel}<span class="dsub">${dt.getDate()} ${MON3[dt.getMonth()]}</span></h2><div class="pnav"><button class="ibtn" data-a="tdprev" aria-label="Previous day">${ICON.l}</button>${k!==today?'<button class="btn sm" data-a="tdtoday">Today</button>':''}<button class="ibtn" data-a="tdnext" aria-label="Next day">${ICON.r}</button></div></div>${real.length?`<p class="cnt tdcount">${done} of ${real.length} done</p>`:''}<form class="add top" data-f="td" data-k="${k}"><input id="td-new" placeholder="Add a to-do for ${k===today?'today':esc(fmtShort(k))}" enterkeyhint="done" autocomplete="off" aria-label="New to-do"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form><ul class="todo">${items.map(it=>todoLi(it,'td',k)).join('')}</ul>${items.length?'':'<p class="muted tdempty">Nothing planned yet.</p>'}${carry?carryBtn(carry,k):''}</section><div class="tright">${listPanel('wk','Work','Add a work to-do')}${listPanel('gt','General','Add a to-do')}</div></div>`}
+v.innerHTML=`<div class="tdview"><section class="tpanel"><div class="tph"><h2 class="serif">${rel}<span class="dsub">${dt.getDate()} ${MON3[dt.getMonth()]}</span></h2><div class="pnav"><button class="ibtn" data-a="tdprev" aria-label="Previous day">${ICON.l}</button>${k!==today?'<button class="btn sm" data-a="tdtoday">Today</button>':''}<button class="ibtn" data-a="tdnext" aria-label="Next day">${ICON.r}</button></div></div>${real.length?`<p class="cnt tdcount">${done} of ${real.length} done</p>`:''}<form class="add top" data-f="td" data-k="${k}"><input id="td-new" placeholder="Add a to-do for ${k===today?'today':esc(fmtShort(k))}" enterkeyhint="done" autocomplete="off" aria-label="New to-do"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form><ul class="todo" id="td-day">${items.map(it=>todoLi(it,'td',k)).join('')}</ul>${carry?carryBtn(carry,k):''}</section><div class="tright">${listPanel('wk','Work','Add a work to-do')}${listPanel('gt','General','Add a to-do')}</div></div>`;
+sortable($('#td-day',v),ids=>reorderDay(k,ids));for(const kind of ['wk','gt'])sortable($('#td-'+kind,v),ids=>reorderList(kind,ids))}
+function reorderDay(k,ids){const d=dayGet(k);if(d){const next=reorderSubset(d.t,ids);if(next){d.t=next;dayDone(k)}}refreshDay()}
+function reorderList(kind,ids){const key=TLK[kind],L=S[key],next=reorderSubset(L.items,ids);if(next){L.items=next;save('meta/'+key)}render()}
 function listTog(kind,id){const key=TLK[kind],it=S[key].items.find(x=>x.id===id);if(!it)return;it.d=!it.d;it.u=Date.now();if(it.d)it.dAt=it.u;else delete it.dAt;save('meta/'+key);render()}
 function listDel(kind,id){const key=TLK[kind],L=S[key];L.del=L.del||{};L.del[id]=Date.now();L.items=L.items.filter(x=>x.id!==id);save('meta/'+key);render()}
 function listAdd(kind,f){const inp=$(`#${kind}-new`,f),x=inp.value.trim();if(!x)return;const key=TLK[kind];S[key].items.push({id:uid(),x,d:false,u:Date.now()});save('meta/'+key);render();$(`#${kind}-new`)?.focus()}
@@ -909,34 +949,44 @@ const ps=from?hPeriods(h,log,from,to):all,met=ps.filter(p=>p.ok).length,total=ps
 let rbest=0;run=0;for(const p of ps){if(p.ok){run++;rbest=Math.max(rbest,run)}else if(!p.cur)run=0}
 let times=0;for(const [k,n] of Object.entries(log))if(!from||(k>=from&&k<=to))times+=n;
 return {log,curN:cur.n,target:h.n||1,streak,best,rbest,met,total,rate:total?met/total:null,times}}
-function habitChip(h,d,k){const n=hCount(d,h),multi=h.per==='day'&&(h.n||1)>1;
-return `<button class="hchip${n?' on':''}${h.c===4?' dk':''}" style="--tc:var(--c${h.c})" data-a="hday" data-id="${esc(h.id)}" data-k="${k}" aria-pressed="${!!n}">${n?ICON.tick:'<i class="dot" style="background:var(--tc)"></i>'}${esc(h.name)}${multi?` <b>${n}/${h.n}</b>`:n>1?` <b>×${n}</b>`:''}</button>`}
 function habitCard(h){const s=hStats(h),t=TODAY(),n=hCount(dayGet(t),h),p=perOf(h),multi=h.per==='day'&&(h.n||1)>1;
-let strip='';for(let i=13;i>=0;i--){const k=addDays(t,-i),c=s.log[k]||0;strip+=`<i${c?' class="on"':''} data-tip="${esc(`${fmtShort(k)}: ${c?(c>1?c+' times':'done'):'not done'}`)}"></i>`}
 const label=multi?(n?`${ICON.tick} ${n} of ${h.n}`:'Log one'):(n?`${ICON.tick} Done`:'Done today');
-return `<article class="hcard${ui.hsel===h.id?' sel':''}${h.c===4?' dk':''}" style="--tc:var(--c${h.c})"><button class="hmain" data-a="hsel" data-id="${esc(h.id)}" aria-label="${esc(h.name)}: details"><span class="hn"><i class="dot" style="background:var(--tc)"></i>${esc(h.name)}</span><span class="hs">${esc(perLabel(h))} · ${s.curN} of ${s.target} ${p[2]}${s.streak?` · ${plural(s.streak,p[0])} streak`:''}</span><span class="hbar"><b style="width:${Math.min(100,s.curN/s.target*100)}%"></b></span><span class="strip" aria-hidden="true">${strip}</span></button><div class="hbtns">${multi&&n?`<button class="ibtn" data-a="hminus" data-id="${esc(h.id)}" aria-label="Remove one from today">−</button>`:''}<button class="hlog${n?' on':''}" data-a="hplus" data-id="${esc(h.id)}" aria-pressed="${!!n}">${label}</button></div></article>`}
-function habitDetail(h,inSheet){const s=hStats(h),p=perOf(h),y=ui.hyear;
-const mc=range(1,12).map(m=>{const pre=`${y}-${p2(m)}`;let c=0;for(const [k,n] of Object.entries(s.log))if(k.startsWith(pre))c+=n;return c}),mx=Math.max(1,...mc);
-const cap=p[2][0].toUpperCase()+p[2].slice(1);
-return `<div class="ch">${inSheet?'<span class="sp"></span>':`<h3 class="hdt"><i class="dot" style="background:var(--c${h.c})"></i>${esc(h.name)}</h3>`}<button class="btn sm" data-a="h-edit" data-id="${esc(h.id)}">Edit</button></div>
-<p class="muted hsince">${esc(perLabel(h))}, since ${fmtDay(hStart(h,s.log))}</p>
-<div class="tiles"><div class="tile"><div class="l">${cap}</div><div class="v">${s.curN}/${s.target}</div></div><div class="tile"><div class="l">Streak</div><div class="v">${s.streak}</div><div class="s">${p[1]} in a row</div></div><div class="tile"><div class="l">Best streak</div><div class="v">${s.best}</div><div class="s">${p[1]}</div></div><div class="tile"><div class="l">Target hit</div><div class="v">${s.rate==null?'–':Math.round(s.rate*100)+'%'}</div><div class="s">${s.met} of ${plural(s.total,p[0])}</div></div></div>
-<div class="ch hyh"><h3>${y}</h3><div class="pnav"><button class="ibtn" data-a="hyprev" aria-label="Previous year">${ICON.l}</button><button class="ibtn" data-a="hynext" aria-label="Next year">${ICON.r}</button></div></div>
-${heatGrid(y,`var(--c${h.c})`,k=>{const c=s.log[k]||0;return {x:c?Math.min(1,c/(h.per==='day'?(h.n||1):1)):null,tip:`${fmtShort(k)}: ${c?(c>1?c+' times':'done'):'not done'}`}},['Not done','','Done'])}
-<div class="msum hmonths">${mc.map((c,i)=>`<div class="mrow"><span class="nm">${MON3[i]}</span><span class="track"><b style="width:${Math.round(c/mx*100)}%;background:var(--c${h.c})"></b></span><span class="v">${c}</span></div>`).join('')}</div>
-<p class="meta">${plural(s.times,'time')} in total</p>`}
+return `<article class="hcard${ui.hsel===h.id?' sel':''}${h.c===4?' dk':''}" data-id="${esc(h.id)}" style="--tc:var(--c${h.c})"><button class="hmain" data-a="hsel" data-id="${esc(h.id)}" data-scroll="1"><span class="hn"><i class="dot" style="background:var(--tc)"></i>${esc(h.name)}</span><span class="hs">${esc(perLabel(h))} · ${s.curN} of ${s.target} ${p[2]}${s.streak?` · ${plural(s.streak,p[0])} streak`:''}</span><span class="hbar"><b style="width:${Math.min(100,s.curN/s.target*100)}%"></b></span></button><div class="hbtns">${multi&&n?`<button class="ibtn" data-a="hminus" data-id="${esc(h.id)}" aria-label="Remove one">−</button>`:''}<button class="hlog${n?' on':''}" data-a="hplus" data-id="${esc(h.id)}" aria-pressed="${!!n}">${label}</button></div></article>`}
+function habitSummary(hs){const t=TODAY(),thisWk=pStart('week',t),wk=ui.hweek&&ui.hweek<=thisWk?ui.hweek:thisWk,days=range(0,6).map(i=>addDays(wk,i));
+const stats=hs.map(h=>({h,s:hStats(h)}));
+const doneToday=hs.filter(h=>hCount(dayGet(t),h)>0).length,met=stats.filter(x=>x.s.curN>=x.s.target).length;
+const top=stats.reduce((a,b)=>b.s.streak>(a?a.s.streak:0)?b:a,null);
+const d0=parseK(days[0]),d6=parseK(days[6]);
+const rows=hs.map(h=>{const multi=h.per==='day'&&(h.n||1)>1;let ws=0;
+const cells=days.map(k=>{const c=hCount(dayGet(k),h);ws+=c;return `<button class="hcell${c?' on':''}${k===t?' now':''}${h.c===4?' dk':''}" style="--tc:var(--c${h.c})" data-a="hday" data-id="${esc(h.id)}" data-k="${k}"${k>t?' disabled':''} aria-label="${esc(h.name)}, ${fmtDay(k)}: ${c?(c>1?c+' times':'done'):'not done'}">${c?(multi||c>1?c:ICON.tick):''}</button>`}).join('');
+let prog;if(h.per==='day')prog=`${ws}/${(h.n||1)*7}`;else if(h.per==='week')prog=`${ws}/${h.n||1}`;else{const pre=addDays(wk,3).slice(0,7);let ms=0;for(const [k,c] of Object.entries(hLog(h)))if(k.startsWith(pre))ms+=c;prog=`${ms}/${h.n||1}`}
+return `<span class="hnm"><i class="dot" style="background:var(--c${h.c})"></i><span>${esc(h.name)}</span></span>${cells}<span class="hp">${prog}</span>`}).join('');
+return `<div class="tiles"><div class="tile"><div class="l">Today</div><div class="v">${doneToday}/${hs.length}</div></div><div class="tile"><div class="l">On target</div><div class="v">${met}/${hs.length}</div></div><div class="tile"><div class="l">Top streak</div><div class="v">${top&&top.s.streak?top.s.streak:0}</div><div class="s">${top&&top.s.streak?esc(top.h.name):''}</div></div></div>
+<div class="ch hwk"><h3>${d0.getDate()} ${MON3[d0.getMonth()]} – ${d6.getDate()} ${MON3[d6.getMonth()]}</h3><div class="pnav"><button class="ibtn" data-a="hwprev" aria-label="Previous week">${ICON.l}</button>${wk!==thisWk?'<button class="btn sm" data-a="hwnow">This week</button>':''}<button class="ibtn" data-a="hwnext" aria-label="Next week"${wk>=thisWk?' disabled':''}>${ICON.r}</button></div></div>
+<div class="hgrid"><span></span>${days.map(k=>`<span class="hd${k===t?' now':''}">${WD3[wdMon(k)][0]}<b>${parseK(k).getDate()}</b></span>`).join('')}<span></span>${rows}</div>`}
+function habitBottom(hs){const sel=ui.hsel&&ui.hsel!=='all'?hab(ui.hsel):null,y=ui.hyear;
+const chips=`<div class="ltabs" role="tablist"><button class="ltab${!sel?' on':''}" data-a="hsel" data-id="all">All habits</button>${hs.map(h=>`<button class="ltab${sel&&sel.id===h.id?' on':''}" data-a="hsel" data-id="${esc(h.id)}" style="--tc:var(--c${h.c})"><i class="dot"></i>${esc(h.name)}</button>`).join('')}</div>`;
+let tiles='',heat,mc;
+if(sel){const s=hStats(sel),p=perOf(sel);
+tiles=`<div class="tiles"><div class="tile"><div class="l">Streak</div><div class="v">${s.streak}</div><div class="s">${p[1]}</div></div><div class="tile"><div class="l">Best streak</div><div class="v">${s.best}</div><div class="s">${p[1]}</div></div><div class="tile"><div class="l">Target hit</div><div class="v">${s.rate==null?'–':Math.round(s.rate*100)+'%'}</div><div class="s">${s.met} of ${plural(s.total,p[0])}</div></div><div class="tile"><div class="l">Total</div><div class="v">${s.times}</div><div class="s">since ${fmtShort(hStart(sel,s.log))}</div></div></div>`;
+heat=heatGrid(y,`var(--c${sel.c})`,k=>{const c=s.log[k]||0;return {x:c?Math.min(1,c/(sel.per==='day'?(sel.n||1):1)):null,tip:`${fmtShort(k)}: ${c?(c>1?c+' times':'done'):'not done'}`}},['Not done','','Done']);
+mc=range(1,12).map(m=>{const pre=`${y}-${p2(m)}`;let c=0;for(const [k,n] of Object.entries(s.log))if(k.startsWith(pre))c+=n;return c})}
+else{const logs=hs.map(h=>({log:hLog(h),st:h.created||'0000'}));
+heat=heatGrid(y,'var(--acc)',k=>{const act=logs.filter(x=>x.st<=k||x.log[k]);if(!act.length)return {x:null,tip:fmtShort(k)};const d=act.filter(x=>x.log[k]).length;return {x:d?d/act.length:null,tip:`${fmtShort(k)}: ${d} of ${act.length}`}},['None','Some','All']);
+mc=range(1,12).map(m=>{const pre=`${y}-${p2(m)}`;let c=0;for(const x of logs)for(const [k,n] of Object.entries(x.log))if(k.startsWith(pre))c+=n;return c})}
+const mx=Math.max(1,...mc),col=sel?`var(--c${sel.c})`:'var(--acc)';
+const months=`<div class="mstrip">${mc.map((c,i)=>`<span class="mcol" data-tip="${MON[i]} ${y}: ${plural(c,'time')}"><i style="height:${Math.round(c/mx*100)}%;background:${col}"></i><b>${MON[i][0]}</b></span>`).join('')}</div>`;
+return `${chips}<div class="ch hyh"><h3>${sel?esc(sel.name):'All habits'}, ${y}</h3>${sel?`<button class="btn sm" data-a="h-edit" data-id="${esc(sel.id)}">Edit</button>`:''}<div class="pnav"><button class="ibtn" data-a="hyprev" aria-label="Previous year">${ICON.l}</button><button class="ibtn" data-a="hynext" aria-label="Next year">${ICON.r}</button></div></div>${tiles}${heat}${months}`}
 function viewHabits(v){const hs=habitsActive(),arch=S.config.habits.filter(h=>h.archived);
-if(ui.hsel&&!hab(ui.hsel))ui.hsel=null;if((!ui.hsel||hab(ui.hsel).archived)&&hs[0])ui.hsel=hs[0].id;
-const wide=matchMedia('(min-width:760px)').matches,sel=hab(ui.hsel);
+const cur=ui.hsel&&ui.hsel!=='all'?hab(ui.hsel):null;if(!cur||cur.archived)ui.hsel='all';
 v.innerHTML=`<div class="pg"><div class="ph"><h2 class="serif">Habits</h2><button class="btn pri" data-a="h-new">${ICON.plus} New habit</button></div>
-${hs.length?`<div class="hview"><div class="hlist">${hs.map(habitCard).join('')}</div>${wide&&sel&&!sel.archived?`<aside class="card hdet">${habitDetail(sel)}</aside>`:''}</div>`:`<p class="empty">No habits yet. Add something you want to do regularly and say how often.</p>`}
-${arch.length?`<details class="card"><summary class="muted">Archived (${arch.length})</summary><div class="items" style="margin-top:10px">${arch.map(h=>`<button class="item" data-a="h-edit" data-id="${esc(h.id)}"><span class="t">${esc(h.name)}</span><span class="r"></span><span class="s">${esc(perLabel(h))}</span><span class="st">Archived</span></button>`).join('')}</div></details>`:''}</div>`}
-function openHabitSheet(h){openSheet(h.name,`<div class="hdet">${habitDetail(h,true)}</div>`)}
-function rerenderHabitDetail(){const h=hab(ui.hsel);if(!h)return;if($('#ov .hdet'))openHabitSheet(h);else render()}
+${hs.length?`<div class="hview"><section class="card hsum">${habitSummary(hs)}</section><div class="hlist" id="hlist">${hs.map(habitCard).join('')}</div></div><section class="card hbottom" id="hbottom">${habitBottom(hs)}</section>`:''}
+${arch.length?`<details class="card"><summary class="muted">Archived (${arch.length})</summary><div class="items" style="margin-top:10px">${arch.map(h=>`<button class="item" data-a="h-edit" data-id="${esc(h.id)}"><span class="t">${esc(h.name)}</span><span class="r"></span><span class="s">${esc(perLabel(h))}</span><span class="st"></span></button>`).join('')}</div></details>`:''}</div>`;
+sortable($('#hlist',v),ids=>{const next=reorderSubset(S.config.habits,ids);if(next){S.config.habits=next;save('meta/config')}render()})}
 function setHabit(k,id,fn){const d=dayEnsure(k);d.h=d.h||{};const n=fn(+d.h[id]||0);if(n>0)d.h[id]=n;else delete d.h[id];dayDone(k)}
 function habitSheet(h){const isNew=!h,used=new Set(habitsActive().map(x=>x.c));
 const cur=h?clone(h):{id:uid(),name:'',n:3,per:'week',c:[6,7,8,3,1,2,5,4].find(x=>!used.has(x))||6,created:TODAY()};
-const body=`<form id="hf"><div class="f"><label for="h-n">Habit</label><input id="h-n" value="${esc(cur.name)}" required autocomplete="off" placeholder="Stretch, read 20 pages, phone off by 10…"></div>
+const body=`<form id="hf"><div class="f"><label for="h-n">Habit</label><input id="h-n" value="${esc(cur.name)}" required autocomplete="off"></div>
 <div class="f"><span class="lb">How often</span><div class="hfreq"><input id="h-c" type="number" inputmode="numeric" min="1" max="99" value="${cur.n}" aria-label="Number of times"><span>${cur.n===1?'time':'times'}</span><div class="seg" id="h-per">${[['day','a day'],['week','a week'],['month','a month']].map(([k,lb])=>`<button type="button" data-per="${k}" class="${cur.per===k?'on':''}">${lb}</button>`).join('')}</div></div></div>
 <div class="f"><span class="lb">Colour</span><div class="seg" id="h-col">${range(1,8).map(i=>`<button type="button" data-c="${i}" class="${cur.c===i?'on':''}" style="--tc:var(--c${i});${cur.c===i?'':`background:color-mix(in srgb,var(--c${i}) 30%,var(--bg))`}" aria-label="Colour ${i}"><i class="dot" style="background:var(--c${i})"></i></button>`).join('')}</div></div>
 <div class="acts">${isNew?'':`<button type="button" class="btn danger" id="h-del">Delete</button><button type="button" class="btn" id="h-arch">${cur.archived?'Unarchive':'Archive'}</button><span class="sp"></span>`}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">Save</button></div></form>`;
@@ -981,7 +1031,7 @@ const c=prevUnfinished(t);store.set('lp.rollover',t);if(c)rolloverSheet(c)}
 function rolloverSheet(c){const t=TODAY(),choice={};c.items.forEach(x=>{choice[x.id]='today'});
 const when=c.k===addDays(t,-1)?'yesterday':WDL[parseK(c.k).getDay()];
 const opts=[['today','Today'],['wk','Work'],['gt','General'],['past','Leave']];
-const body=`<p style="margin:0 0 6px">You didn’t finish ${plural(c.items.length,'to-do')} ${when==='yesterday'?'yesterday':'on '+when}. Choose where each one goes, or leave it where it was.</p>
+const body=`
 <div class="rall"><span class="muted">All to:</span>${opts.map(([v,lb])=>`<button type="button" class="btn sm" data-all="${v}">${lb}</button>`).join('')}</div>
 <div>${c.items.map(x=>`<div class="rrow"><span class="rtx">${esc(x.x)}</span><div class="seg rseg" data-id="${esc(x.id)}" role="group" aria-label="${esc(x.x)}">${opts.map(([v,lb])=>`<button type="button" data-v="${v}" class="${v==='today'?'on':''}">${lb}</button>`).join('')}</div></div>`).join('')}</div>
 <p class="rsum" id="r-sum"></p><div class="acts"><button type="button" class="btn" data-a="close">Not now</button><button type="button" class="btn pri" id="r-go">Done</button></div>`;
@@ -1013,59 +1063,79 @@ function setLook(p){S.config.look={...(S.config.look||{}),...p};save('meta/confi
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{lookKey='';applyLook()});
 
 /* ---------- lists ---------- */
-const LTYPES=[['archive','Archive','Dated entries with notes and an optional score, like books, films or games.'],['tick','Tick list','Longer-term to-dos you tick off, like shiny hunts.'],['ordered','Ordered','A ranked list you drag into order, like present ideas.']];
+const LTYPES=[['archive','Archive'],['tick','Tick list'],['ordered','Ordered']];
 const lType=l=>['archive','tick','ordered'].includes(l?.type)?l.type:'tick';
 const tabOf=(l,id)=>id?l.tabs.find(t=>t.id===id)||null:null;
 const doneTab=l=>lType(l)==='tick'&&l.done.mode==='tab';
 function curTab(l){const t=ui.ltab[l.id]||'all';if(t==='done')return doneTab(l)?'done':'all';return t==='all'||tabOf(l,t)?t:'all'}
-/* the items a tab shows: ticked items live only in the done tab when the list moves them there */
-function visibleIn(l,t){let it=l.items;
-if(doneTab(l)){if(t==='done')return it.filter(i=>i.done).sort((a,b)=>(b.d||'').localeCompare(a.d||''));it=it.filter(i=>!i.done)}
+function arState(l){let s=ui.lstate[l.id];if(s!=='todo'&&s!=='done')s=l.items.length&&l.items.every(i=>i.done)?'done':'todo';return s}
+/* the items a tab shows; archive lists also split into not-done and done */
+function visibleIn(l,t){let it=l.items;const ty=lType(l);
+if(ty==='archive'){const st=arState(l);it=it.filter(i=>st==='done'?i.done:!i.done)}
+else if(doneTab(l)){if(t==='done')return it.filter(i=>i.done).sort((a,b)=>(b.d||'').localeCompare(a.d||''));it=it.filter(i=>!i.done)}
 return t==='all'||t==='done'?it:it.filter(i=>(i.tab||'')===t)}
 function rateHTML(l,r){r=+r||0;if(!l.rate||!r)return '';if(l.rate===10)return `<span class="score" aria-label="${r} out of 10">${r}<small>/10</small></span>`;return `<span class="stars" aria-label="${r} out of 5">${'★'.repeat(r)}<span class="off">${'★'.repeat(5-r)}</span></span>`}
 function itemTint(l,it){if(l.cby==='rating'&&l.rate){const r=+it.r||0;return r?`background:color-mix(in srgb,var(--c${l.c||1}) ${Math.round(6+34*r/l.rate)}%,var(--panel))`:''}const tb=tabOf(l,it.tab);return `background:color-mix(in srgb,var(--c${tb?tb.c:(l.c||1)}) 13%,var(--panel))`}
-function tabTag(l,it,t){if(!l.tabs.length||(t!=='all'&&t!=='done'))return '';const tb=tabOf(l,it.tab);return tb?`<span class="tabtag"><i class="dot" style="background:var(--c${tb.c})"></i>${esc(tb.name)}</span>`:'<span class="tabtag">No tab</span>'}
+function tabTag(l,it,t){if(!l.tabs.length||(t!=='all'&&t!=='done'))return '';const tb=tabOf(l,it.tab);return tb?`<span class="tabtag"><i class="dot" style="background:var(--c${tb.c})"></i>${esc(tb.name)}</span>`:''}
 function viewLists(v){const ord=listOrder();if(!S.lists[ui.list])ui.list=ord[0]||null;
-const nav=`<nav class="lnav" aria-label="Lists">${ord.map(id=>{const l=S.lists[id],n=doneTab(l)?l.items.filter(i=>!i.done).length:l.items.length;return `<button class="${ui.list===id?'on':''}" data-a="lsel" data-id="${esc(id)}"><i class="dot" style="background:var(--c${l.c||1})"></i>${esc(l.name)}<span class="n">${n}</span></button>`}).join('')}<button class="newl" data-a="list-new">${ICON.plus} New list</button></nav>`;
+const cnt=l=>doneTab(l)||lType(l)==='archive'?l.items.filter(i=>!i.done).length:l.items.length;
+const nav=`<nav class="lnav" aria-label="Lists">${ord.map(id=>{const l=S.lists[id];return `<button class="${ui.list===id?'on':''}" data-a="lsel" data-id="${esc(id)}"><i class="dot" style="background:var(--c${l.c||1})"></i><span class="ln">${esc(l.name)}</span><span class="n">${cnt(l)}</span></button>`}).join('')}<button class="newl" data-a="list-new">${ICON.plus} New list</button></nav>`;
 let body='';
-if(!ui.list)body=`<div class="empty"><p>No lists yet. Make one for anything: books you’ve read, present ideas, long-term to-dos.</p><button class="btn pri" data-a="list-new">${ICON.plus} New list</button></div>`;
-else{const l=S.lists[ui.list],ty=lType(l),t=curTab(l);
-const head=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${ty==='archive'?`<button class="btn pri" data-a="item-new">${ICON.plus} Add</button>`:''}</div>`;
-const tabBtn=(id,label,c,extra='')=>`<button class="ltab${t===id?' on':''}" role="tab" aria-selected="${t===id}" data-a="ltab" data-t="${esc(id)}"${c?` style="--tc:var(--c${c})"`:''}>${extra}${label}<span>${visibleIn(l,id).length}</span></button>`;
-const tabs=`<div class="ltabs" role="tablist" aria-label="Tabs in ${esc(l.name)}">${tabBtn('all','All',0)}${l.tabs.map(tb=>tabBtn(tb.id,esc(tb.name),tb.c,'<i class="dot"></i>')).join('')}${doneTab(l)?tabBtn('done',esc(l.done.name),l.done.c,ICON.tick):''}<button class="ltab add" data-a="tab-new">${ICON.plus} Tab</button>${t!=='all'?'<button class="ltab add" data-a="tab-edit">Edit tab</button>':''}</div>`;
+if(ui.list){const l=S.lists[ui.list],ty=lType(l),t=curTab(l),st=ty==='archive'?arState(l):'';
+const head=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${ty==='archive'&&st==='done'?`<button class="btn pri" data-a="ar-log">${ICON.plus} Add</button>`:''}</div>`;
+const states=ty==='archive'?`<div class="segbar" role="group" aria-label="Section">${[['todo',l.states.todo],['done',l.states.done]].map(([k,lb])=>`<button class="${st===k?'on':''}" data-a="lstate" data-s="${k}">${esc(lb)} <span class="muted">${l.items.filter(i=>k==='done'?i.done:!i.done).length}</span></button>`).join('')}</div>`:'';
+const tabBtn=(id,label,c,extra='',real=false)=>`<button class="ltab${t===id?' on':''}" role="tab" aria-selected="${t===id}" data-a="ltab" data-t="${esc(id)}"${real?` data-id="${esc(id)}"`:''}${c?` style="--tc:var(--c${c})"`:''}>${extra}${label}<span>${visibleIn(l,id).length}</span></button>`;
+const tabs=`<div class="ltabs" id="ltabs" role="tablist" aria-label="Tabs in ${esc(l.name)}">${tabBtn('all','All',0)}${l.tabs.map(tb=>tabBtn(tb.id,esc(tb.name),tb.c,'<i class="dot"></i>',true)).join('')}${doneTab(l)?tabBtn('done',esc(l.done.name),l.done.c,ICON.tick):''}<button class="ltab add" data-a="tab-new" aria-label="New tab">${ICON.plus}</button>${t!=='all'?'<button class="ltab add" data-a="tab-edit">Edit tab</button>':''}</div>`;
 const tname=t==='all'||t==='done'?l.name:tabOf(l,t).name;
-if(ty==='archive'){const sorts=[['recent','Newest'],['old','Oldest'],...(l.rate?[['rating','Highest rated']]:[]),['title','A to Z']];if(!sorts.some(s=>s[0]===ui.lsort))ui.lsort='recent';
-body=head+tabs+`<div class="lctl"><input id="lq" data-in="lq" type="search" placeholder="Search ${esc(tname.toLowerCase())}" value="${esc(ui.lq)}" aria-label="Search"><select id="lsort" data-ch="lsort" aria-label="Sort">${sorts.map(([k,lb])=>`<option value="${k}"${ui.lsort===k?' selected':''}>${lb}</option>`).join('')}</select></div><div class="items" id="litems"></div>`}
-else body=head+tabs+(t==='done'?'':`<form class="add top" data-f="li"><input id="li-new" placeholder="Add to ${esc(tname)}" enterkeyhint="done" autocomplete="off" aria-label="Add to ${esc(tname)}"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form>`)+'<div id="litems"></div>'}
-v.innerHTML=`<div class="pg"><div class="lview">${nav}<div class="lbody">${body}</div></div></div>`;if(ui.list)renderItems()}
+const quick=`<form class="add top" data-f="li"><input id="li-new" placeholder="Add to ${esc(ty==='archive'?l.states.todo:tname)}" enterkeyhint="done" autocomplete="off" aria-label="Add to ${esc(tname)}"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form>`;
+if(ty==='archive'&&st==='done'){const sorts=[['recent','Newest'],['old','Oldest'],...(l.rate?[['rating','Highest rated']]:[]),['title','A to Z']];if(!sorts.some(s=>s[0]===ui.lsort))ui.lsort='recent';
+body=head+states+tabs+`<div class="lctl"><input id="lq" data-in="lq" type="search" placeholder="Search" value="${esc(ui.lq)}" aria-label="Search"><select id="lsort" data-ch="lsort" aria-label="Sort">${sorts.map(([k,lb])=>`<option value="${k}"${ui.lsort===k?' selected':''}>${lb}</option>`).join('')}</select></div><div class="items" id="litems"></div>`}
+else body=head+states+tabs+(t==='done'?'':quick)+'<div id="litems"></div>'}
+v.innerHTML=`<div class="pg"><div class="lview">${nav}<div class="lbody">${body}</div></div></div>`;
+sortable($('.lnav',v),ids=>{S.config.listOrder=reorderIds(S.config.listOrder,ids);save('meta/config');render()});
+if(ui.list){const l=S.lists[ui.list];sortable($('#ltabs',v),ids=>{const next=reorderSubset(l.tabs,ids);if(next){l.tabs=next;save('lists/'+l.id)}render()});renderItems()}}
 function renderItems(){const el=$('#litems');if(!el)return;const l=S.lists[ui.list];if(!l)return;const ty=lType(l),t=curTab(l);let it=visibleIn(l,t);
-if(ty==='archive'){const q=ui.lq.trim().toLowerCase();if(q)it=it.filter(i=>`${i.t} ${i.s||''} ${i.n||''}`.toLowerCase().includes(q));
+if(ty==='archive'&&arState(l)==='done'){const q=ui.lq.trim().toLowerCase();if(q)it=it.filter(i=>`${i.t} ${i.s||''} ${i.n||''}`.toLowerCase().includes(q));
 const by={recent:(a,b)=>(b.d||'').localeCompare(a.d||'')||(b.u||0)-(a.u||0),old:(a,b)=>(a.d||'9').localeCompare(b.d||'9'),rating:(a,b)=>(b.r||0)-(a.r||0)||(b.d||'').localeCompare(a.d||''),title:(a,b)=>a.t.localeCompare(b.t)}[ui.lsort];
-el.innerHTML=[...it].sort(by).map(i=>`<button class="item" data-a="item-edit" data-id="${esc(i.id)}" style="${itemTint(l,i)}"><span class="t">${esc(i.t)}</span><span class="r">${rateHTML(l,i.r)}</span><span class="s">${tabTag(l,i,t)}${esc(i.s||'')}${i.n?`<span class="nsnip">${esc(i.n.length>110?i.n.slice(0,110).trim()+'…':i.n)}</span>`:''}</span><span class="st">${i.d?`${fmtShort(i.d)} ${i.d.slice(0,4)}`:''}</span></button>`).join('')||`<p class="empty">${q?'Nothing matches that search.':'Nothing here yet. Tap Add for the first entry.'}</p>`;return}
-if(ty==='tick'){el.innerHTML=it.length?`<ul class="litems">${it.map(i=>liRow(l,i,0,t)).join('')}</ul>`:`<p class="muted tdempty">${t==='done'?'Nothing ticked off yet.':l.items.length?'All ticked off.':'Nothing here yet.'}</p>`;return}
-el.innerHTML=it.length?`<ol class="litems" id="rank">${it.map((i,n)=>liRow(l,i,n+1,t)).join('')}</ol><p class="meta">Drag the handle to put them in order.</p>`:'<p class="muted tdempty">Nothing here yet.</p>';
-bindRank(el)}
-function liRow(l,i,rank,t){const ty=lType(l),note=i.n?(i.n.length>70?i.n.slice(0,70).trim()+'…':i.n):'',strike=ty==='tick'&&i.done&&!doneTab(l);
-const sub=[tabTag(l,i,t),esc(i.s||''),esc(note),i.done&&i.d?`${doneTab(l)?esc(l.done.name):'Done'} ${fmtShort(i.d)}`:''].filter(Boolean).join(' · ');
-return `<li class="lrow${strike?' done':''}${i.done?' ticked':''}" data-id="${esc(i.id)}" style="${itemTint(l,i)}">${ty==='tick'?`<button class="chk" data-a="li-tog" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="${i.done?'Untick':'Tick off'}">${ICON.tick}</button>`:`<span class="rk">${rank}</span>`}<button class="lmain" data-a="item-edit" data-id="${esc(i.id)}"><span class="lt">${esc(i.t)}</span>${sub?`<span class="ls">${sub}</span>`:''}</button>${rateHTML(l,i.r)}${ty==='ordered'?`<button class="grip" type="button" data-id="${esc(i.id)}" aria-label="Move ${esc(i.t)}: use the arrow keys">${ICON.grip}</button>`:''}</li>`}
-function bindRank(el){const list=$('#rank',el);if(!list)return;
-list.addEventListener('pointerdown',e=>{const g=e.target.closest('.grip');if(!g)return;e.preventDefault();const row=g.closest('li');list.setPointerCapture(e.pointerId);row.classList.add('drag');
-const move=ev=>{const y=ev.clientY,prev=row.previousElementSibling,next=row.nextElementSibling;
-if(prev){const r=prev.getBoundingClientRect();if(y<r.top+r.height/2){list.insertBefore(row,prev);renumber(list);return}}
-if(next){const r=next.getBoundingClientRect();if(y>r.top+r.height/2){list.insertBefore(next,row);renumber(list)}}};
-const up=()=>{list.removeEventListener('pointermove',move);list.removeEventListener('pointerup',up);list.removeEventListener('pointercancel',up);row.classList.remove('drag');saveRank(list)};
-list.addEventListener('pointermove',move);list.addEventListener('pointerup',up);list.addEventListener('pointercancel',up)});
+el.innerHTML=[...it].sort(by).map(i=>`<button class="item" data-a="item-edit" data-id="${esc(i.id)}" style="${itemTint(l,i)}"><span class="t">${esc(i.t)}</span><span class="r">${rateHTML(l,i.r)}</span><span class="s">${tabTag(l,i,t)}${esc(i.s||'')}${i.n?`<span class="nsnip">${esc(i.n.length>110?i.n.slice(0,110).trim()+'…':i.n)}</span>`:''}</span><span class="st">${i.d?`${fmtShort(i.d)} ${i.d.slice(0,4)}`:''}</span></button>`).join('');return}
+const tag=ty==='ordered'?'ol':'ul';
+el.innerHTML=it.length?`<${tag} class="litems" id="lrows">${it.map((i,n)=>liRow(l,i,n+1,t)).join('')}</${tag}>`:'';
+const list=$('#lrows',el);if(!list)return;
+sortable(list,ids=>{const next=reorderSubset(l.items,ids);if(next){l.items=next;save('lists/'+l.id)}renderItems()});
+if(ty==='ordered'){list.addEventListener('sortmove',()=>renumber(list));
 list.addEventListener('keydown',e=>{const g=e.target.closest('.grip');if(!g||!['ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const row=g.closest('li');
 if(e.key==='ArrowUp'&&row.previousElementSibling)list.insertBefore(row,row.previousElementSibling);else if(e.key==='ArrowDown'&&row.nextElementSibling)list.insertBefore(row.nextElementSibling,row);
-renumber(list);saveRank(list);g.focus()})}
+renumber(list);const next=reorderSubset(l.items,[...list.children].map(c=>c.dataset.id));if(next){l.items=next;save('lists/'+l.id)}g.focus()})}}
+function liRow(l,i,rank,t){const ty=lType(l),note=i.n?(i.n.length>70?i.n.slice(0,70).trim()+'…':i.n):'',strike=ty==='tick'&&i.done&&!doneTab(l);
+const sub=[tabTag(l,i,t),esc(i.s||''),esc(note),ty==='tick'&&i.done&&i.d?fmtShort(i.d):''].filter(Boolean).join(' · ');
+const lead=ty==='tick'?`<button class="chk" data-a="li-tog" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="${i.done?'Untick':'Tick off'}">${ICON.tick}</button>`:ty==='ordered'?`<span class="rk">${rank}</span>`:'';
+const tail=ty==='archive'?`<button class="markd" data-a="ar-done" data-id="${esc(i.id)}">${ICON.tick}${esc(l.states.done)}</button>`:ty==='ordered'?`<button class="grip" type="button" aria-label="Move ${esc(i.t)}">${ICON.grip}</button>`:'';
+return `<li class="lrow${strike?' done':''}${i.done?' ticked':''}" data-id="${esc(i.id)}" style="${itemTint(l,i)}">${lead}<button class="lmain" data-a="item-edit" data-id="${esc(i.id)}"><span class="lt">${esc(i.t)}</span>${sub?`<span class="ls">${sub}</span>`:''}</button>${rateHTML(l,i.r)}${tail}</li>`}
 function renumber(list){[...list.children].forEach((li,i)=>{const rk=$('.rk',li);if(rk)rk.textContent=i+1})}
-/* reorder only the items on show, putting them back into the slots they held in the whole list */
-function saveRank(list){const l=S.lists[ui.list];if(!l)return;const ids=[...list.children].map(li=>li.dataset.id),set=new Set(ids),slots=[];
-l.items.forEach((it,i)=>{if(set.has(it.id))slots.push(i)});if(slots.length!==ids.length)return;
-const map=new Map(l.items.map(i=>[i.id,i])),next=l.items.slice();ids.forEach((id,k)=>{next[slots[k]]=map.get(id)});
-if(next.map(i=>i.id).join()===l.items.map(i=>i.id).join())return;l.items=next;save('lists/'+l.id)}
 function liAdd(f){const l=S.lists[ui.list],inp=$('#li-new',f),x=inp.value.trim();if(!l||!x)return;const t=curTab(l);
-l.items.push({id:uid(),t:x,s:'',n:'',r:0,d:'',tab:t==='all'||t==='done'?'':t,u:Date.now(),a:TODAY()});save('lists/'+l.id);render();$('#li-new')?.focus()}
+l.items.push({id:uid(),t:x,s:'',n:'',r:0,d:'',done:false,tab:t==='all'||t==='done'?'':t,u:Date.now(),a:TODAY()});save('lists/'+l.id);render();$('#li-new')?.focus()}
+
+/* ---------- drag to reorder (press and hold, or drag a handle) ---------- */
+let dragJust=0;
+const sib=(el,d)=>{let s=d<0?el.previousElementSibling:el.nextElementSibling;while(s&&!(s.dataset&&s.dataset.id))s=d<0?s.previousElementSibling:s.nextElementSibling;return s};
+function sortable(list,onDone){if(!list||list._sortable)return;list._sortable=1;
+let timer=0,row=null,sx=0,sy=0,pid=null,on=false;
+const horiz=()=>{const cs=getComputedStyle(list);return cs.display.includes('flex')&&cs.flexDirection.startsWith('row')};
+const begin=()=>{timer=0;if(!row)return;on=true;row.classList.add('drag');list.classList.add('sorting');try{list.setPointerCapture(pid)}catch(e){}try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}};
+list.addEventListener('pointerdown',e=>{if(e.button>0)return;let r=e.target;while(r&&r.parentElement!==list)r=r.parentElement;if(!r||!r.dataset||!r.dataset.id)return;row=r;sx=e.clientX;sy=e.clientY;pid=e.pointerId;
+if(e.target.closest('.grip')){e.preventDefault();begin();return}clearTimeout(timer);timer=setTimeout(begin,420)});
+list.addEventListener('pointermove',e=>{if(!on){if(timer&&Math.hypot(e.clientX-sx,e.clientY-sy)>8){clearTimeout(timer);timer=0;row=null}return}
+const h=horiz(),p=h?e.clientX:e.clientY,prev=sib(row,-1),next=sib(row,1);
+if(prev){const b=prev.getBoundingClientRect();if(p<(h?b.left+b.width/2:b.top+b.height/2)){list.insertBefore(row,prev);list.dispatchEvent(new Event('sortmove'));return}}
+if(next){const b=next.getBoundingClientRect();if(p>(h?b.left+b.width/2:b.top+b.height/2)){list.insertBefore(next,row);list.dispatchEvent(new Event('sortmove'))}}});
+const finish=()=>{clearTimeout(timer);timer=0;if(!on){row=null;return}on=false;row.classList.remove('drag');list.classList.remove('sorting');row=null;dragJust=Date.now();
+onDone([...list.children].filter(c=>c.dataset&&c.dataset.id).map(c=>c.dataset.id))};
+list.addEventListener('pointerup',finish);list.addEventListener('pointercancel',finish);
+list.addEventListener('touchmove',e=>{if(on&&e.cancelable)e.preventDefault()},{passive:false});
+list.addEventListener('contextmenu',e=>{if(on||timer)e.preventDefault()})}
+function reorderSubset(arr,ids){const set=new Set(ids),slots=[];arr.forEach((x,i)=>{if(set.has(x.id))slots.push(i)});if(slots.length!==ids.length)return null;
+const map=new Map(arr.map(x=>[x.id,x])),next=arr.slice();ids.forEach((id,k)=>{next[slots[k]]=map.get(id)});return next.map(x=>x.id).join()===arr.map(x=>x.id).join()?null:next}
+function reorderIds(order,ids){const next=reorderSubset(order.map(id=>({id})),ids);return next?next.map(x=>x.id):order}
 
 /* ---------- stats ---------- */
 function statsRange(){const t=TODAY();let from,to,label;
@@ -1081,13 +1151,13 @@ let logged=0,days=0,tdDone=0,tdAll=0,notes=0,words=0,scS=0,scN=0;
 if(!none)eachDay(from,to,k=>{days++;const d=dayGet(k);if(hasEntry(d))logged++;if(d){const r=d.t.filter(x=>!x.m);tdAll+=r.length;tdDone+=r.filter(x=>x.d).length;const tx=(d.n||'').trim();if(tx){notes++;words+=tx.split(/\s+/).length}}const sc=dayScore(d);if(sc!=null){scS+=sc;scN++}});
 const logRun=curRun(hasEntry);
 const cm=today.slice(0,7),pmk=addMonths(cm,-1),cy=+cm.slice(0,4);
-const wrapCard=`<div class="card"><div class="ch"><h3>Wrapped</h3></div><p class="muted" style="margin:0 0 10px">Your month or year in a few cards. Each new month opens with last month’s.</p><div class="row"><button class="btn" data-a="wopen" data-k="month" data-v="${cm}">${MON[+cm.slice(5)-1]} so far</button><button class="btn" data-a="wopen" data-k="month" data-v="${pmk}">${MON[+pmk.slice(5)-1]}</button><button class="btn" data-a="wopen" data-k="year" data-v="${cy}">${cy} so far</button><button class="btn" data-a="wopen" data-k="year" data-v="${cy-1}">${cy-1}</button></div></div>`;
+const wrapCard=`<div class="card"><div class="ch"><h3>Wrapped</h3></div><div class="row"><button class="btn" data-a="wopen" data-k="month" data-v="${cm}">${MON[+cm.slice(5)-1]} so far</button><button class="btn" data-a="wopen" data-k="month" data-v="${pmk}">${MON[+pmk.slice(5)-1]}</button><button class="btn" data-a="wopen" data-k="year" data-v="${cy}">${cy} so far</button><button class="btn" data-a="wopen" data-k="year" data-v="${cy-1}">${cy-1}</button></div></div>`;
 const hs=habitsActive();
 const habCard=hs.length&&!none?`<div class="card"><div class="ch"><h3>Habits</h3><span class="cnt">${esc(label)}</span></div><table class="htab"><thead><tr><th>Habit</th><th>Done</th><th>Target hit</th><th>Streak now</th></tr></thead><tbody>${hs.map(h=>{const s=hStats(h,from,to),p=perOf(h);return `<tr><td data-l=""><i class="dot" style="background:var(--c${h.c})"></i> ${esc(h.name)}</td><td data-l="Done">${plural(s.times,'time')}</td><td data-l="Target hit">${s.total?`${s.met} of ${plural(s.total,p[0])}`:'–'}</td><td data-l="Streak now">${plural(s.streak,p[0])}</td></tr>`}).join('')}</tbody></table></div>`:'';
 const head=`<div class="ph"><h2 class="serif">Stats</h2><div class="segbar" role="group" aria-label="Period">${[['month','Month'],['year','Year'],['all','All time']].map(([k,lb])=>`<button class="${ui.sp===k?'on':''}" data-a="sp" data-p="${k}">${lb}</button>`).join('')}</div>${ui.sp!=='all'?`<div class="pnav"><button class="ibtn" data-a="sprev" aria-label="Earlier">${ICON.l}</button><b>${esc(label)}</b><button class="ibtn" data-a="snext" aria-label="Later">${ICON.r}</button></div>`:''}</div>`;
-if(none){v.innerHTML=`<div class="pg">${head}<p class="empty">Nothing logged in ${esc(label)} yet.</p>${wrapCard}</div>`;return}
+if(none){v.innerHTML=`<div class="pg">${head}<p class="empty">Nothing logged.</p>${wrapCard}</div>`;return}
 const tiles=`<div class="tiles"><div class="tile"><div class="l">Days logged</div><div class="v">${logged}</div><div class="s">of ${plural(days,'day')}${logRun>1?` · ${logRun} in a row now`:''}</div></div><div class="tile"><div class="l">Average day score</div><div class="v">${scN?Math.round(scS/scN*100)+'%':'–'}</div><div class="s">across all trackers</div></div><div class="tile"><div class="l">To-dos done</div><div class="v">${tdDone}</div><div class="s">${tdAll?`${Math.round(tdDone/tdAll*100)}% of ${tdAll} planned`:'none planned'}</div></div><div class="tile"><div class="l">Notes written</div><div class="v">${notes}</div><div class="s">${plural(words,'word')}</div></div></div>`;
-if(!ts.length){v.innerHTML=`<div class="pg">${head}${tiles}${habCard}<p class="empty">Add trackers in settings to see their stats.</p>${wrapCard}</div>`;return}
+if(!ts.length){v.innerHTML=`<div class="pg">${head}${tiles}${habCard}${wrapCard}</div>`;return}
 const tlist=ts.map(t=>{const s=trackerStats(t,from,to),br=bestRun(t,from,to);return `<button class="trk${t.id===ui.strk?' on':''}" data-a="strk" data-id="${esc(t.id)}" aria-pressed="${t.id===ui.strk}"><span class="nm"><i class="dot" style="background:var(--c${t.c})"></i>${esc(t.name)}</span><span class="mv">${esc(s.main)}</span><span class="sb">${esc(s.sub)}</span><span class="sk">best run ${plural(br,'day')}</span></button>`}).join('');
 const t=trk(ui.strk),col=`var(--c${t.c})`;
 const cs=trackerStats(t,from,to);
@@ -1105,7 +1175,7 @@ pts.push({v:s.n?(t.type==='check'?s.avg:s.avg):null,tip:`${MON3[+mk.slice(5)-1]}
 xl.push(ui.sp==='year'?MON[+mk.slice(5)-1][0]:(months.length<=12||i%3===0?MON3[+mk.slice(5)-1]:''))});
 if(ui.sp==='year'){const ps=trackerStats(t,`${ui.syear-1}-01-01`,`${ui.syear-1}-12-31`);finding=findingText(t,cs,ps,String(ui.syear),String(ui.syear-1))}
 else finding=cs.n?`${t.name}: ${cs.main}${t.type==='check'?' of logged days':' on average'} since ${fmtDay(from)} ${from.slice(0,4)}`:`No ${t.name.toLowerCase()} logged yet`}
-const chart=`<div class="card"><p class="finding">${esc(finding)}</p>${colsChart(pts,col,ymax,ylab,xl,grid)}${grid!=null?`<p class="meta">Dashed line: ${t.type==='scale'?`a good day (${Math.ceil(t.max*0.7)} or more)`:`your target of ${fmtNum(t.target)}${t.unit?' '+esc(t.unit):''}`}</p>`:''}</div>`;
+const chart=`<div class="card"><p class="finding">${esc(finding)}</p>${colsChart(pts,col,ymax,ylab,xl,grid)}</div>`;
 const hy=ui.sp==='year'?ui.syear:ui.sp==='month'?+ui.smonth.slice(0,4):+today.slice(0,4);
 const wd=Array.from({length:7},()=>({s:0,n:0}));eachDay(from,to,k=>{const x=norm(t,val(dayGet(k),t));if(x!=null){const w=wdMon(k);wd[w].s+=x;wd[w].n++}});
 const wdRows=wd.map((x,i)=>{const a=x.n?x.s/x.n:null;let lb='–';if(a!=null){lb=t.type==='check'?`${Math.round(a*100)}%`:t.type==='scale'?fmtNum(a*t.max):`${fmtNum(a*(t.target||1))}${t.unit?' '+t.unit:''}`}return `<div class="mrow"><span class="nm">${WD3[i]}</span><span class="track"><b style="width:${a==null?0:Math.round(a*100)}%;background:${col}"></b></span><span class="v">${esc(lb)}</span></div>`}).join('');
@@ -1142,7 +1212,7 @@ const st=c?.r?` style="background:color-mix(in srgb,var(--acc) ${30+c.r*14}%,var
 return `<button class="${c?.r?'has':''}${isDue?' due':''}" data-a="ci" data-g="${esc(g.id)}" data-m="${mm}"${fut?' disabled':''}${st} aria-label="${MON[i-1]} check-in${c?.r?`: rated ${c.r} of 5`:''}">${MON[i-1][0]}</button>`}).join('');
 return `<article class="card goal"><div class="ch"><h3>${esc(g.title)}</h3><button class="btn sm" data-a="goal-edit" data-id="${esc(g.id)}">Edit</button></div>${prog}<div class="mdots">${dots}</div></article>`}).join('');
 v.innerHTML=`<div class="pg"><div class="ph"><h2 class="serif">Goals for ${y}</h2><div class="pnav"><button class="ibtn" data-a="gprev" aria-label="Previous year">${ICON.l}</button><button class="ibtn" data-a="gnext" aria-label="Next year">${ICON.r}</button></div><button class="btn pri" data-a="goal-new">${ICON.plus} New goal</button></div>
-${gs.length?`<p class="gkey">The black line on each bar marks where an even pace would put you today. Tap a month to check in: darker means it went better.</p><div class="goals">${cards}</div>`:`<p class="empty">No goals for ${y} yet. Set one and you’ll be asked how it’s going each month.</p>`}</div>`}
+${gs.length?`<div class="goals">${cards}</div>`:''}</div>`}
 
 /* ---------- wrapped ---------- */
 const WC=['#2a2fb8','#0c6a57','#a3224d','#1c1e25','#0b57a8','#9a3a0c','#4d2bb0','#1c1e25'];
@@ -1158,26 +1228,26 @@ if(d){const tx=(d.n||'').trim();if(tx){W.notes++;W.words+=tx.split(/\s+/).length
 if(sc!=null){if(sc>W.bestSc||(sc===W.bestSc&&(d.n||'').trim()&&!W.bestNote)){W.bestSc=sc;W.best=k;W.bestNote=(d.n||'').trim()}const w=wdMon(k);W.wd[w].s+=sc;W.wd[w].n++}
 ts.forEach(t=>{if(good(t,val(d,t))){runs[t.id]++;br[t.id]=Math.max(br[t.id],runs[t.id])}else runs[t.id]=0})});
 W.hab=habitsActive().map(h=>({h,st:hStats(h,from,to)}));W.trk=ts.map(t=>({t,st:trackerStats(t,from,to),run:br[t.id]}));
-W.lists=listOrder().map(id=>S.lists[id]).filter(l=>lType(l)!=='ordered').map(l=>{const dn=l.items.filter(i=>i.d&&i.d>=from&&i.d<=to&&(lType(l)==='archive'||i.done));return {l,n:dn.length,top:l.rate?[...dn].sort((a,b)=>(b.r||0)-(a.r||0))[0]:null}});
+W.lists=listOrder().map(id=>S.lists[id]).filter(l=>lType(l)!=='ordered').map(l=>{const dn=l.items.filter(i=>i.done&&i.d&&i.d>=from&&i.d<=to);return {l,n:dn.length,top:l.rate?[...dn].sort((a,b)=>(b.r||0)-(a.r||0))[0]:null}});
 let bw=-1,bv=-1;W.wd.forEach((x,i)=>{if(x.n&&x.s/x.n>bv){bv=x.s/x.n;bw=i}});W.bestWd=bw;W.bestWdV=bv;return W}
 function viewWrapped(v){const {from,to,label,title,partial}=wrapRange(),today=TODAY();
 const head=`<div class="ph"><h2 class="serif">Wrapped</h2><div class="segbar" role="group" aria-label="Period"><button class="${ui.wk==='month'?'on':''}" data-a="wk" data-k="month">Month</button><button class="${ui.wk==='year'?'on':''}" data-a="wk" data-k="year">Year</button></div><div class="pnav"><button class="ibtn" data-a="wprev" aria-label="Earlier">${ICON.l}</button><b>${esc(label)}</b><button class="ibtn" data-a="wnext" aria-label="Later">${ICON.r}</button></div><button class="ibtn" data-a="wclose" aria-label="Close wrapped">${ICON.x}</button></div>`;
-if(from>today){v.innerHTML=`<div class="pg">${head}<p class="empty">${esc(label)} hasn’t started yet.</p></div>`;return}
+if(from>today){v.innerHTML=`<div class="pg">${head}<p class="empty">Nothing yet.</p></div>`;return}
 const W=wrapData(from,to);
-if(!W.logged&&!W.lists.some(x=>x.n)){v.innerHTML=`<div class="pg">${head}<p class="empty">Nothing logged in ${esc(label)}, so there’s nothing to wrap yet.</p></div>`;return}
+if(!W.logged&&!W.lists.some(x=>x.n)){v.innerHTML=`<div class="pg">${head}<p class="empty">Nothing to wrap.</p></div>`;return}
 let ci=0;const card=(h)=>`<article class="wcard" style="--wc:${WC[ci++%WC.length]}">${h}</article>`;
 const cards=[];
 const gridCols=ui.wk==='month'?7:Math.ceil(W.cells.length/7)+1;
 let gcells='';if(ui.wk==='month'){const off=wdMon(from);gcells='<i class="x"></i>'.repeat(off)}
 gcells+=W.cells.map(c=>`<i style="${c.sc!=null?`background:rgb(255 255 255/${(0.25+0.75*c.sc).toFixed(2)})`:''}"></i>`).join('');
-cards.push(card(`<h3>Your ${esc(title)}${partial?' so far':''}</h3><p class="big">${W.logged}</p><p class="lead">of ${plural(W.days,'day')} logged</p><div class="wgrid${ui.wk==='year'?' yr':''}" style="grid-template-columns:repeat(${gridCols},minmax(0,1fr));${ui.wk==='year'?'grid-auto-flow:column;grid-template-rows:repeat(7,auto);gap:2px':''}">${gcells}</div><p class="foot">Brighter squares were better days</p>`));
+cards.push(card(`<h3>Your ${esc(title)}${partial?' so far':''}</h3><p class="big">${W.logged}</p><p class="lead">of ${plural(W.days,'day')} logged</p><div class="wgrid${ui.wk==='year'?' yr':''}" style="grid-template-columns:repeat(${gridCols},minmax(0,1fr));${ui.wk==='year'?'grid-auto-flow:column;grid-template-rows:repeat(7,auto);gap:2px':''}">${gcells}</div>`));
 if(W.trk.some(x=>x.st.n))cards.push(card(`<h3>How the days went</h3><div class="wrows">${W.trk.map(({t,st})=>`<div class="wrow"><span>${esc(t.name)}</span><span class="wv">${esc(st.main)}</span><span class="wt"><b style="width:${st.nm==null?0:Math.round(st.nm*100)}%"></b></span><small>${esc(st.sub)}</small></div>`).join('')}</div>`));
 if(W.best)cards.push(card(`<h3>Your best day was ${WDL[parseK(W.best).getDay()]} ${fmtDay(W.best)}</h3><p class="big">${Math.round(W.bestSc*100)}%</p><p class="lead">day score</p>${W.bestNote?`<p class="quote">“${esc(W.bestNote.length>170?W.bestNote.slice(0,170).trim()+'…':W.bestNote)}”</p>`:''}`));
 const runs=W.trk.filter(x=>x.run>0).sort((a,b)=>b.run-a.run);
-if(runs.length||W.logBest)cards.push(card(`<h3>Longest streaks</h3>${runs[0]?`<p class="big">${runs[0].run}</p><p class="lead">days in a row of ${esc(runs[0].t.type==='check'?runs[0].t.name.toLowerCase():`good ${runs[0].t.name.toLowerCase()}`)}</p>`:''}<div class="wrows">${runs.slice(1).map(x=>`<div class="wrow"><span>${esc(x.t.name)}</span><span class="wv">${plural(x.run,'day')}</span></div>`).join('')}<div class="wrow"><span>Logging every day</span><span class="wv">${plural(W.logBest,'day')}</span></div></div><p class="foot">A good day is a yes, a score in the top 30% of its scale, or hitting your target.</p>`));
+if(runs.length||W.logBest)cards.push(card(`<h3>Longest streaks</h3>${runs[0]?`<p class="big">${runs[0].run}</p><p class="lead">days in a row of ${esc(runs[0].t.type==='check'?runs[0].t.name.toLowerCase():`good ${runs[0].t.name.toLowerCase()}`)}</p>`:''}<div class="wrows">${runs.slice(1).map(x=>`<div class="wrow"><span>${esc(x.t.name)}</span><span class="wv">${plural(x.run,'day')}</span></div>`).join('')}<div class="wrow"><span>Logging every day</span><span class="wv">${plural(W.logBest,'day')}</span></div></div>`));
 if(W.tdAll)cards.push(card(`<h3>To-dos ticked off</h3><p class="big">${W.td}</p><p class="lead">${Math.round(W.td/W.tdAll*100)}% of the ${W.tdAll} you planned</p>${W.busy?`<p class="foot">Busiest day: ${WDL[parseK(W.busy).getDay()]} ${fmtDay(W.busy)}, with ${W.busyN} done</p>`:''}`));
 const fin=W.lists.filter(x=>x.n);
-if(fin.length){const top=fin.sort((a,b)=>b.n-a.n);cards.push(card(`<h3>Lists</h3><div class="wrows">${top.map(x=>`<div class="wrow"><span><b style="font-size:28px">${x.n}</b> ${lType(x.l)==='archive'?'added to':'ticked off in'} ${esc(x.l.name)}</span><span class="wv"></span>${x.top&&x.top.r?`<small>Top: ${esc(x.top.t)}, ${x.top.r} of ${x.l.rate}</small>`:''}</div>`).join('')}</div>`))}
+if(fin.length){const top=fin.sort((a,b)=>b.n-a.n);cards.push(card(`<h3>Lists</h3><div class="wrows">${top.map(x=>`<div class="wrow"><span><b style="font-size:28px">${x.n}</b> ${esc(lType(x.l)==='archive'?x.l.states.done.toLowerCase():'ticked off')}, ${esc(x.l.name)}</span><span class="wv"></span>${x.top&&x.top.r?`<small>Top: ${esc(x.top.t)}, ${x.top.r} of ${x.l.rate}</small>`:''}</div>`).join('')}</div>`))}
 const hb=W.hab.filter(x=>x.st.times>0);if(hb.length)cards.push(card(`<h3>Habits</h3><div class="wrows">${hb.map(({h,st})=>`<div class="wrow"><span>${esc(h.name)}</span><span class="wv">${plural(st.times,'time')}</span><span class="wt"><b style="width:${st.rate==null?0:Math.round(st.rate*100)}%"></b></span><small>Target hit ${st.met} of ${plural(st.total,perOf(h)[0])}${st.rbest>1?`, best run ${plural(st.rbest,perOf(h)[0])}`:''}</small></div>`).join('')}</div>`));
 const yr=ui.wk==='month'?+ui.wmonth.slice(0,4):ui.wyear;const gs=S.config.goals.filter(g=>g.year===yr);
 if(gs.length){const mm=ui.wk==='month'?ui.wmonth.slice(5):null;cards.push(card(`<h3>${ui.wk==='month'?`Goals in ${esc(title)}`:'Goals'}</h3><div class="wrows">${gs.map(g=>{const c=mm?g.checkins?.[mm]:null;if(g.kind==='rating'){const rs=Object.values(g.checkins||{}).map(x=>+x.r).filter(Boolean);const r=mm?(c?.r||0):(rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:0);return `<div class="wrow"><span>${esc(g.title)}</span><span class="wv">${r?fmtNum(r)+' / 5':'–'}</span><span class="wt"><b style="width:${r/5*100}%"></b></span></div>`}
@@ -1189,7 +1259,7 @@ function wrapText(){const x=$('#wov')._wrap;if(!x)return '';const {W,label,parti
 W.trk.forEach(({t,st})=>{if(st.n)L.push(`${t.name}: ${st.main} (${st.sub})`)});
 if(W.best)L.push(`Best day: ${fmtDay(W.best)} (${Math.round(W.bestSc*100)}%)`);
 if(W.tdAll)L.push(`To-dos: ${W.td} of ${W.tdAll} done`);
-W.lists.filter(l=>l.n).forEach(({l,n,top})=>{L.push(`${l.name}: ${n} ${lType(l)==='archive'?'added':'ticked off'}${top&&top.r?`, top: ${top.t}`:''}`)});
+W.lists.filter(l=>l.n).forEach(({l,n,top})=>{L.push(`${l.name}: ${n} ${lType(l)==='archive'?l.states.done.toLowerCase():'ticked off'}${top&&top.r?`, top: ${top.t}`:''}`)});
 W.hab.filter(x=>x.st.times).forEach(({h,st})=>L.push(`${h.name}: ${st.times} times, target hit ${st.met} of ${st.total}`));L.push(`${W.notes} notes, ${W.words} words`);return L.join('\n')}
 
 /* ---------- sheets ---------- */
@@ -1200,75 +1270,90 @@ function armed(btn,txt){if(btn.classList.contains('armed'))return true;btn.class
 function segPick(sheet,sel,attr,cb){$$(sel,sheet).forEach(b=>b.addEventListener('click',()=>{const on=!b.classList.contains('on')||!b.closest('[data-toggle]');$$(sel,sheet).forEach(x=>x.classList.remove('on'));if(on)b.classList.add('on');cb(on?b.dataset[attr]:null)}))}
 const colourSeg=(id,cur)=>`<div class="seg" id="${id}">${range(1,8).map(i=>`<button type="button" data-c="${i}" class="${cur===i?'on':''}" style="--tc:var(--c${i});${cur===i?'':`background:color-mix(in srgb,var(--c${i}) 30%,var(--bg))`}" aria-label="Colour ${i}"><i class="dot" style="background:var(--c${i})"></i></button>`).join('')}</div>`;
 function bindColour(sh,id,set){$$(`#${id} button`,sh).forEach(b=>b.addEventListener('click',()=>{set(+b.dataset.c);$$(`#${id} button`,sh).forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.style.background=on?'':`color-mix(in srgb,var(--c${x.dataset.c}) 30%,var(--bg))`})}))}
-function itemSheet(l,item){const ty=lType(l),t=curTab(l);const it=item?clone(item):{id:uid(),t:'',s:'',r:0,d:ty==='archive'?TODAY():'',n:'',tab:t==='all'||t==='done'?'':t,a:TODAY()};
-const others=listOrder().filter(id=>id!==l.id);
+const rateSeg=(l,r)=>l.rate?`<div class="f"><span class="lb">${l.rate===10?'Score':'Rating'}</span><div class="seg ratebtns" id="it-r" data-toggle>${range(1,l.rate).map(i=>`<button type="button" data-r="${i}" class="${r===i?'on':''}" aria-label="${i} out of ${l.rate}">${l.rate===5?i+'★':i}</button>`).join('')}</div></div>`:'';
+const tabSelect=(l,tab)=>l.tabs.length?`<div class="f"><label for="it-tab">Tab</label><select id="it-tab"><option value="">None</option>${l.tabs.map(tb=>`<option value="${esc(tb.id)}"${(tab||'')===tb.id?' selected':''}>${esc(tb.name)}</option>`).join('')}</select></div>`:'';
+function itemSheet(l,item){const ty=lType(l),t=curTab(l);const it=item?clone(item):{id:uid(),t:'',s:'',r:0,d:'',n:'',done:false,tab:t==='all'||t==='done'?'':t,a:TODAY()};
+const others=listOrder().filter(id=>id!==l.id),showDone=ty==='archive'?it.done:ty==='tick'&&it.done;
 const body=`<form id="itf"><div class="f"><label for="it-t">Title</label><input id="it-t" value="${esc(it.t)}" required autocomplete="off"></div>
-<div class="f"><label for="it-s">Detail</label><input id="it-s" value="${esc(it.s||'')}" autocomplete="off" placeholder="${ty==='archive'?'Author, director, platform…':'Optional'}"></div>
-${l.tabs.length?`<div class="f"><label for="it-tab">Tab</label><select id="it-tab"><option value="">No tab</option>${l.tabs.map(tb=>`<option value="${esc(tb.id)}"${(it.tab||'')===tb.id?' selected':''}>${esc(tb.name)}</option>`).join('')}</select></div>`:''}
-${l.rate?`<div class="f"><span class="lb">${l.rate===10?'Score':'Rating'}</span><div class="seg ratebtns" id="it-r" data-toggle>${range(1,l.rate).map(i=>`<button type="button" data-r="${i}" class="${it.r===i?'on':''}" aria-label="${i} out of ${l.rate}">${l.rate===5?i+'★':i}</button>`).join('')}</div><span class="hint">Tap the selected one again to clear it.</span></div>`:''}
-${ty==='archive'||(ty==='tick'&&it.done)?`<div class="f"><label for="it-d">${ty==='archive'?'Date':'Ticked off on'}</label><input id="it-d" type="date" value="${esc(it.d||'')}"></div>`:''}
-<div class="f"><label for="it-n">Notes</label><textarea id="it-n" rows="4">${esc(it.n||'')}</textarea></div>
-${item&&others.length?`<div class="f"><label for="it-mv">Move to another list</label><select id="it-mv"><option value="">Keep in ${esc(l.name)}</option>${others.map(id=>`<option value="${esc(id)}">${esc(S.lists[id].name)}</option>`).join('')}</select></div>`:''}
-<div class="acts">${item?'<button type="button" class="btn danger" id="it-del">Delete</button><span class="sp"></span>':''}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">Save</button></div></form>`;
-openSheet(item?'Edit':'Add to '+(t!=='all'&&t!=='done'?tabOf(l,t).name:l.name),body,sh=>{
+<div class="f"><label for="it-s">Detail</label><input id="it-s" value="${esc(it.s||'')}" autocomplete="off"></div>
+${tabSelect(l,it.tab)}${ty!=='archive'||it.done?rateSeg(l,it.r):''}
+${showDone?`<div class="f"><label for="it-d">Date</label><input id="it-d" type="date" value="${esc(it.d||'')}"></div>`:''}
+<div class="f"><label for="it-n">${ty==='archive'&&it.done?'Review':'Notes'}</label><textarea id="it-n" rows="4">${esc(it.n||'')}</textarea></div>
+${item&&others.length?`<div class="f"><label for="it-mv">Move to list</label><select id="it-mv"><option value="">${esc(l.name)}</option>${others.map(id=>`<option value="${esc(id)}">${esc(S.lists[id].name)}</option>`).join('')}</select></div>`:''}
+<div class="acts">${item?`<button type="button" class="btn danger" id="it-del">Delete</button>${ty==='archive'&&it.done?`<button type="button" class="btn" id="it-undo">Back to ${esc(l.states.todo)}</button>`:''}<span class="sp"></span>`:''}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">Save</button></div></form>`;
+openSheet(item?'Edit':'Add',body,sh=>{
 segPick(sh,'#it-r button','r',v=>{it.r=v?+v:0});
-const del=$('#it-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del))return;const L=S.lists[l.id];if(L){L.items=L.items.filter(x=>x.id!==it.id);L.del=L.del||{};L.del[it.id]=Date.now()}save('lists/'+l.id);closeSheet();render();toast('Deleted')});
+const L=()=>S.lists[l.id];
+const del=$('#it-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del))return;const x=L();if(x){x.items=x.items.filter(y=>y.id!==it.id);x.del=x.del||{};x.del[it.id]=Date.now()}save('lists/'+l.id);closeSheet();render()});
+const undo=$('#it-undo',sh);if(undo)undo.addEventListener('click',()=>{const x=L(),y=x&&x.items.find(z=>z.id===it.id);if(y){y.done=false;y.d='';y.u=Date.now();save('lists/'+l.id)}closeSheet();render()});
 $('#itf',sh).addEventListener('submit',e=>{e.preventDefault();it.t=$('#it-t',sh).value.trim();if(!it.t){$('#it-t',sh).focus();return}
 it.s=$('#it-s',sh).value.trim();it.n=$('#it-n',sh).value.trim();const di=$('#it-d',sh);if(di)it.d=di.value;const ts=$('#it-tab',sh);if(ts)it.tab=ts.value;it.u=Date.now();
-const L=S.lists[l.id];if(!L){closeSheet();toast('That list was deleted on another device');return}
+const x=L();if(!x){closeSheet();return}
 const dest=$('#it-mv',sh)?.value;
-if(dest&&S.lists[dest]){L.items=L.items.filter(x=>x.id!==it.id);L.del=L.del||{};L.del[it.id]=Date.now();const D2=S.lists[dest];const moved={...it,id:uid(),tab:''};if(lType(D2)==='archive'&&!moved.d)moved.d=TODAY();D2.items.push(moved);save('lists/'+dest);save('lists/'+l.id);closeSheet();render();toast(`Moved to ${D2.name}`);return}
-const i=L.items.findIndex(x=>x.id===it.id);if(i>=0)L.items[i]=it;else L.items.push(it);save('lists/'+l.id);closeSheet();render()})})}
+if(dest&&S.lists[dest]){x.items=x.items.filter(y=>y.id!==it.id);x.del=x.del||{};x.del[it.id]=Date.now();const D2=S.lists[dest];D2.items.push({...it,id:uid(),tab:''});save('lists/'+dest);save('lists/'+l.id);closeSheet();render();toast(`Moved to ${D2.name}`);return}
+const i=x.items.findIndex(y=>y.id===it.id);if(i>=0)x.items[i]=it;else x.items.push(it);save('lists/'+l.id);closeSheet();render()})})}
+/* mark an archive item done (or log a new one straight in): date defaults to today */
+function doneSheet(l,item){const t=curTab(l);const it=item?clone(item):{id:uid(),t:'',s:'',r:0,d:'',n:'',done:false,tab:t==='all'||t==='done'?'':t,a:TODAY()};
+const body=`<form id="dnf">${item?`<p class="dntitle">${esc(it.t)}</p>`:`<div class="f"><label for="dn-t">Title</label><input id="dn-t" required autocomplete="off"></div><div class="f"><label for="dn-s">Detail</label><input id="dn-s" autocomplete="off"></div>${tabSelect(l,it.tab)}`}
+<div class="f"><label for="it-d">Date</label><input id="it-d" type="date" value="${esc(it.d||TODAY())}"></div>
+${rateSeg(l,it.r)}
+<div class="f"><label for="dn-n">Review</label><textarea id="dn-n" rows="3">${esc(it.n||'')}</textarea></div>
+<div class="acts"><span class="sp"></span><button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${esc(l.states.done)}</button></div></form>`;
+openSheet(item?l.states.done:`Add to ${l.states.done}`,body,sh=>{
+segPick(sh,'#it-r button','r',v=>{it.r=v?+v:0});
+$('#dnf',sh).addEventListener('submit',e=>{e.preventDefault();const x=S.lists[l.id];if(!x){closeSheet();return}
+if(!item){it.t=$('#dn-t',sh).value.trim();if(!it.t){$('#dn-t',sh).focus();return}it.s=$('#dn-s',sh).value.trim();const ts=$('#it-tab',sh);if(ts)it.tab=ts.value}
+it.d=$('#it-d',sh).value||TODAY();it.n=$('#dn-n',sh).value.trim();it.done=true;it.u=Date.now();
+const i=x.items.findIndex(y=>y.id===it.id);if(i>=0)x.items[i]=it;else x.items.push(it);save('lists/'+l.id);closeSheet();render()})})}
 function listSheet(l){const isNew=!l,used=new Set(listOrder().map(id=>S.lists[id].c));
-const cur=l?{name:l.name,type:lType(l),rate:l.rate||0,cby:l.cby||'tab',c:l.c||1,done:{...(l.done||{mode:'tab',name:'Done',c:l.c||6})}}:{name:'',type:'archive',rate:0,cby:'tab',c:range(1,8).find(x=>!used.has(x))||1,done:{mode:'tab',name:'Done',c:6}};
-const body=`<form id="lf"><div class="f"><label for="l-n">Name</label><input id="l-n" value="${esc(cur.name)}" required autocomplete="off" placeholder="Books, present ideas, shiny hunts…"></div>
-<div class="f"><span class="lb">Kind of list</span><div class="seg" id="l-ty">${LTYPES.map(([k,lb])=>`<button type="button" data-ty="${k}">${lb}</button>`).join('')}</div><span class="hint" id="l-desc"></span></div>
-<div class="f" id="l-donef"><span class="lb">Ticked items</span><div class="seg" id="l-done">${[['tab','Move to their own tab'],['strike','Stay, crossed out']].map(([k,lb])=>`<button type="button" data-dm="${k}">${lb}</button>`).join('')}</div><div class="frow" id="l-donetab"><div class="f" style="margin:0"><label for="l-donen">Name of that tab</label><input id="l-donen" value="${esc(cur.done.name)}" placeholder="Done, Caught, Finished…" autocomplete="off"></div></div></div>
-<div class="f"><span class="lb">List colour</span>${colourSeg('l-col',cur.c)}<span class="hint">Items take their tab’s colour, or this one if they have no tab.</span></div>
+const cur=l?{name:l.name,type:lType(l),rate:l.rate||0,cby:l.cby||'tab',c:l.c||1,done:{...(l.done||{mode:'tab',name:'Done',c:l.c||6})},states:{...(l.states||{todo:'To do',done:'Done'})}}:{name:'',type:'archive',rate:0,cby:'tab',c:range(1,8).find(x=>!used.has(x))||1,done:{mode:'tab',name:'Done',c:6},states:{todo:'To do',done:'Done'}};
+const body=`<form id="lf"><div class="f"><label for="l-n">Name</label><input id="l-n" value="${esc(cur.name)}" required autocomplete="off"></div>
+<div class="f"><span class="lb">Kind</span><div class="seg" id="l-ty">${LTYPES.map(([k,lb])=>`<button type="button" data-ty="${k}">${lb}</button>`).join('')}</div></div>
+<div class="frow" id="l-statesf"><div class="f"><label for="l-s1">Not done</label><input id="l-s1" value="${esc(cur.states.todo)}" autocomplete="off"></div><div class="f"><label for="l-s2">Done</label><input id="l-s2" value="${esc(cur.states.done)}" autocomplete="off"></div></div>
+<div class="f" id="l-donef"><span class="lb">Ticked items</span><div class="seg" id="l-done">${[['tab','Own tab'],['strike','Crossed out']].map(([k,lb])=>`<button type="button" data-dm="${k}">${lb}</button>`).join('')}</div><input id="l-donen" value="${esc(cur.done.name)}" autocomplete="off" aria-label="Name of the ticked tab"></div>
+<div class="f"><span class="lb">Colour</span>${colourSeg('l-col',cur.c)}</div>
 <div class="f"><span class="lb">Ratings</span><div class="seg" id="l-rate">${[[0,'Off'],[5,'5 stars'],[10,'Out of 10']].map(([k,lb])=>`<button type="button" data-rate="${k}">${lb}</button>`).join('')}</div></div>
-<div class="f" id="l-cbyf"><span class="lb">Colour items by</span><div class="seg" id="l-cby">${[['tab','Tab colour'],['rating','Rating']].map(([k,lb])=>`<button type="button" data-cby="${k}">${lb}</button>`).join('')}</div><span class="hint">Rating shades each item deeper the higher it’s rated.</span></div>
-<div class="acts">${isNew?'':`<button type="button" class="btn danger" id="l-del">Delete list</button><button type="button" class="btn" id="l-up">Move up</button><span class="sp"></span>`}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Create':'Save'}</button></div></form>`;
+<div class="f" id="l-cbyf"><span class="lb">Colour items by</span><div class="seg" id="l-cby">${[['tab','Tab'],['rating','Rating']].map(([k,lb])=>`<button type="button" data-cby="${k}">${lb}</button>`).join('')}</div></div>
+<div class="acts">${isNew?'':'<button type="button" class="btn danger" id="l-del">Delete list</button><span class="sp"></span>'}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Create':'Save'}</button></div></form>`;
 openSheet(isNew?'New list':'Edit list',body,sh=>{
-const upd=()=>{$('#l-desc',sh).textContent=(LTYPES.find(x=>x[0]===cur.type)||LTYPES[0])[2];$('#l-cbyf',sh).hidden=!cur.rate;$('#l-donef',sh).hidden=cur.type!=='tick';$('#l-donetab',sh).hidden=cur.done.mode!=='tab';
+const upd=()=>{$('#l-cbyf',sh).hidden=!cur.rate;$('#l-donef',sh).hidden=cur.type!=='tick';$('#l-donen',sh).hidden=cur.done.mode!=='tab';$('#l-statesf',sh).hidden=cur.type!=='archive';
 $$('#l-ty button',sh).forEach(b=>b.classList.toggle('on',b.dataset.ty===cur.type));$$('#l-rate button',sh).forEach(b=>b.classList.toggle('on',+b.dataset.rate===cur.rate));$$('#l-cby button',sh).forEach(b=>b.classList.toggle('on',b.dataset.cby===cur.cby));$$('#l-done button',sh).forEach(b=>b.classList.toggle('on',b.dataset.dm===cur.done.mode))};upd();
 $$('#l-ty button',sh).forEach(b=>b.addEventListener('click',()=>{cur.type=b.dataset.ty;upd()}));
 $$('#l-rate button',sh).forEach(b=>b.addEventListener('click',()=>{cur.rate=+b.dataset.rate;upd()}));
 $$('#l-cby button',sh).forEach(b=>b.addEventListener('click',()=>{cur.cby=b.dataset.cby;upd()}));
 $$('#l-done button',sh).forEach(b=>b.addEventListener('click',()=>{cur.done.mode=b.dataset.dm;upd()}));
 bindColour(sh,'l-col',c=>{cur.c=c});
-const del=$('#l-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del,`Delete it and ${plural(l.items.length,'item')}? Tap again`))return;delete S.lists[l.id];S.config.listOrder=S.config.listOrder.filter(x=>x!==l.id);save('lists/'+l.id);save('meta/config');ui.list=null;closeSheet();render();toast('List deleted')});
-const up=$('#l-up',sh);if(up)up.addEventListener('click',()=>{const o=S.config.listOrder,i=o.indexOf(l.id);if(i>0){[o[i-1],o[i]]=[o[i],o[i-1]];save('meta/config');render();toast('Moved up')}});
+const del=$('#l-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del,`Delete ${plural(l.items.length,'item')}? Tap again`))return;delete S.lists[l.id];S.config.listOrder=S.config.listOrder.filter(x=>x!==l.id);save('lists/'+l.id);save('meta/config');ui.list=null;closeSheet();render()});
 $('#lf',sh).addEventListener('submit',e=>{e.preventDefault();const nm=$('#l-n',sh).value.trim();if(!nm){$('#l-n',sh).focus();return}cur.name=nm;cur.done.name=$('#l-donen',sh).value.trim()||'Done';
+cur.states={todo:$('#l-s1',sh).value.trim()||'To do',done:$('#l-s2',sh).value.trim()||'Done'};
 if(isNew){const id=uid();S.lists[id]={id,...cur,tabs:[],items:[]};S.config.listOrder.push(id);ui.list=id;save('meta/config');save('lists/'+id)}
-else{const L=S.lists[l.id];if(L){Object.assign(L,cur);if(cur.rate)L.items.forEach(i=>{if(i.r>cur.rate)i.r=cur.rate});save('lists/'+l.id)}}
+else{const L=S.lists[l.id];if(L){if(cur.type==='archive'&&L.type!=='archive')L.items.forEach(i=>{if(i.done==null)i.done=!!i.d});Object.assign(L,cur);if(cur.rate)L.items.forEach(i=>{if(i.r>cur.rate)i.r=cur.rate});save('lists/'+l.id)}}
 closeSheet();render()})})}
 function tabSheet(l,id){const isDone=id==='done',isNew=!id,real=id&&!isDone?tabOf(l,id):null;
 const tb=isDone?{name:l.done.name,c:l.done.c}:real?{name:real.name,c:real.c}:{name:'',c:range(1,8).find(x=>!l.tabs.some(t=>t.c===x))||1};
-const n=real?l.items.filter(i=>i.tab===real.id).length:0,idx=real?l.tabs.indexOf(real):-1;
-const body=`<form id="tbf"><div class="f"><label for="tb-n">Name</label><input id="tb-n" value="${esc(tb.name)}" required autocomplete="off" placeholder="${isDone?'Done, Caught, Finished…':'Scarlet, Switch 2, Mum…'}"></div>
+const n=real?l.items.filter(i=>i.tab===real.id).length:0;
+const body=`<form id="tbf"><div class="f"><label for="tb-n">Name</label><input id="tb-n" value="${esc(tb.name)}" required autocomplete="off"></div>
 <div class="f"><span class="lb">Colour</span>${colourSeg('tb-col',tb.c)}</div>
-${isDone?'<p class="hint">Ticked items move here. Untick one to send it back to its tab.</p>':''}
-<div class="acts">${real?`<button type="button" class="btn danger" id="tb-del">Delete tab</button>${idx>0?'<button type="button" class="btn" id="tb-left">Move left</button>':''}<span class="sp"></span>`:''}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Add tab':'Save'}</button></div></form>`;
-openSheet(isNew?`New tab in ${l.name}`:isDone?'Ticked items tab':'Edit tab',body,sh=>{
+<div class="acts">${real?'<button type="button" class="btn danger" id="tb-del">Delete tab</button><span class="sp"></span>':''}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Add tab':'Save'}</button></div></form>`;
+openSheet(isNew?'New tab':'Edit tab',body,sh=>{
 bindColour(sh,'tb-col',c=>{tb.c=c});
 const L=()=>S.lists[l.id];
-const del=$('#tb-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del,n?`Delete it? Its ${plural(n,'item')} stay in the list. Tap again`:'Tap again to delete'))return;const x=L();if(!x)return;x.tabs=x.tabs.filter(t=>t.id!==real.id);const now=Date.now();x.items.forEach(i=>{if(i.tab===real.id){i.tab='';i.u=now}});ui.ltab[x.id]='all';save('lists/'+x.id);closeSheet();render()});
-const left=$('#tb-left',sh);if(left)left.addEventListener('click',()=>{const x=L(),i=x.tabs.findIndex(t=>t.id===real.id);if(i>0){[x.tabs[i-1],x.tabs[i]]=[x.tabs[i],x.tabs[i-1]];save('lists/'+x.id);closeSheet();render()}});
+const del=$('#tb-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del,n?`Delete? Its ${plural(n,'item')} stay in the list`:'Tap again to delete'))return;const x=L();if(!x)return;x.tabs=x.tabs.filter(t=>t.id!==real.id);const now=Date.now();x.items.forEach(i=>{if(i.tab===real.id){i.tab='';i.u=now}});ui.ltab[x.id]='all';save('lists/'+x.id);closeSheet();render()});
 $('#tbf',sh).addEventListener('submit',e=>{e.preventDefault();const nm=$('#tb-n',sh).value.trim();if(!nm){$('#tb-n',sh).focus();return}const x=L();if(!x)return;
 if(isDone){x.done.name=nm;x.done.c=tb.c}else if(real){const t2=tabOf(x,real.id);if(t2){t2.name=nm;t2.c=tb.c}}else{const nid=uid();x.tabs.push({id:nid,name:nm,c:tb.c});ui.ltab[x.id]=nid}
 save('lists/'+x.id);closeSheet();render()})})}
 const typeLabel=t=>t.type==='scale'?`Score 1 to ${t.max}`:t.type==='check'?'Yes or no':`Number${t.unit?' in '+t.unit:''}${t.target?`, target ${fmtNum(t.target)}`:''}`;
 function settingsSheet(){const c=S.config,lk=c.look||{},pal=lk.palette||'ink',ap=lk.appearance||'';
-const body=`<section class="sset"><h3>Look</h3><div class="f"><span class="lb">Colour</span><div class="swatches">${PALETTES.map(([k,lb,col])=>`<button class="swatch${pal===k?' on':''}" data-a="look-pal" data-v="${k}" aria-pressed="${pal===k}"><i style="background:${col}"></i>${lb}</button>`).join('')}</div></div><div class="f" style="margin:0"><span class="lb">Appearance</span><div class="segbar" role="group" aria-label="Appearance">${[['','Match phone'],['light','Light'],['dark','Dark']].map(([k,lb])=>`<button class="${ap===k?'on':''}" data-a="look-ap" data-v="${k}">${lb}</button>`).join('')}</div></div></section><section class="sset"><h3>Trackers</h3><p>The things you score each day. Archiving hides a tracker but keeps its history; deleting removes it and its scores.</p><ul class="tl2">${c.trackers.map((t,i)=>`<li class="${t.archived?'arch':''}"><i class="dot" style="background:var(--c${t.c})"></i><span class="tn" style="flex:1">${esc(t.name)}<small>${esc(typeLabel(t))}${t.archived?' · archived':''}</small></span>${i?`<button class="ibtn" data-a="t-up" data-id="${esc(t.id)}" aria-label="Move ${esc(t.name)} up">${ICON.up}</button>`:''}<button class="btn sm" data-a="t-edit" data-id="${esc(t.id)}">Edit</button></li>`).join('')}</ul><button class="btn" data-a="t-new">${ICON.plus} Add tracker</button></section>
-<section class="sset"><h3>Sync</h3>${syncSection()}</section>${APP&&typeof APP.setReminder==='function'?`<section class="sset"><h3>Daily reminder</h3><p>A notification if you haven’t filled anything in by this time.</p><div class="row" style="align-items:center"><label class="tog" for="rm-on"><input type="checkbox" id="rm-on" data-ch="rmon"${remindState().on?' checked':''}> Remind me at</label><input type="time" id="rm-time" data-ch="rmtime" value="${esc(remindState().time)}" style="width:auto" aria-label="Reminder time"></div></section>`:''}
-<section class="sset"><h3>Backup</h3><p>Copy everything as text to keep somewhere safe, or restore from a backup. Restoring replaces what’s here.</p><div class="row"><button class="btn" data-a="bk-copy">Copy backup</button><label class="btn" for="bk-file">Restore from file</label><input type="file" id="bk-file" data-ch="bkfile" accept=".json,.txt,application/json,text/plain" style="position:absolute;width:1px;height:1px;opacity:0"></div><div id="bk-out"></div><details style="margin-top:10px"><summary class="muted">Paste a backup instead</summary><textarea id="bk-text" rows="4" class="copybox" style="margin-top:8px" aria-label="Backup text"></textarea><button class="btn" style="margin-top:8px" data-a="bk-paste">Restore pasted backup</button></details></section><p class="meta">Version ${/^\d+$/.test(APP_VERSION)?APP_VERSION:'dev'}${APP?' · Android app':''}</p>`;
+const body=`<section class="sset"><h3>Look</h3><div class="f"><span class="lb">Colour</span><div class="swatches">${PALETTES.map(([k,lb,col])=>`<button class="swatch${pal===k?' on':''}" data-a="look-pal" data-v="${k}" aria-pressed="${pal===k}"><i style="background:${col}"></i>${lb}</button>`).join('')}</div></div><div class="f" style="margin:0"><span class="lb">Appearance</span><div class="segbar" role="group" aria-label="Appearance">${[['','Match phone'],['light','Light'],['dark','Dark']].map(([k,lb])=>`<button class="${ap===k?'on':''}" data-a="look-ap" data-v="${k}">${lb}</button>`).join('')}</div></div></section><section class="sset"><h3>Trackers</h3><ul class="tl2">${c.trackers.map((t,i)=>`<li class="${t.archived?'arch':''}"><i class="dot" style="background:var(--c${t.c})"></i><span class="tn" style="flex:1">${esc(t.name)}<small>${esc(typeLabel(t))}${t.archived?' · archived':''}</small></span>${i?`<button class="ibtn" data-a="t-up" data-id="${esc(t.id)}" aria-label="Move ${esc(t.name)} up">${ICON.up}</button>`:''}<button class="btn sm" data-a="t-edit" data-id="${esc(t.id)}">Edit</button></li>`).join('')}</ul><button class="btn" data-a="t-new">${ICON.plus} Add tracker</button></section>
+<section class="sset"><h3>Sync</h3>${syncSection()}</section>${APP&&typeof APP.setReminder==='function'?`<section class="sset"><h3>Daily reminder</h3><div class="row" style="align-items:center"><label class="tog" for="rm-on"><input type="checkbox" id="rm-on" data-ch="rmon"${remindState().on?' checked':''}> Remind me at</label><input type="time" id="rm-time" data-ch="rmtime" value="${esc(remindState().time)}" style="width:auto" aria-label="Reminder time"></div></section>`:''}
+<section class="sset"><h3>Backup</h3><div class="row"><button class="btn" data-a="bk-copy">Copy backup</button><label class="btn" for="bk-file">Restore from file</label><input type="file" id="bk-file" data-ch="bkfile" accept=".json,.txt,application/json,text/plain" style="position:absolute;width:1px;height:1px;opacity:0"></div><div id="bk-out"></div><details style="margin-top:10px"><summary class="muted">Paste a backup instead</summary><textarea id="bk-text" rows="4" class="copybox" style="margin-top:8px" aria-label="Backup text"></textarea><button class="btn" style="margin-top:8px" data-a="bk-paste">Restore pasted backup</button></details></section><p class="meta">Version ${/^\d+$/.test(APP_VERSION)?APP_VERSION:'dev'}${APP?' · Android app':''}</p>`;
 openSheet('Settings',body)}
 function trackerSheet(t){const isNew=!t;const used=new Set(S.config.trackers.filter(x=>!x.archived).map(x=>x.c));
 const cur=t?clone(t):{id:uid(),name:'',type:'scale',max:5,c:[1,2,3,4,5,6,7,8].find(x=>!used.has(x))||1};
-const body=`<form id="tf"><div class="f"><label for="t-n">Name</label><input id="t-n" value="${esc(cur.name)}" required autocomplete="off" placeholder="Focus, water, steps…"></div>
-<div class="f"><span class="lb">Type</span>${isNew?`<div class="seg" id="t-ty">${[['scale','Score'],['check','Yes or no'],['number','Number']].map(([k,lb])=>`<button type="button" data-ty="${k}" class="${cur.type===k?'on':''}">${lb}</button>`).join('')}</div>`:`<span>${esc(typeLabel(cur))}</span><span class="hint">The type can’t change once you’ve started logging. Archive this one and add a new tracker instead.</span>`}</div>
+const body=`<form id="tf"><div class="f"><label for="t-n">Name</label><input id="t-n" value="${esc(cur.name)}" required autocomplete="off"></div>
+<div class="f"><span class="lb">Type</span>${isNew?`<div class="seg" id="t-ty">${[['scale','Score'],['check','Yes or no'],['number','Number']].map(([k,lb])=>`<button type="button" data-ty="${k}" class="${cur.type===k?'on':''}">${lb}</button>`).join('')}</div>`:`<span>${esc(typeLabel(cur))}</span>`}</div>
 <div class="f" id="t-scale"${cur.type==='scale'?'':' hidden'}><span class="lb">Scale</span><div class="seg" id="t-max">${[5,10].map(m=>`<button type="button" data-m="${m}" class="${cur.max===m?'on':''}"${isNew?'':' disabled'}>1 to ${m}</button>`).join('')}</div></div>
-<div class="frow" id="t-num"${cur.type==='number'?'':' hidden'}><div class="f"><label for="t-u">Unit</label><input id="t-u" value="${esc(cur.unit||'')}" placeholder="h, km, pages"></div><div class="f"><label for="t-g">Daily target</label><input id="t-g" type="number" inputmode="decimal" min="0" step="any" value="${cur.target??''}"></div><div class="f"><label for="t-st">Step for − and +</label><input id="t-st" type="number" inputmode="decimal" min="0" step="any" value="${cur.step??1}"></div></div>
+<div class="frow" id="t-num"${cur.type==='number'?'':' hidden'}><div class="f"><label for="t-u">Unit</label><input id="t-u" value="${esc(cur.unit||'')}"></div><div class="f"><label for="t-g">Daily target</label><input id="t-g" type="number" inputmode="decimal" min="0" step="any" value="${cur.target??''}"></div><div class="f"><label for="t-st">Step for − and +</label><input id="t-st" type="number" inputmode="decimal" min="0" step="any" value="${cur.step??1}"></div></div>
 <div class="f"><span class="lb">Colour</span><div class="seg" id="t-c">${range(1,8).map(i=>`<button type="button" data-c="${i}" class="${cur.c===i?'on':''}" style="--tc:var(--c${i});background:${cur.c===i?'':'color-mix(in srgb,var(--c'+i+') 30%,var(--bg))'}" aria-label="Colour ${i}"><i class="dot" style="background:var(--c${i})"></i></button>`).join('')}</div></div>
 <div class="acts">${isNew?'':`<button type="button" class="btn danger" id="t-del">Delete</button><button type="button" class="btn" id="t-arch">${cur.archived?'Unarchive':'Archive'}</button><span class="sp"></span>`}<button type="button" class="btn" data-a="settings">Back</button><button class="btn pri">Save</button></div></form>`;
 openSheet(isNew?'New tracker':'Edit tracker',body,sh=>{
@@ -1286,11 +1371,11 @@ if(isNew){if(trks().length>=8){toast('Up to 8 active trackers. Archive one first
 save('meta/config');render();settingsSheet()})})}
 function goalSheet(g){const isNew=!g;const cur=g?clone(g):{id:uid(),year:ui.gyear,title:'',kind:'list',listId:listOrder()[0]||'',trackerId:trks()[0]?.id||'',target:'',checkins:{},created:TODAY().slice(0,7)+'-01'};
 const ord=listOrder();
-const body=`<form id="gf"><div class="f"><label for="g-t">Goal</label><input id="g-t" value="${esc(cur.title)}" required autocomplete="off" placeholder="Read 20 books"></div>
+const body=`<form id="gf"><div class="f"><label for="g-t">Goal</label><input id="g-t" value="${esc(cur.title)}" required autocomplete="off"></div>
 <div class="f"><label for="g-k">How it’s measured</label><select id="g-k">${[['list','Entries in an archive, or ticks in a tick list'],['tracker','Days I hit a tracker'],['manual','A number I add up each month'],['rating','Just a monthly rating']].map(([k,lb])=>`<option value="${k}"${cur.kind===k?' selected':''}>${lb}</option>`).join('')}</select></div>
-<div class="f" data-k="list"><label for="g-l">List</label><select id="g-l">${ord.filter(id=>lType(S.lists[id])!=='ordered').map(id=>`<option value="${esc(id)}"${cur.listId===id?' selected':''}>${esc(S.lists[id].name)}</option>`).join('')}</select><span class="hint">Counts archive entries dated in ${cur.year}, or tick-list items ticked off in ${cur.year}.</span></div>
-<div class="frow" data-k="tracker"><div class="f"><label for="g-tr">Tracker</label><select id="g-tr">${trks().map(t=>`<option value="${esc(t.id)}"${cur.trackerId===t.id?' selected':''}>${esc(t.name)}</option>`).join('')}</select></div><div class="f"><label for="g-th">Counts when at least</label><input id="g-th" type="number" inputmode="decimal" step="any" value="${cur.threshold??''}" placeholder="blank = a good day"><span class="hint">Yes-or-no trackers count every yes.</span></div></div>
-<div class="frow"><div class="f" data-k="list tracker manual"><label for="g-n">Target</label><input id="g-n" type="number" inputmode="decimal" min="0" step="any" value="${cur.target??''}"></div><div class="f" data-k="manual"><label for="g-u">Unit</label><input id="g-u" value="${esc(cur.unit||'')}" placeholder="km, £, hours"></div><div class="f"><label for="g-y">Year</label><input id="g-y" type="number" inputmode="numeric" value="${cur.year}"></div></div>
+<div class="f" data-k="list"><label for="g-l">List</label><select id="g-l">${ord.filter(id=>lType(S.lists[id])!=='ordered').map(id=>`<option value="${esc(id)}"${cur.listId===id?' selected':''}>${esc(S.lists[id].name)}</option>`).join('')}</select></div>
+<div class="frow" data-k="tracker"><div class="f"><label for="g-tr">Tracker</label><select id="g-tr">${trks().map(t=>`<option value="${esc(t.id)}"${cur.trackerId===t.id?' selected':''}>${esc(t.name)}</option>`).join('')}</select></div><div class="f"><label for="g-th">Counts when at least</label><input id="g-th" type="number" inputmode="decimal" step="any" value="${cur.threshold??''}"></div></div>
+<div class="frow"><div class="f" data-k="list tracker manual"><label for="g-n">Target</label><input id="g-n" type="number" inputmode="decimal" min="0" step="any" value="${cur.target??''}"></div><div class="f" data-k="manual"><label for="g-u">Unit</label><input id="g-u" value="${esc(cur.unit||'')}"></div><div class="f"><label for="g-y">Year</label><input id="g-y" type="number" inputmode="numeric" value="${cur.year}"></div></div>
 <div class="acts">${isNew?'':'<button type="button" class="btn danger" id="g-del">Delete</button><span class="sp"></span>'}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">Save</button></div></form>`;
 openSheet(isNew?'New goal':'Edit goal',body,sh=>{
 const upd=()=>{const k=$('#g-k',sh).value;$$('[data-k]',sh).forEach(el=>{el.hidden=!el.dataset.k.split(' ').includes(k)})};upd();$('#g-k',sh).addEventListener('change',upd);
@@ -1305,7 +1390,7 @@ function checkinSheet(queue,i){const {g,m}=queue[i],mk=`${g.year}-${m}`,c=g.chec
 let info='';if(g.kind==='list'||g.kind==='tracker')info=`<div class="ciinfo"><b>${fmtNum(goalVal(g,mk))}</b> ${esc(goalUnit(g,goalVal(g,mk)))} in ${MON[+m-1]}. <b>${fmtNum(goalVal(g))}</b> of ${fmtNum(g.target)} for the year.</div>`;
 else if(g.kind==='manual')info=`<div class="ciinfo">So far this year: <b>${fmtNum(goalVal(g)-(+c.v||0))}</b> of ${fmtNum(g.target)} ${esc(unit)}, not counting ${MON[+m-1]}.</div>`;
 const body=`<p style="margin:0 0 10px;font-weight:700;font-size:18px">${esc(g.title)}</p>${info}<form id="cif">${g.kind==='manual'?`<div class="f"><label for="ci-v">How many ${esc(unit||'')} in ${MON[+m-1]}?</label><input id="ci-v" type="number" inputmode="decimal" step="any" min="0" value="${c.v??''}"></div>`:''}
-<div class="f"><span class="lb">How did ${MON[+m-1]} go for this goal?</span><div class="seg ratebtns" id="ci-r">${range(1,5).map(x=>`<button type="button" data-r="${x}" class="${r===x?'on':''}">${x}</button>`).join('')}</div><span class="hint" id="ci-lab">${r?RATE[r-1]:'1 is off track, 5 is brilliant'}</span></div>
+<div class="f"><span class="lb">How did ${MON[+m-1]} go for this goal?</span><div class="seg ratebtns" id="ci-r">${range(1,5).map(x=>`<button type="button" data-r="${x}" class="${r===x?'on':''}">${x}</button>`).join('')}</div><span class="hint" id="ci-lab">${r?RATE[r-1]:''}</span></div>
 <div class="f"><label for="ci-n">Anything to note?</label><textarea id="ci-n" rows="3">${esc(c.n||'')}</textarea></div>
 <div class="acts">${queue.length>1?`<span class="muted" style="align-self:center">${i+1} of ${queue.length}</span><span class="sp"></span><button type="button" class="btn" id="ci-skip">Skip</button>`:'<button type="button" class="btn" data-a="close">Cancel</button>'}<button class="btn pri">${i<queue.length-1?'Save and next':'Save'}</button></div></form>`;
 const next=()=>{if(i<queue.length-1)checkinSheet(queue,i+1);else{closeSheet();render();toast('Check-in saved')}};
@@ -1361,11 +1446,17 @@ tdtoday:()=>{ui.tdDay=TODAY();render()},
 hday:b=>{const h=hab(b.dataset.id);if(!h)return;const multi=h.per==='day'&&(h.n||1)>1;setHabit(b.dataset.k,h.id,n=>multi?(n>=h.n?0:n+1):(n?0:1));refreshDay()},
 hplus:b=>{const h=hab(b.dataset.id);if(!h)return;const multi=h.per==='day'&&(h.n||1)>1;setHabit(TODAY(),h.id,n=>multi?n+1:(n?0:1));render()},
 hminus:b=>{const h=hab(b.dataset.id);if(!h)return;setHabit(TODAY(),h.id,n=>n-1);render()},
-hsel:b=>{const h=hab(b.dataset.id);if(!h)return;ui.hsel=h.id;if(matchMedia('(min-width:760px)').matches)render();else{render();openHabitSheet(h)}},
+hsel:b=>{ui.hsel=b.dataset.id;render();if(b.dataset.scroll)setTimeout(()=>$('#hbottom')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'}),30)},
+hwprev:()=>{ui.hweek=addDays(ui.hweek||pStart('week',TODAY()),-7);render()},
+hwnext:()=>{const n=addDays(ui.hweek||pStart('week',TODAY()),7);ui.hweek=n>pStart('week',TODAY())?'':n;render()},
+hwnow:()=>{ui.hweek='';render()},
+lstate:b=>{ui.lstate[ui.list]=b.dataset.s;ui.lq='';render()},
+'ar-done':b=>{const l=S.lists[ui.list],it=l&&l.items.find(x=>x.id===b.dataset.id);if(it)doneSheet(l,it)},
+'ar-log':()=>{const l=S.lists[ui.list];if(l)doneSheet(l,null)},
 'h-new':()=>habitSheet(null),
 'h-edit':b=>{const h=hab(b.dataset.id);if(h)habitSheet(h)},
-hyprev:()=>{ui.hyear--;rerenderHabitDetail()},
-hynext:()=>{ui.hyear++;rerenderHabitDetail()},
+hyprev:()=>{ui.hyear--;render()},
+hynext:()=>{ui.hyear++;render()},
 wopen:b=>openWrapped(b.dataset.k,b.dataset.v),
 'look-pal':b=>{setLook({palette:b.dataset.v});$$('[data-a=look-pal]').forEach(x=>{const on=x.dataset.v===b.dataset.v;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)})},
 'look-ap':b=>{setLook({appearance:b.dataset.v});$$('[data-a=look-ap]').forEach(x=>x.classList.toggle('on',x.dataset.v===b.dataset.v))},
@@ -1398,7 +1489,7 @@ wcopy:async()=>{const tx=wrapText();try{await navigator.clipboard.writeText(tx);
 'bk-copy':async()=>{const tx=JSON.stringify(S);try{await navigator.clipboard.writeText(tx);toast('Backup copied. Paste it somewhere safe.')}catch(e){$('#bk-out').innerHTML=`<p class="meta">Couldn’t copy automatically. Select all of this and copy it:</p><textarea class="copybox" readonly>${esc(tx)}</textarea>`}},
 'bk-paste':b=>{let o;try{o=JSON.parse($('#bk-text').value)}catch(e){toast('That isn’t valid backup text');return}if(!armed(b))return;restore(o)}};
 function scrollDeck(dir){const dk=$('#deck');if(!dk)return;const cs=[...dk.children];const x=dk.scrollLeft;let i=cs.findIndex(c=>c.offsetLeft-dk.offsetLeft>=x-4);if(i<0)i=0;const n=Math.max(0,Math.min(cs.length-1,i+dir));cs[n].scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'nearest',inline:'start'})}
-D.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const f=A[b.dataset.a];if(f){e.preventDefault();f(b,e)}});
+D.addEventListener('click',e=>{if(Date.now()-dragJust<450){e.preventDefault();e.stopPropagation();return}const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const f=A[b.dataset.a];if(f){e.preventDefault();f(b,e)}});
 const FORMS={
 td:f=>{const inp=$('#td-new',f),x=inp.value.trim();if(!x)return;const k=f.dataset.k||ui.sel,d=dayEnsure(k);d.t.push({id:uid(),x,d:false});dayDone(k);refreshDay();$('#td-new')?.focus()},
 gt:f=>listAdd('gt',f),wk:f=>listAdd('wk',f),li:f=>liAdd(f)};
