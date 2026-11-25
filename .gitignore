@@ -1,0 +1,7 @@
+.gradle/
+build/
+local.properties
+*.apk
+android/app/src/main/assets/
+.idea/
+.DS_Store
