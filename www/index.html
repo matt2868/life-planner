@@ -23,6 +23,7 @@
 :root[data-theme=light]{color-scheme:light}
 :root[data-theme=dark]{color-scheme:dark}
 *{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -325,6 +326,23 @@ details.card[open]>summary{margin-bottom:8px}
 .rseg button{height:36px;font-size:14px}
 .rall{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0 4px}
 .rsum{font-size:14px;color:var(--ink2);margin:8px 0 0}
+/* lists */
+.lbody{display:grid;gap:12px;align-content:start}
+.item .nsnip{display:block;margin-top:2px;color:var(--ink2);font-size:14px}
+.litems{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.lrow{display:flex;align-items:center;gap:10px;padding:4px 6px 4px 12px;border-radius:12px;min-height:52px;background:var(--panel)}
+.lrow.done .lt{text-decoration:line-through;color:var(--ink2)}
+.lrow .chk{flex:none}
+.lrow.done .chk{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.lmain{flex:1;min-width:0;display:grid;gap:1px;border:0;background:none;padding:8px 0;text-align:left}
+.lt{font-weight:700;overflow-wrap:anywhere}
+.ls{font-size:14px;color:var(--ink2);overflow-wrap:anywhere}
+.rk{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;background:var(--bg);flex:none;font-variant-numeric:tabular-nums}
+.grip{width:44px;height:44px;display:grid;place-items:center;border:0;background:none;color:var(--ink2);touch-action:none;cursor:grab;flex:none;border-radius:10px}
+.lrow.drag{box-shadow:0 8px 22px rgb(0 0 0/.2);position:relative;z-index:2;transform:scale(1.01)}
+.score{font-weight:800;font-size:15px;white-space:nowrap}
+.score small{font-weight:600;color:var(--ink2);font-size:13px}
+.lnav button .dot{width:9px;height:9px}
 /* compact day page */
 .daycol{gap:8px;padding:12px}
 .dhead h2{font-size:clamp(22px,3vw,28px)}
@@ -467,18 +485,12 @@ l:'<svg class="ic" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>'
 r:'<svg class="ic" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg>',
 up:'<svg class="ic" viewBox="0 0 24 24"><path d="M6 14.5l6-6 6 6"/></svg>',
 plus:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
-tick:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'};
+tick:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+grip:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 9h14M5 15h14"/></svg>'};
 
-/* ---------- list kinds ---------- */
-const KINDS={
-books:{label:'Books',tl:'Title',sl:'Author',st:[['want','Want to read'],['doing','Reading'],['done','Read']],dl:'Date finished',verb:'read',noun:['book','books']},
-films:{label:'Films',tl:'Title',sl:'Director or year',st:[['want','Watchlist'],['done','Watched']],dl:'Date watched',verb:'watched',noun:['film','films']},
-games:{label:'Games',tl:'Title',sl:'Platform',st:[['want','Backlog'],['doing','Playing'],['done','Finished'],['dropped','Dropped']],dl:'Date finished',verb:'finished',noun:['game','games']},
-albums:{label:'Albums',tl:'Album',sl:'Artist',st:[['want','To listen'],['done','Listened']],dl:'Date listened',verb:'listened to',noun:['album','albums']},
-shiny:{label:'Shiny hunts',tl:'Pokémon',sl:'Game',st:[['doing','Hunting'],['paused','Paused'],['done','Found']],dl:'Date found',verb:'found',noun:['shiny','shinies'],extra:[['method','Method','text'],['enc','Encounters','number']]},
-custom:{label:'Custom list',tl:'Item',sl:'Detail',st:[['want','To do'],['doing','In progress'],['done','Done']],dl:'Date done',verb:'done',noun:['item','items']}};
-const kindOf=l=>KINDS[l?.kind]||KINDS.custom;
-const stLabel=(l,st)=>(kindOf(l).st.find(s=>s[0]===st)||[st,st])[1];
+/* ---------- old list kinds, only used to convert lists made before list types existed ---------- */
+const OLDK={books:'archive',films:'archive',games:'archive',albums:'archive',shiny:'tick',custom:'tick'};
+const migrated=new Set();
 
 /* ---------- state ---------- */
 const APP_VERSION='__APP_VERSION__';
@@ -487,7 +499,7 @@ const UPDATE_REPO='matt2868/life-planner';
 let S=null,mode='loading',syncState='loading';
 const T0=TODAY();
 const ui={tab:'calendar',sel:T0,month:T0.slice(0,7),colorBy:'all',anim:true,gtOpen:true,
-list:'books',lst:'all',tdDay:'',hsel:null,hyear:+T0.slice(0,4),lq:'',lsort:'recent',
+list:null,ldone:false,tdDay:'',hsel:null,hyear:+T0.slice(0,4),lq:'',lsort:'recent',
 sp:'month',smonth:T0.slice(0,7),syear:+T0.slice(0,4),strk:null,
 gyear:+T0.slice(0,4),wk:'month',wmonth:T0.slice(0,7),wyear:+T0.slice(0,4),snoozed:'',update:0};
 
@@ -498,15 +510,17 @@ function defaultTrackers(){return [
 {id:'sleep',name:'Sleep',type:'number',unit:'h',target:8,step:0.5,c:4},
 {id:'read',name:'Reading',type:'check',c:5}]}
 function blankState(){
-const ids=['books','films','games','albums','shiny'];
-return {config:{v:1,created:TODAY(),trackers:defaultTrackers(),habits:[],goals:[],listOrder:ids.slice()},todos:{items:[]},work:{items:[]},
-lists:Object.fromEntries(ids.map(k=>[k,{id:k,name:KINDS[k].label,kind:k,items:[]}])),months:{}}}
+return {config:{v:1,created:TODAY(),trackers:defaultTrackers(),habits:[],goals:[],listOrder:[]},todos:{items:[]},work:{items:[]},lists:{},months:{}}}
 const PER_OK=['day','week','month'];
 function normalize(st){
 st.config=st.config||{};const c=st.config;
 c.trackers=Array.isArray(c.trackers)?c.trackers:[];c.goals=Array.isArray(c.goals)?c.goals:[];c.habits=Array.isArray(c.habits)?c.habits:[];c.habits.forEach(h=>{h.n=Math.max(1,+h.n||1);if(!PER_OK.includes(h.per))h.per='week'});
 st.lists=st.lists&&typeof st.lists==='object'?st.lists:{};
-for(const [id,l] of Object.entries(st.lists)){l.id=id;l.items=Array.isArray(l.items)?l.items:[];if(!KINDS[l.kind])l.kind='custom'}
+Object.keys(st.lists).forEach((id,n)=>{const l=st.lists[id];l.id=id;l.items=Array.isArray(l.items)?l.items:[];
+if(!['archive','tick','ordered'].includes(l.type)){l.type=OLDK[l.kind]||'tick';l.rate=l.type==='archive'?5:0;l.cby='list';
+l.items.forEach(it=>{if(it.st!=null){if(l.type==='tick'){it.done=it.st==='done';if(!it.done)it.d=''}delete it.st}if(it.x&&typeof it.x==='object'){const ex=[it.x.method,it.x.enc!=null&&it.x.enc!==''?`${Number(it.x.enc).toLocaleString('en-GB')} encounters`:''].filter(Boolean).join(' · ');if(ex)it.s=it.s?`${it.s} · ${ex}`:ex;delete it.x}});
+delete l.kind;migrated.add(id)}
+if(!l.c)l.c=[1,2,3,5,7,6,8,4][n%8];l.rate=[0,5,10].includes(+l.rate)?+l.rate:0;if(l.cby!=='rating')l.cby='list'});
 c.listOrder=(Array.isArray(c.listOrder)?c.listOrder:[]).filter(id=>st.lists[id]);
 for(const id of Object.keys(st.lists))if(!c.listOrder.includes(id))c.listOrder.push(id);
 st.todos=st.todos&&Array.isArray(st.todos.items)?st.todos:{items:[]};st.work=st.work&&Array.isArray(st.work.items)?st.work:{items:[]};
@@ -540,12 +554,12 @@ if(rnd()<0.65){const n=2+Math.floor(rnd()*4);const used=new Set();for(let i=0;i<
 if(k===today){d.h={hb2:1};d.s={prod:4,sleep:7.5};d.n='';d.t=[{id:uid(),x:'Plan next week',d:true},{id:uid(),x:'Reply to emails',d:true},{id:uid(),x:'Food shop',d:false},{id:uid(),x:'Fix bike tyre',d:false}]}
 const mk=k.slice(0,7);(st.months[mk]=st.months[mk]||{days:{}}).days[k]=d}
 const dt=(m,dd)=>`${y}-${p2(m)}-${p2(dd)}`;
-const put=(id,arr)=>{st.lists[id].items=arr.map(([t,sub,stt,r,date,x])=>({id:uid(),t,s:sub,st:stt,r:r||0,d:date||'',n:'',x:x||{},a:date||today,u:date?parseK(date).getTime():Date.now()}))};
-put('books',[['The Left Hand of Darkness','Ursula K. Le Guin','done',5,dt(1,24)],['Piranesi','Susanna Clarke','done',5,dt(2,19)],['The Overstory','Richard Powers','done',4,dt(3,30)],['A Psalm for the Wild-Built','Becky Chambers','done',4,dt(5,4)],['Entangled Life','Merlin Sheldrake','done',4,dt(6,22)],['Project Hail Mary','Andy Weir','done',5,dt(8,9)],['The Remains of the Day','Kazuo Ishiguro','done',4,dt(9,14)],['Tomorrow, and Tomorrow, and Tomorrow','Gabrielle Zevin','done',3,dt(10,27)],['The Dispossessed','Ursula K. Le Guin','doing'],['Braiding Sweetgrass','Robin Wall Kimmerer','want'],['The Wager','David Grann','want'],['Middlemarch','George Eliot','want']]);
-put('films',[['Paddington 2','2017','done',5,dt(1,3)],['Past Lives','2023','done',4,dt(2,8)],['Perfect Days','2023','done',5,dt(3,15)],['Arrival','2016','done',5,dt(5,2)],['The Holdovers','2023','done',4,dt(7,19)],['Aftersun','2022','done',4,dt(9,6)],['Dune: Part Two','2024','done',4,dt(11,8)],['Seven Samurai','1954','want'],['Spirited Away','2001','want']]);
-put('games',[['Balatro','PC','done',5,dt(2,2)],['Outer Wilds','PC','done',5,dt(4,12)],['Hades II','PC','done',4,dt(8,30)],['Pokémon Legends: Z-A','Switch 2','done',4,dt(11,2)],['Hollow Knight: Silksong','Switch 2','doing'],['Disco Elysium','PC','want'],['Elden Ring','PC','dropped']]);
-put('albums',[['Blue Rev','Alvvays','done',5,dt(1,12)],['Titanic Rising','Weyes Blood','done',4,dt(3,2)],['Ants From Up There','Black Country, New Road','done',5,dt(4,21)],['Promises','Floating Points','done',4,dt(6,8)],['In Rainbows','Radiohead','done',5,dt(10,11)],['Laughing Stock','Talk Talk','want'],['Carrie & Lowell','Sufjan Stevens','want']]);
-put('shiny',[['Ralts','Scarlet','done',5,dt(2,11),{method:'Masuda method',enc:1840}],['Eevee','Violet','done',4,dt(4,3),{method:'Mass outbreak',enc:310}],['Gible','Scarlet','done',5,dt(7,28),{method:'Masuda method',enc:2210}],['Dratini','Legends: Z-A','done',4,dt(11,4),{method:'Respawns',enc:612}],['Beldum','Legends: Z-A','doing',0,'',{method:'Respawns',enc:950}],['Larvitar','Violet','paused',0,'',{method:'Mass outbreak',enc:420}]]);
+const mkList=(id,name,type,c,rate,cby,rows)=>{st.lists[id]={id,name,type,c,rate,cby,items:rows.map(([t,s,r,d,n,done])=>({id:uid(),t,s:s||'',r:r||0,d:d||'',n:n||'',done:!!done,u:d?parseK(d).getTime():Date.now(),a:d||today}))};st.config.listOrder.push(id)};
+mkList('books','Books','archive',1,5,'rating',[['The Left Hand of Darkness','Ursula K. Le Guin',5,dt(1,24),'Better second time round.'],['Piranesi','Susanna Clarke',5,dt(2,19)],['The Overstory','Richard Powers',4,dt(3,30),'Slow start, huge payoff.'],['A Psalm for the Wild-Built','Becky Chambers',4,dt(5,4)],['Entangled Life','Merlin Sheldrake',4,dt(6,22)],['Project Hail Mary','Andy Weir',5,dt(8,9)],['The Remains of the Day','Kazuo Ishiguro',4,dt(9,14)],['Tomorrow, and Tomorrow, and Tomorrow','Gabrielle Zevin',3,dt(10,27)]]);
+mkList('films','Films','archive',8,10,'rating',[['Paddington 2','2017',9,dt(1,3)],['Past Lives','2023',8,dt(2,8)],['Perfect Days','2023',9,dt(3,15),'Quietly perfect.'],['Arrival','2016',9,dt(5,2)],['The Holdovers','2023',8,dt(7,19)],['Dune: Part Two','2024',7,dt(11,8)]]);
+mkList('presents','Present ideas','ordered',5,0,'list',[['Fountain pen','For Mum','','','A green Lamy Safari'],['Bird feeder camera','For Dad'],['Cookbook','For Sam'],['Board game night kit','For anyone']]);
+mkList('shiny','Shiny hunts','tick',7,0,'list',[['Ralts','Scarlet · Masuda method · 1,840 encounters','',dt(2,11),'',true],['Gible','Scarlet · Masuda method','',dt(7,28),'',true],['Dratini','Legends: Z-A · respawns','',dt(11,4),'',true],['Beldum','Legends: Z-A · respawns · 950 so far'],['Larvitar','Violet · mass outbreaks']]);
+mkList('places','Places to visit','tick',3,0,'list',[['Isle of Skye'],['Northumberland coast','Dark sky park too'],['Edinburgh in August','','',dt(8,15),'',true]]);
 st.todos.items=[['Renew railcard',false],['Order printer ink',false],['Return library books',true],['Sort out photos from summer',false],['Book winter tyres check',false]].map(([x,dd])=>({id:uid(),x,d:dd}));
 const ci=(rs,n)=>Object.fromEntries(rs.map((r,i)=>[p2(i+1),{r,n:n?.[i]||''}]));
 st.config.goals=[
@@ -567,7 +581,7 @@ function dayEnsure(k){const mk=k.slice(0,7);const m=S.months[mk]||(S.months[mk]=
 function dayDone(k){const mk=k.slice(0,7),d=S.months[mk]?.days?.[k];if(d)d.u=Date.now();save('months/'+mk)}
 const val=(d,t)=>d?.s?.[t.id]??null;
 const hasEntry=d=>!!d&&(Object.keys(d.s||{}).length>0||!!(d.n||'').trim()||!!(d.h&&Object.keys(d.h).length));
-function norm(t,v){if(v==null||v==='')return null;if(t.type==='check')return v?1:0;if(t.type==='scale')return Math.max(0,Math.min(1,(v-1)/((t.max||5)-1)));if(t.target)return Math.max(0,Math.min(1,v/t.target));return v>0?1:0}
+function norm(t,v){if(v==null||v==='')return null;if(t.type==='check')return v?1:0;if(t.type==='scale')return Math.max(0,Math.min(1,v/(t.max||5)));if(t.target)return Math.max(0,Math.min(1,v/t.target));return v>0?1:0}
 function good(t,v,th){if(v==null)return false;if(t.type==='check')return v===true;if(th!=null&&th!=='')return v>=+th;if(t.type==='scale')return v>=Math.ceil((t.max||5)*0.7);return t.target?v>=t.target:v>0}
 function dayScore(d){if(!d)return null;const ts=trks();if(!ts.some(t=>val(d,t)!=null))return null;let s=0,n=0;for(const t of ts){let x=norm(t,val(d,t));if(x==null&&t.type==='scale')x=0;if(x!=null){s+=x;n++}}return n?s/n:null}
 function fmtVal(t,v){if(v==null)return 'not logged';if(t.type==='check')return v?'yes':'no';if(t.type==='scale')return `${v} of ${t.max}`;return `${fmtNum(v)}${t.unit?' '+t.unit:''}`}
@@ -583,9 +597,9 @@ function curRun(test){let k=TODAY();if(!test(dayGet(k)))k=addDays(k,-1);let n=0;
 const listOrder=()=>S.config.listOrder.filter(id=>S.lists[id]);
 
 /* ---------- goals ---------- */
-function goalUnit(g,n){const one=n===1;if(g.kind==='list'){return kindOf(S.lists[g.listId]).noun[one?0:1]}if(g.kind==='tracker')return one?'day':'days';return g.unit||''}
+function goalUnit(g,n){const one=n===1;if(g.kind==='list'){return (S.lists[g.listId]?.name||'items').toLowerCase()}if(g.kind==='tracker')return one?'day':'days';return g.unit||''}
 function goalVal(g,mk){const pre=mk||String(g.year);
-if(g.kind==='list'){const l=S.lists[g.listId];return l?l.items.filter(i=>i.st==='done'&&i.d&&i.d.startsWith(pre)).length:0}
+if(g.kind==='list'){const l=S.lists[g.listId];return l?l.items.filter(i=>i.d&&i.d.startsWith(pre)&&(lType(l)==='archive'||i.done)).length:0}
 if(g.kind==='tracker'){const t=trk(g.trackerId);if(!t)return 0;let c=0;for(const [k2,m] of Object.entries(S.months)){if(!k2.startsWith(pre.slice(0,7)))continue;for(const d of Object.values(m.days||{}))if(good(t,val(d,t),g.threshold))c++}return c}
 if(g.kind==='manual'){const ci=g.checkins||{};if(mk)return +(ci[mk.slice(5)]?.v)||0;return Object.values(ci).reduce((a,c)=>a+(+c.v||0),0)}
 return null}
@@ -695,7 +709,7 @@ async function syncNow(){if(mode!=='github')return;
 try{if(!['auth','noaccess'].includes(syncState))setSync('saving');const res=await pull();
 if(res.empty&&!hasPlanner(S)){S=blankState();for(const p of allPaths(S)){dirty.add(p);seq[p]=(seq[p]||0)+1}saveMeta();saveLocalNow();widgetSync()}
 if(res.changed||res.empty)softRender();
-await pushAll();if(!dirty.size){fails=0;setSync('saved')}renderBanner();if(!syncNow.done&&hasPlanner(S)&&meta.last){syncNow.done=true;pruneDone();maybeWrapPopup()}if(meta.last)rolloverCheck()}
+await pushAll();if(!dirty.size){fails=0;setSync('saved')}renderBanner();if(!syncNow.done&&hasPlanner(S)&&meta.last){syncNow.done=true;pruneDone();saveMigrated();maybeWrapPopup()}if(meta.last)rolloverCheck()}
 catch(e){syncFailed(e);if(!meta.last)render()}}
 function parseRepo(s){const m=/^(?:https?:\/\/)?(?:www\.)?(?:github\.com\/)?([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+?)(?:\.git)?\/?$/.exec(String(s||'').trim());return m?`${m[1]}/${m[2]}`:null}
 const TOKEN_RW='That token can read the repo but can’t save to it. Edit the token on GitHub and set Contents to Read and write.';
@@ -770,7 +784,7 @@ function boot(){
 if(cfg.mode==='github'||cfg.mode==='local'){const st=store.get(K.state);S=normalize(st&&st.config?st:(cfg.mode==='github'?emptyState():blankState()));mode=cfg.mode}
 else{S=makeExample();mode='example'}
 setSync(mode==='github'?'saving':mode);render();applyWidgetActions();widgetSync();sendReminder();
-if(mode==='local'){pruneDone();maybeWrapPopup();rolloverCheck()}
+if(mode==='local'){pruneDone();saveMigrated();maybeWrapPopup();rolloverCheck()}
 if(mode==='github')syncNow();
 if(!cfg.mode)setTimeout(()=>{if(mode==='example'&&!$('#ov').classList.contains('open'))setupSheet(true)},400);
 checkUpdate()}
@@ -849,6 +863,7 @@ v.innerHTML=`<div class="tdview"><section class="tpanel"><div class="tph"><h2 cl
 function listTog(kind,id){const key=TLK[kind],it=S[key].items.find(x=>x.id===id);if(!it)return;it.d=!it.d;it.u=Date.now();if(it.d)it.dAt=it.u;else delete it.dAt;save('meta/'+key);render()}
 function listDel(kind,id){const key=TLK[kind],L=S[key];L.del=L.del||{};L.del[id]=Date.now();L.items=L.items.filter(x=>x.id!==id);save('meta/'+key);render()}
 function listAdd(kind,f){const inp=$(`#${kind}-new`,f),x=inp.value.trim();if(!x)return;const key=TLK[kind];S[key].items.push({id:uid(),x,d:false,u:Date.now()});save('meta/'+key);render();$(`#${kind}-new`)?.focus()}
+function saveMigrated(){if(mode==='example')return migrated.clear();migrated.forEach(id=>{if(S.lists[id])save('lists/'+id)});migrated.clear()}
 function pruneDone(){if(!S||mode==='example'||mode==='loading')return;const now=Date.now(),old=now-7*864e5;
 for(const kind of ['gt','wk']){const key=TLK[kind],L=S[key];let ch=false;
 for(const it of L.items)if(it.d&&!it.dAt){it.dAt=now;ch=true}
@@ -983,26 +998,46 @@ function setLook(p){S.config.look={...(S.config.look||{}),...p};save('meta/confi
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{lookKey='';applyLook()});
 
 /* ---------- lists ---------- */
+const LTYPES=[['archive','Archive','Dated entries with notes and an optional score, like books, films or games.'],['tick','Tick list','Longer-term to-dos you tick off. Done items are kept below.'],['ordered','Ordered','A ranked list you drag into order, like present ideas.']];
+const lType=l=>['archive','tick','ordered'].includes(l?.type)?l.type:'tick';
+function rateHTML(l,r){r=+r||0;if(!l.rate||!r)return '';if(l.rate===10)return `<span class="score" aria-label="${r} out of 10">${r}<small>/10</small></span>`;return `<span class="stars" aria-label="${r} out of 5">${'★'.repeat(r)}<span class="off">${'★'.repeat(5-r)}</span></span>`}
+function itemTint(l,it){if(l.cby==='rating'&&l.rate){const r=+it.r||0;return r?`background:color-mix(in srgb,var(--c${l.c||1}) ${Math.round(6+34*r/l.rate)}%,var(--panel))`:''}return `background:color-mix(in srgb,var(--c${l.c||1}) 12%,var(--panel))`}
 function viewLists(v){const ord=listOrder();if(!S.lists[ui.list])ui.list=ord[0]||null;
-const nav=`<nav class="lnav" aria-label="Lists">${ord.map(id=>{const l=S.lists[id];return `<button class="${ui.list===id?'on':''}" data-a="lsel" data-id="${esc(id)}">${esc(l.name)}<span class="n">${l.items.length}</span></button>`}).join('')}<button class="newl" data-a="list-new">${ICON.plus} New list</button></nav>`;
+const nav=`<nav class="lnav" aria-label="Lists">${ord.map(id=>{const l=S.lists[id],n=lType(l)==='tick'?l.items.filter(i=>!i.done).length:l.items.length;return `<button class="${ui.list===id?'on':''}" data-a="lsel" data-id="${esc(id)}"><i class="dot" style="background:var(--c${l.c||1})"></i>${esc(l.name)}<span class="n">${n}</span></button>`}).join('')}<button class="newl" data-a="list-new">${ICON.plus} New list</button></nav>`;
 let body='';
-if(!ui.list){body='<p class="empty">No lists yet. Make one with New list.</p>'}
-else{const l=S.lists[ui.list],K=kindOf(l);if(ui.lst!=='all'&&!K.st.some(s=>s[0]===ui.lst))ui.lst='all';
-const cnt=st=>l.items.filter(i=>i.st===st).length;
-body=`<div style="display:grid;gap:12px"><div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button><button class="btn pri" data-a="item-new">${ICON.plus} Add</button></div>
-<div class="segbar" role="group" aria-label="Filter by status"><button class="${ui.lst==='all'?'on':''}" data-a="lst" data-s="all">All ${l.items.length}</button>${K.st.map(([s,lb])=>`<button class="${ui.lst===s?'on':''}" data-a="lst" data-s="${s}">${esc(lb)} ${cnt(s)}</button>`).join('')}</div>
-<div class="lctl"><input id="lq" data-in="lq" type="search" placeholder="Search ${esc(l.name.toLowerCase())}" value="${esc(ui.lq)}" aria-label="Search"><select id="lsort" data-ch="lsort" aria-label="Sort">${[['recent','Recent'],['date','Date finished'],['rating','Rating'],['title','A to Z']].map(([k,lb])=>`<option value="${k}"${ui.lsort===k?' selected':''}>${lb}</option>`).join('')}</select></div>
-<div class="items" id="litems"></div></div>`}
-v.innerHTML=`<div class="pg"><div class="lview">${nav}<div>${body}</div></div></div>`;
-if(ui.list)renderItems()}
-function stars(r){r=+r||0;if(!r)return '';return `<span class="stars" aria-label="${r} out of 5">${'★'.repeat(r)}<span class="off">${'★'.repeat(5-r)}</span></span>`}
-function renderItems(){const el=$('#litems');if(!el)return;const l=S.lists[ui.list],K=kindOf(l);
-let it=l.items.filter(i=>ui.lst==='all'||i.st===ui.lst);
-const q=ui.lq.trim().toLowerCase();if(q)it=it.filter(i=>(i.t+' '+(i.s||'')+' '+Object.values(i.x||{}).join(' ')).toLowerCase().includes(q));
-const srt={recent:(a,b)=>(b.u||0)-(a.u||0),date:(a,b)=>(b.d||'').localeCompare(a.d||''),rating:(a,b)=>(b.r||0)-(a.r||0),title:(a,b)=>a.t.localeCompare(b.t)}[ui.lsort];it=[...it].sort(srt);
-el.innerHTML=it.map(i=>{const ex=K.extra?K.extra.map(([f,lb])=>i.x?.[f]?(f==='enc'?`${(+i.x[f]).toLocaleString('en-GB')} encounters`:esc(i.x[f])):'').filter(Boolean):[];
-const sub=[i.s?esc(i.s):'',...ex].filter(Boolean).join(' · ');
-return `<button class="item" data-a="item-edit" data-id="${esc(i.id)}"><span class="t">${esc(i.t)}</span><span class="r">${stars(i.r)}</span><span class="s">${sub||'&nbsp;'}</span><span class="st${i.st==='done'?' done':''}">${esc(stLabel(l,i.st))}${i.st==='done'&&i.d?` · ${fmtShort(i.d)}`:''}</span></button>`}).join('')||`<p class="empty">${q?'Nothing matches that search.':l.items.length?'Nothing with this status.':`No ${esc(K.noun[1])} yet. Tap Add to put the first one in.`}</p>`}
+if(!ui.list)body=`<div class="empty"><p>No lists yet. Make one for anything: books you’ve read, present ideas, long-term to-dos.</p><button class="btn pri" data-a="list-new">${ICON.plus} New list</button></div>`;
+else{const l=S.lists[ui.list],ty=lType(l);
+const head=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${ty==='archive'?`<button class="btn pri" data-a="item-new">${ICON.plus} Add</button>`:''}</div>`;
+if(ty==='archive'){const sorts=[['recent','Newest'],['old','Oldest'],...(l.rate?[['rating','Highest rated']]:[]),['title','A to Z']];if(!sorts.some(s=>s[0]===ui.lsort))ui.lsort='recent';
+body=head+`<div class="lctl"><input id="lq" data-in="lq" type="search" placeholder="Search ${esc(l.name.toLowerCase())}" value="${esc(ui.lq)}" aria-label="Search"><select id="lsort" data-ch="lsort" aria-label="Sort">${sorts.map(([k,lb])=>`<option value="${k}"${ui.lsort===k?' selected':''}>${lb}</option>`).join('')}</select></div><div class="items" id="litems"></div>`}
+else body=head+`<form class="add top" data-f="li"><input id="li-new" placeholder="Add to ${esc(l.name)}" enterkeyhint="done" autocomplete="off" aria-label="Add to ${esc(l.name)}"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form><div id="litems"></div>`}
+v.innerHTML=`<div class="pg"><div class="lview">${nav}<div class="lbody">${body}</div></div></div>`;if(ui.list)renderItems()}
+function renderItems(){const el=$('#litems');if(!el)return;const l=S.lists[ui.list];if(!l)return;const ty=lType(l);
+if(ty==='archive'){let it=l.items;const q=ui.lq.trim().toLowerCase();if(q)it=it.filter(i=>`${i.t} ${i.s||''} ${i.n||''}`.toLowerCase().includes(q));
+const by={recent:(a,b)=>(b.d||'').localeCompare(a.d||'')||(b.u||0)-(a.u||0),old:(a,b)=>(a.d||'9').localeCompare(b.d||'9'),rating:(a,b)=>(b.r||0)-(a.r||0)||(b.d||'').localeCompare(a.d||''),title:(a,b)=>a.t.localeCompare(b.t)}[ui.lsort];
+el.innerHTML=[...it].sort(by).map(i=>`<button class="item" data-a="item-edit" data-id="${esc(i.id)}" style="${itemTint(l,i)}"><span class="t">${esc(i.t)}</span><span class="r">${rateHTML(l,i.r)}</span><span class="s">${esc(i.s||'')}${i.n?`<span class="nsnip">${esc(i.n.length>110?i.n.slice(0,110).trim()+'…':i.n)}</span>`:''}</span><span class="st">${i.d?`${fmtShort(i.d)} ${i.d.slice(0,4)}`:''}</span></button>`).join('')||`<p class="empty">${q?'Nothing matches that search.':'Nothing here yet. Tap Add for the first entry.'}</p>`;return}
+if(ty==='tick'){const open=l.items.filter(i=>!i.done),done=l.items.filter(i=>i.done).sort((a,b)=>(b.d||'').localeCompare(a.d||''));
+el.innerHTML=`<ul class="litems">${open.map(i=>liRow(l,i)).join('')}</ul>${open.length?'':`<p class="muted tdempty">${done.length?'All ticked off.':'Nothing here yet.'}</p>`}${done.length?`<details class="done"${ui.ldone?' open':''}><summary>Done (${done.length})</summary><ul class="litems">${done.map(i=>liRow(l,i)).join('')}</ul></details>`:''}`;
+const dt=$('details.done',el);if(dt)dt.addEventListener('toggle',()=>{ui.ldone=dt.open});return}
+el.innerHTML=l.items.length?`<ol class="litems" id="rank">${l.items.map((i,n)=>liRow(l,i,n+1)).join('')}</ol><p class="meta">Drag the handle to put them in order.</p>`:'<p class="muted tdempty">Nothing here yet.</p>';
+bindRank(el)}
+function liRow(l,i,rank){const ty=lType(l),note=i.n?(i.n.length>70?i.n.slice(0,70).trim()+'…':i.n):'';
+return `<li class="lrow${i.done?' done':''}" data-id="${esc(i.id)}" style="${itemTint(l,i)}">${ty==='tick'?`<button class="chk" data-a="li-tog" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="${i.done?'Mark not done':'Tick off'}">${ICON.tick}</button>`:`<span class="rk">${rank}</span>`}<button class="lmain" data-a="item-edit" data-id="${esc(i.id)}"><span class="lt">${esc(i.t)}</span>${i.s||note?`<span class="ls">${esc([i.s,note].filter(Boolean).join(' · '))}</span>`:''}${i.done&&i.d?`<span class="ls">Done ${fmtShort(i.d)}</span>`:''}</button>${rateHTML(l,i.r)}${ty==='ordered'?`<button class="grip" type="button" data-id="${esc(i.id)}" aria-label="Move ${esc(i.t)}: use the arrow keys">${ICON.grip}</button>`:''}</li>`}
+function bindRank(el){const list=$('#rank',el);if(!list)return;
+list.addEventListener('pointerdown',e=>{const g=e.target.closest('.grip');if(!g)return;e.preventDefault();const row=g.closest('li');list.setPointerCapture(e.pointerId);row.classList.add('drag');
+const move=ev=>{const y=ev.clientY,prev=row.previousElementSibling,next=row.nextElementSibling;
+if(prev){const r=prev.getBoundingClientRect();if(y<r.top+r.height/2){list.insertBefore(row,prev);renumber(list);return}}
+if(next){const r=next.getBoundingClientRect();if(y>r.top+r.height/2){list.insertBefore(next,row);renumber(list)}}};
+const up=()=>{list.removeEventListener('pointermove',move);list.removeEventListener('pointerup',up);list.removeEventListener('pointercancel',up);row.classList.remove('drag');saveRank(list)};
+list.addEventListener('pointermove',move);list.addEventListener('pointerup',up);list.addEventListener('pointercancel',up)});
+list.addEventListener('keydown',e=>{const g=e.target.closest('.grip');if(!g||!['ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const row=g.closest('li');
+if(e.key==='ArrowUp'&&row.previousElementSibling)list.insertBefore(row,row.previousElementSibling);else if(e.key==='ArrowDown'&&row.nextElementSibling)list.insertBefore(row.nextElementSibling,row);
+renumber(list);saveRank(list);g.focus()})}
+function renumber(list){[...list.children].forEach((li,i)=>{const rk=$('.rk',li);if(rk)rk.textContent=i+1})}
+function saveRank(list){const l=S.lists[ui.list];if(!l)return;const map=new Map(l.items.map(i=>[i.id,i]));const items=[...list.children].map(li=>map.get(li.dataset.id)).filter(Boolean);
+for(const i of l.items)if(!items.includes(i))items.push(i);
+if(items.map(i=>i.id).join()===l.items.map(i=>i.id).join())return;l.items=items;save('lists/'+l.id)}
+function liAdd(f){const l=S.lists[ui.list],inp=$('#li-new',f),x=inp.value.trim();if(!l||!x)return;l.items.push({id:uid(),t:x,s:'',n:'',r:0,d:'',u:Date.now(),a:TODAY()});save('lists/'+l.id);render();$('#li-new')?.focus()}
 
 /* ---------- stats ---------- */
 function statsRange(){const t=TODAY();let from,to,label;
@@ -1045,7 +1080,7 @@ else finding=cs.n?`${t.name}: ${cs.main}${t.type==='check'?' of logged days':' o
 const chart=`<div class="card"><p class="finding">${esc(finding)}</p>${colsChart(pts,col,ymax,ylab,xl,grid)}${grid!=null?`<p class="meta">Dashed line: ${t.type==='scale'?`a good day (${Math.ceil(t.max*0.7)} or more)`:`your target of ${fmtNum(t.target)}${t.unit?' '+esc(t.unit):''}`}</p>`:''}</div>`;
 const hy=ui.sp==='year'?ui.syear:ui.sp==='month'?+ui.smonth.slice(0,4):+today.slice(0,4);
 const wd=Array.from({length:7},()=>({s:0,n:0}));eachDay(from,to,k=>{const x=norm(t,val(dayGet(k),t));if(x!=null){const w=wdMon(k);wd[w].s+=x;wd[w].n++}});
-const wdRows=wd.map((x,i)=>{const a=x.n?x.s/x.n:null;let lb='–';if(a!=null){lb=t.type==='check'?`${Math.round(a*100)}%`:t.type==='scale'?fmtNum(1+a*(t.max-1)):`${fmtNum(a*(t.target||1))}${t.unit?' '+t.unit:''}`}return `<div class="mrow"><span class="nm">${WD3[i]}</span><span class="track"><b style="width:${a==null?0:Math.round(a*100)}%;background:${col}"></b></span><span class="v">${esc(lb)}</span></div>`}).join('');
+const wdRows=wd.map((x,i)=>{const a=x.n?x.s/x.n:null;let lb='–';if(a!=null){lb=t.type==='check'?`${Math.round(a*100)}%`:t.type==='scale'?fmtNum(a*t.max):`${fmtNum(a*(t.target||1))}${t.unit?' '+t.unit:''}`}return `<div class="mrow"><span class="nm">${WD3[i]}</span><span class="track"><b style="width:${a==null?0:Math.round(a*100)}%;background:${col}"></b></span><span class="v">${esc(lb)}</span></div>`}).join('');
 let bw=-1,bv=-1;wd.forEach((x,i)=>{if(x.n&&x.s/x.n>bv){bv=x.s/x.n;bw=i}});
 v.innerHTML=`<div class="pg">${head}${tiles}<div class="two"><div class="card"><div class="ch"><h3>Trackers</h3><span class="cnt">${esc(label)}</span></div><div class="tlist">${tlist}</div></div>${chart}</div>
 <div class="card"><div class="ch"><h3>${esc(t.name)} through ${hy}</h3></div>${heatmap(t,hy)}</div>
@@ -1095,7 +1130,7 @@ if(d){const tx=(d.n||'').trim();if(tx){W.notes++;W.words+=tx.split(/\s+/).length
 if(sc!=null){if(sc>W.bestSc||(sc===W.bestSc&&(d.n||'').trim()&&!W.bestNote)){W.bestSc=sc;W.best=k;W.bestNote=(d.n||'').trim()}const w=wdMon(k);W.wd[w].s+=sc;W.wd[w].n++}
 ts.forEach(t=>{if(good(t,val(d,t))){runs[t.id]++;br[t.id]=Math.max(br[t.id],runs[t.id])}else runs[t.id]=0})});
 W.hab=habitsActive().map(h=>({h,st:hStats(h,from,to)}));W.trk=ts.map(t=>({t,st:trackerStats(t,from,to),run:br[t.id]}));
-W.lists=listOrder().map(id=>S.lists[id]).map(l=>{const dn=l.items.filter(i=>i.st==='done'&&i.d&&i.d>=from&&i.d<=to);return {l,n:dn.length,top:[...dn].sort((a,b)=>(b.r||0)-(a.r||0))[0]}});
+W.lists=listOrder().map(id=>S.lists[id]).filter(l=>lType(l)!=='ordered').map(l=>{const dn=l.items.filter(i=>i.d&&i.d>=from&&i.d<=to&&(lType(l)==='archive'||i.done));return {l,n:dn.length,top:l.rate?[...dn].sort((a,b)=>(b.r||0)-(a.r||0))[0]:null}});
 let bw=-1,bv=-1;W.wd.forEach((x,i)=>{if(x.n&&x.s/x.n>bv){bv=x.s/x.n;bw=i}});W.bestWd=bw;W.bestWdV=bv;return W}
 function viewWrapped(v){const {from,to,label,title,partial}=wrapRange(),today=TODAY();
 const head=`<div class="ph"><h2 class="serif">Wrapped</h2><div class="segbar" role="group" aria-label="Period"><button class="${ui.wk==='month'?'on':''}" data-a="wk" data-k="month">Month</button><button class="${ui.wk==='year'?'on':''}" data-a="wk" data-k="year">Year</button></div><div class="pnav"><button class="ibtn" data-a="wprev" aria-label="Earlier">${ICON.l}</button><b>${esc(label)}</b><button class="ibtn" data-a="wnext" aria-label="Later">${ICON.r}</button></div><button class="ibtn" data-a="wclose" aria-label="Close wrapped">${ICON.x}</button></div>`;
@@ -1114,7 +1149,7 @@ const runs=W.trk.filter(x=>x.run>0).sort((a,b)=>b.run-a.run);
 if(runs.length||W.logBest)cards.push(card(`<h3>Longest streaks</h3>${runs[0]?`<p class="big">${runs[0].run}</p><p class="lead">days in a row of ${esc(runs[0].t.type==='check'?runs[0].t.name.toLowerCase():`good ${runs[0].t.name.toLowerCase()}`)}</p>`:''}<div class="wrows">${runs.slice(1).map(x=>`<div class="wrow"><span>${esc(x.t.name)}</span><span class="wv">${plural(x.run,'day')}</span></div>`).join('')}<div class="wrow"><span>Logging every day</span><span class="wv">${plural(W.logBest,'day')}</span></div></div><p class="foot">A good day is a yes, a score in the top 30% of its scale, or hitting your target.</p>`));
 if(W.tdAll)cards.push(card(`<h3>To-dos ticked off</h3><p class="big">${W.td}</p><p class="lead">${Math.round(W.td/W.tdAll*100)}% of the ${W.tdAll} you planned</p>${W.busy?`<p class="foot">Busiest day: ${WDL[parseK(W.busy).getDay()]} ${fmtDay(W.busy)}, with ${W.busyN} done</p>`:''}`));
 const fin=W.lists.filter(x=>x.n);
-if(fin.length){const top=fin.sort((a,b)=>b.n-a.n);cards.push(card(`<h3>Finished</h3><div class="wrows">${top.map(x=>{const K=kindOf(x.l);return `<div class="wrow"><span><b style="font-size:28px">${x.n}</b> ${esc(x.n===1?K.noun[0]:K.noun[1])} ${esc(K.verb)}</span><span class="wv"></span>${x.top?`<small>Top: ${esc(x.top.t)}${x.top.r?' '+'★'.repeat(x.top.r):''}</small>`:''}</div>`}).join('')}</div>`))}
+if(fin.length){const top=fin.sort((a,b)=>b.n-a.n);cards.push(card(`<h3>Lists</h3><div class="wrows">${top.map(x=>`<div class="wrow"><span><b style="font-size:28px">${x.n}</b> ${lType(x.l)==='archive'?'added to':'ticked off in'} ${esc(x.l.name)}</span><span class="wv"></span>${x.top&&x.top.r?`<small>Top: ${esc(x.top.t)}, ${x.top.r} of ${x.l.rate}</small>`:''}</div>`).join('')}</div>`))}
 const hb=W.hab.filter(x=>x.st.times>0);if(hb.length)cards.push(card(`<h3>Habits</h3><div class="wrows">${hb.map(({h,st})=>`<div class="wrow"><span>${esc(h.name)}</span><span class="wv">${plural(st.times,'time')}</span><span class="wt"><b style="width:${st.rate==null?0:Math.round(st.rate*100)}%"></b></span><small>Target hit ${st.met} of ${plural(st.total,perOf(h)[0])}${st.rbest>1?`, best run ${plural(st.rbest,perOf(h)[0])}`:''}</small></div>`).join('')}</div>`));
 const yr=ui.wk==='month'?+ui.wmonth.slice(0,4):ui.wyear;const gs=S.config.goals.filter(g=>g.year===yr);
 if(gs.length){const mm=ui.wk==='month'?ui.wmonth.slice(5):null;cards.push(card(`<h3>${ui.wk==='month'?`Goals in ${esc(title)}`:'Goals'}</h3><div class="wrows">${gs.map(g=>{const c=mm?g.checkins?.[mm]:null;if(g.kind==='rating'){const rs=Object.values(g.checkins||{}).map(x=>+x.r).filter(Boolean);const r=mm?(c?.r||0):(rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:0);return `<div class="wrow"><span>${esc(g.title)}</span><span class="wv">${r?fmtNum(r)+' / 5':'–'}</span><span class="wt"><b style="width:${r/5*100}%"></b></span></div>`}
@@ -1126,7 +1161,7 @@ function wrapText(){const x=$('#wov')._wrap;if(!x)return '';const {W,label,parti
 W.trk.forEach(({t,st})=>{if(st.n)L.push(`${t.name}: ${st.main} (${st.sub})`)});
 if(W.best)L.push(`Best day: ${fmtDay(W.best)} (${Math.round(W.bestSc*100)}%)`);
 if(W.tdAll)L.push(`To-dos: ${W.td} of ${W.tdAll} done`);
-W.lists.filter(l=>l.n).forEach(({l,n,top})=>{const K=kindOf(l);L.push(`${n} ${n===1?K.noun[0]:K.noun[1]} ${K.verb}${top?`, top: ${top.t}`:''}`)});
+W.lists.filter(l=>l.n).forEach(({l,n,top})=>{L.push(`${l.name}: ${n} ${lType(l)==='archive'?'added':'ticked off'}${top&&top.r?`, top: ${top.t}`:''}`)});
 W.hab.filter(x=>x.st.times).forEach(({h,st})=>L.push(`${h.name}: ${st.times} times, target hit ${st.met} of ${st.total}`));L.push(`${W.notes} notes, ${W.words} words`);return L.join('\n')}
 
 /* ---------- sheets ---------- */
@@ -1135,31 +1170,46 @@ function closeSheet(){const ov=$('#ov');ov.classList.remove('open');ov.innerHTML
 $('#ov').addEventListener('click',e=>{if(e.target.id==='ov')closeSheet()});
 function armed(btn,txt){if(btn.classList.contains('armed'))return true;btn.classList.add('armed');btn.dataset.txt=btn.textContent;btn.textContent=txt||'Tap again to confirm';setTimeout(()=>{if(btn.isConnected){btn.classList.remove('armed');btn.textContent=btn.dataset.txt}},5000);return false}
 function segPick(sheet,sel,attr,cb){$$(sel,sheet).forEach(b=>b.addEventListener('click',()=>{const on=!b.classList.contains('on')||!b.closest('[data-toggle]');$$(sel,sheet).forEach(x=>x.classList.remove('on'));if(on)b.classList.add('on');cb(on?b.dataset[attr]:null)}))}
-function itemSheet(l,item){const K=kindOf(l);const it=item?clone(item):{id:uid(),t:'',s:'',st:K.st[0][0],r:0,d:'',n:'',x:{},a:TODAY()};it.x=it.x||{};
-const body=`<form id="itf"><div class="f"><label for="it-t">${esc(K.tl)}</label><input id="it-t" value="${esc(it.t)}" required autocomplete="off"></div><div class="f"><label for="it-s">${esc(K.sl)}</label><input id="it-s" value="${esc(it.s||'')}" autocomplete="off"></div>
-${K.extra?`<div class="frow">${K.extra.map(([f,lb,ty])=>`<div class="f"><label for="it-x-${f}">${esc(lb)}</label><input id="it-x-${f}" type="${ty}" ${ty==='number'?'inputmode="numeric" min="0"':''} value="${esc(it.x[f]??'')}"></div>`).join('')}</div>`:''}
-<div class="f"><span class="lb">Status</span><div class="seg" id="it-st">${K.st.map(([s,lb])=>`<button type="button" data-st="${s}" class="${it.st===s?'on':''}">${esc(lb)}</button>`).join('')}</div></div>
-<div class="f"><span class="lb">Rating</span><div class="seg ratebtns" id="it-r" data-toggle>${range(1,5).map(i=>`<button type="button" data-r="${i}" class="${it.r===i?'on':''}" aria-label="${i} stars">${i}★</button>`).join('')}</div><span class="hint">Tap the selected rating again to clear it.</span></div>
-<div class="f"><label for="it-d">${esc(K.dl)}</label><input id="it-d" type="date" value="${esc(it.d||'')}"></div>
-<div class="f"><label for="it-n">Notes</label><textarea id="it-n" rows="3">${esc(it.n||'')}</textarea></div>
+function itemSheet(l,item){const ty=lType(l);const it=item?clone(item):{id:uid(),t:'',s:'',r:0,d:ty==='archive'?TODAY():'',n:'',a:TODAY()};
+const others=listOrder().filter(id=>id!==l.id);
+const body=`<form id="itf"><div class="f"><label for="it-t">Title</label><input id="it-t" value="${esc(it.t)}" required autocomplete="off"></div>
+<div class="f"><label for="it-s">Detail</label><input id="it-s" value="${esc(it.s||'')}" autocomplete="off" placeholder="${ty==='archive'?'Author, director, platform…':'Optional'}"></div>
+${l.rate?`<div class="f"><span class="lb">${l.rate===10?'Score':'Rating'}</span><div class="seg ratebtns" id="it-r" data-toggle>${range(1,l.rate).map(i=>`<button type="button" data-r="${i}" class="${it.r===i?'on':''}" aria-label="${i} out of ${l.rate}">${l.rate===5?i+'★':i}</button>`).join('')}</div><span class="hint">Tap the selected one again to clear it.</span></div>`:''}
+${ty==='archive'||(ty==='tick'&&it.done)?`<div class="f"><label for="it-d">${ty==='archive'?'Date':'Done on'}</label><input id="it-d" type="date" value="${esc(it.d||'')}"></div>`:''}
+<div class="f"><label for="it-n">Notes</label><textarea id="it-n" rows="4">${esc(it.n||'')}</textarea></div>
+${item&&others.length?`<div class="f"><label for="it-mv">Move to another list</label><select id="it-mv"><option value="">Keep in ${esc(l.name)}</option>${others.map(id=>`<option value="${esc(id)}">${esc(S.lists[id].name)}</option>`).join('')}</select></div>`:''}
 <div class="acts">${item?'<button type="button" class="btn danger" id="it-del">Delete</button><span class="sp"></span>':''}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">Save</button></div></form>`;
 openSheet(item?'Edit':'Add to '+l.name,body,sh=>{
-segPick(sh,'#it-st button','st',v=>{it.st=v||K.st[0][0];if(it.st==='done'&&!$('#it-d',sh).value)$('#it-d',sh).value=TODAY()});
-$$('#it-st button',sh).forEach(b=>b.addEventListener('click',()=>b.classList.add('on')));
 segPick(sh,'#it-r button','r',v=>{it.r=v?+v:0});
 const del=$('#it-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del))return;const L=S.lists[l.id];if(L){L.items=L.items.filter(x=>x.id!==it.id);L.del=L.del||{};L.del[it.id]=Date.now()}save('lists/'+l.id);closeSheet();render();toast('Deleted')});
 $('#itf',sh).addEventListener('submit',e=>{e.preventDefault();it.t=$('#it-t',sh).value.trim();if(!it.t){$('#it-t',sh).focus();return}
-it.s=$('#it-s',sh).value.trim();it.d=$('#it-d',sh).value;it.n=$('#it-n',sh).value.trim();
-(K.extra||[]).forEach(([f,,ty])=>{const x=$('#it-x-'+f,sh).value.trim();if(x==='')delete it.x[f];else it.x[f]=ty==='number'?+x:x});
-it.u=Date.now();const L=S.lists[l.id];if(!L){closeSheet();toast('That list was deleted on another device');return}const i=L.items.findIndex(x=>x.id===it.id);if(i>=0)L.items[i]=it;else L.items.unshift(it);save('lists/'+l.id);closeSheet();render()})})}
-function listSheet(l){const isNew=!l;const cur=l||{id:uid(),name:'',kind:'custom',items:[]};
-const body=`<form id="lf"><div class="f"><label for="l-n">Name</label><input id="l-n" value="${esc(cur.name)}" required autocomplete="off" placeholder="Podcasts, board games, places to visit…"></div>
-<div class="f"><label for="l-k">Type</label><select id="l-k"${isNew?'':' disabled'}>${Object.entries(KINDS).map(([k,K])=>`<option value="${k}"${cur.kind===k?' selected':''}>${esc(K.label)} (${K.st.map(s=>s[1].toLowerCase()).join(', ')})</option>`).join('')}</select>${isNew?'<span class="hint">The type sets the statuses and fields. Custom works for anything.</span>':''}</div>
-<div class="acts">${isNew?'':'<button type="button" class="btn danger" id="l-del">Delete list</button><span class="sp"></span>'}${isNew?'':`<button type="button" class="btn" id="l-up">Move up</button>`}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">Save</button></div></form>`;
+it.s=$('#it-s',sh).value.trim();it.n=$('#it-n',sh).value.trim();const di=$('#it-d',sh);if(di)it.d=di.value;it.u=Date.now();
+const L=S.lists[l.id];if(!L){closeSheet();toast('That list was deleted on another device');return}
+const dest=$('#it-mv',sh)?.value;
+if(dest&&S.lists[dest]){L.items=L.items.filter(x=>x.id!==it.id);L.del=L.del||{};L.del[it.id]=Date.now();const D2=S.lists[dest];const moved={...it,id:uid()};if(lType(D2)==='archive'&&!moved.d)moved.d=TODAY();D2.items.push(moved);save('lists/'+dest);save('lists/'+l.id);closeSheet();render();toast(`Moved to ${D2.name}`);return}
+const i=L.items.findIndex(x=>x.id===it.id);if(i>=0)L.items[i]=it;else L.items.push(it);save('lists/'+l.id);closeSheet();render()})})}
+function listSheet(l){const isNew=!l,used=new Set(listOrder().map(id=>S.lists[id].c));
+const cur=l?{name:l.name,type:lType(l),rate:l.rate||0,cby:l.cby||'list',c:l.c||1}:{name:'',type:'archive',rate:0,cby:'list',c:range(1,8).find(x=>!used.has(x))||1};
+const body=`<form id="lf"><div class="f"><label for="l-n">Name</label><input id="l-n" value="${esc(cur.name)}" required autocomplete="off" placeholder="Books, present ideas, shiny hunts…"></div>
+<div class="f"><span class="lb">Kind of list</span><div class="seg" id="l-ty">${LTYPES.map(([k,lb])=>`<button type="button" data-ty="${k}" class="${cur.type===k?'on':''}">${lb}</button>`).join('')}</div><span class="hint" id="l-desc"></span></div>
+<div class="f"><span class="lb">Colour</span><div class="seg" id="l-col">${range(1,8).map(i=>`<button type="button" data-c="${i}" class="${cur.c===i?'on':''}" style="--tc:var(--c${i});${cur.c===i?'':`background:color-mix(in srgb,var(--c${i}) 30%,var(--bg))`}" aria-label="Colour ${i}"><i class="dot" style="background:var(--c${i})"></i></button>`).join('')}</div></div>
+<div class="f"><span class="lb">Ratings</span><div class="seg" id="l-rate">${[[0,'Off'],[5,'5 stars'],[10,'Out of 10']].map(([k,lb])=>`<button type="button" data-rate="${k}" class="${cur.rate===k?'on':''}">${lb}</button>`).join('')}</div></div>
+<div class="f" id="l-cbyf"><span class="lb">Colour items by</span><div class="seg" id="l-cby">${[['list','List colour'],['rating','Rating']].map(([k,lb])=>`<button type="button" data-cby="${k}" class="${cur.cby===k?'on':''}">${lb}</button>`).join('')}</div><span class="hint">Rating shades each item deeper the higher it’s rated.</span></div>
+<div class="acts">${isNew?'':`<button type="button" class="btn danger" id="l-del">Delete list</button><button type="button" class="btn" id="l-up">Move up</button><span class="sp"></span>`}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Create':'Save'}</button></div></form>`;
 openSheet(isNew?'New list':'Edit list',body,sh=>{
-const del=$('#l-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del))return;delete S.lists[cur.id];S.config.listOrder=S.config.listOrder.filter(x=>x!==cur.id);save('lists/'+cur.id);save('meta/config');ui.list=null;closeSheet();render();toast('List deleted')});
-const up=$('#l-up',sh);if(up)up.addEventListener('click',()=>{const o=S.config.listOrder,i=o.indexOf(cur.id);if(i>0){[o[i-1],o[i]]=[o[i],o[i-1]];save('meta/config');render();toast('Moved up')}});
-$('#lf',sh).addEventListener('submit',e=>{e.preventDefault();const nm=$('#l-n',sh).value.trim();if(!nm)return;cur.name=nm;if(!isNew&&S.lists[cur.id])S.lists[cur.id].name=nm;if(isNew){cur.kind=$('#l-k',sh).value;S.lists[cur.id]=cur;S.config.listOrder.push(cur.id);ui.list=cur.id;save('meta/config')}save('lists/'+cur.id);closeSheet();render()})})}
+const upd=()=>{$('#l-desc',sh).textContent=(LTYPES.find(t=>t[0]===cur.type)||LTYPES[0])[2];$('#l-cbyf',sh).hidden=!cur.rate;
+$$('#l-ty button',sh).forEach(b=>b.classList.toggle('on',b.dataset.ty===cur.type));$$('#l-rate button',sh).forEach(b=>b.classList.toggle('on',+b.dataset.rate===cur.rate));$$('#l-cby button',sh).forEach(b=>b.classList.toggle('on',b.dataset.cby===cur.cby))};upd();
+$$('#l-ty button',sh).forEach(b=>b.addEventListener('click',()=>{cur.type=b.dataset.ty;upd()}));
+$$('#l-rate button',sh).forEach(b=>b.addEventListener('click',()=>{cur.rate=+b.dataset.rate;upd()}));
+$$('#l-cby button',sh).forEach(b=>b.addEventListener('click',()=>{cur.cby=b.dataset.cby;upd()}));
+$$('#l-col button',sh).forEach(b=>b.addEventListener('click',()=>{cur.c=+b.dataset.c;$$('#l-col button',sh).forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.style.background=on?'':`color-mix(in srgb,var(--c${x.dataset.c}) 30%,var(--bg))`})}));
+const del=$('#l-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del,`Delete it and ${plural(l.items.length,'item')}? Tap again`))return;delete S.lists[l.id];S.config.listOrder=S.config.listOrder.filter(x=>x!==l.id);save('lists/'+l.id);save('meta/config');ui.list=null;closeSheet();render();toast('List deleted')});
+const up=$('#l-up',sh);if(up)up.addEventListener('click',()=>{const o=S.config.listOrder,i=o.indexOf(l.id);if(i>0){[o[i-1],o[i]]=[o[i],o[i-1]];save('meta/config');render();toast('Moved up')}});
+$('#lf',sh).addEventListener('submit',e=>{e.preventDefault();const nm=$('#l-n',sh).value.trim();if(!nm){$('#l-n',sh).focus();return}cur.name=nm;
+if(isNew){const id=uid();S.lists[id]={id,...cur,items:[]};S.config.listOrder.push(id);ui.list=id;save('meta/config');save('lists/'+id)}
+else{const L=S.lists[l.id];if(L){Object.assign(L,cur);if(cur.rate)L.items.forEach(i=>{if(i.r>cur.rate)i.r=cur.rate});save('lists/'+l.id)}}
+closeSheet();render()})})}
+
 const typeLabel=t=>t.type==='scale'?`Score 1 to ${t.max}`:t.type==='check'?'Yes or no':`Number${t.unit?' in '+t.unit:''}${t.target?`, target ${fmtNum(t.target)}`:''}`;
 function settingsSheet(){const c=S.config,lk=c.look||{},pal=lk.palette||'ink',ap=lk.appearance||'';
 const body=`<section class="sset"><h3>Look</h3><div class="f"><span class="lb">Colour</span><div class="swatches">${PALETTES.map(([k,lb,col])=>`<button class="swatch${pal===k?' on':''}" data-a="look-pal" data-v="${k}" aria-pressed="${pal===k}"><i style="background:${col}"></i>${lb}</button>`).join('')}</div></div><div class="f" style="margin:0"><span class="lb">Appearance</span><div class="segbar" role="group" aria-label="Appearance">${[['','Match phone'],['light','Light'],['dark','Dark']].map(([k,lb])=>`<button class="${ap===k?'on':''}" data-a="look-ap" data-v="${k}">${lb}</button>`).join('')}</div></div></section><section class="sset"><h3>Trackers</h3><p>The things you score each day. Archiving hides a tracker but keeps its history; deleting removes it and its scores.</p><ul class="tl2">${c.trackers.map((t,i)=>`<li class="${t.archived?'arch':''}"><i class="dot" style="background:var(--c${t.c})"></i><span class="tn" style="flex:1">${esc(t.name)}<small>${esc(typeLabel(t))}${t.archived?' · archived':''}</small></span>${i?`<button class="ibtn" data-a="t-up" data-id="${esc(t.id)}" aria-label="Move ${esc(t.name)} up">${ICON.up}</button>`:''}<button class="btn sm" data-a="t-edit" data-id="${esc(t.id)}">Edit</button></li>`).join('')}</ul><button class="btn" data-a="t-new">${ICON.plus} Add tracker</button></section>
@@ -1190,8 +1240,8 @@ save('meta/config');render();settingsSheet()})})}
 function goalSheet(g){const isNew=!g;const cur=g?clone(g):{id:uid(),year:ui.gyear,title:'',kind:'list',listId:listOrder()[0]||'',trackerId:trks()[0]?.id||'',target:'',checkins:{},created:TODAY().slice(0,7)+'-01'};
 const ord=listOrder();
 const body=`<form id="gf"><div class="f"><label for="g-t">Goal</label><input id="g-t" value="${esc(cur.title)}" required autocomplete="off" placeholder="Read 20 books"></div>
-<div class="f"><label for="g-k">How it’s measured</label><select id="g-k">${[['list','Things I finish in a list'],['tracker','Days I hit a tracker'],['manual','A number I add up each month'],['rating','Just a monthly rating']].map(([k,lb])=>`<option value="${k}"${cur.kind===k?' selected':''}>${lb}</option>`).join('')}</select></div>
-<div class="f" data-k="list"><label for="g-l">List</label><select id="g-l">${ord.map(id=>`<option value="${esc(id)}"${cur.listId===id?' selected':''}>${esc(S.lists[id].name)}</option>`).join('')}</select><span class="hint">Counts items marked as finished with a date in ${cur.year}.</span></div>
+<div class="f"><label for="g-k">How it’s measured</label><select id="g-k">${[['list','Entries in an archive, or ticks in a tick list'],['tracker','Days I hit a tracker'],['manual','A number I add up each month'],['rating','Just a monthly rating']].map(([k,lb])=>`<option value="${k}"${cur.kind===k?' selected':''}>${lb}</option>`).join('')}</select></div>
+<div class="f" data-k="list"><label for="g-l">List</label><select id="g-l">${ord.filter(id=>lType(S.lists[id])!=='ordered').map(id=>`<option value="${esc(id)}"${cur.listId===id?' selected':''}>${esc(S.lists[id].name)}</option>`).join('')}</select><span class="hint">Counts archive entries dated in ${cur.year}, or tick-list items ticked off in ${cur.year}.</span></div>
 <div class="frow" data-k="tracker"><div class="f"><label for="g-tr">Tracker</label><select id="g-tr">${trks().map(t=>`<option value="${esc(t.id)}"${cur.trackerId===t.id?' selected':''}>${esc(t.name)}</option>`).join('')}</select></div><div class="f"><label for="g-th">Counts when at least</label><input id="g-th" type="number" inputmode="decimal" step="any" value="${cur.threshold??''}" placeholder="blank = a good day"><span class="hint">Yes-or-no trackers count every yes.</span></div></div>
 <div class="frow"><div class="f" data-k="list tracker manual"><label for="g-n">Target</label><input id="g-n" type="number" inputmode="decimal" min="0" step="any" value="${cur.target??''}"></div><div class="f" data-k="manual"><label for="g-u">Unit</label><input id="g-u" value="${esc(cur.unit||'')}" placeholder="km, £, hours"></div><div class="f"><label for="g-y">Year</label><input id="g-y" type="number" inputmode="numeric" value="${cur.year}"></div></div>
 <div class="acts">${isNew?'':'<button type="button" class="btn danger" id="g-del">Delete</button><span class="sp"></span>'}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">Save</button></div></form>`;
@@ -1273,8 +1323,8 @@ wopen:b=>openWrapped(b.dataset.k,b.dataset.v),
 'look-pal':b=>{setLook({palette:b.dataset.v});$$('[data-a=look-pal]').forEach(x=>{const on=x.dataset.v===b.dataset.v;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)})},
 'look-ap':b=>{setLook({appearance:b.dataset.v});$$('[data-a=look-ap]').forEach(x=>x.classList.toggle('on',x.dataset.v===b.dataset.v))},
 wclose:()=>closeWrapped(),
-lsel:b=>{ui.list=b.dataset.id;ui.lst='all';ui.lq='';render()},
-lst:b=>{ui.lst=b.dataset.s;render()},
+lsel:b=>{ui.list=b.dataset.id;ui.lq='';ui.ldone=false;render()},
+'li-tog':b=>{const l=S.lists[ui.list],it=l&&l.items.find(x=>x.id===b.dataset.id);if(!it)return;it.done=!it.done;it.d=it.done?TODAY():'';it.u=Date.now();save('lists/'+l.id);render()},
 'item-new':()=>itemSheet(S.lists[ui.list]),
 'item-edit':b=>{const l=S.lists[ui.list];const it=l.items.find(x=>x.id===b.dataset.id);if(it)itemSheet(l,it)},
 'list-new':()=>listSheet(null),
@@ -1301,7 +1351,7 @@ function scrollDeck(dir){const dk=$('#deck');if(!dk)return;const cs=[...dk.child
 D.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const f=A[b.dataset.a];if(f){e.preventDefault();f(b,e)}});
 const FORMS={
 td:f=>{const inp=$('#td-new',f),x=inp.value.trim();if(!x)return;const k=f.dataset.k||ui.sel,d=dayEnsure(k);d.t.push({id:uid(),x,d:false});dayDone(k);refreshDay();$('#td-new')?.focus()},
-gt:f=>listAdd('gt',f),wk:f=>listAdd('wk',f)};
+gt:f=>listAdd('gt',f),wk:f=>listAdd('wk',f),li:f=>liAdd(f)};
 D.addEventListener('submit',e=>{const f=e.target.closest('form[data-f]');if(!f)return;e.preventDefault();FORMS[f.dataset.f]?.(f)});
 D.addEventListener('input',e=>{const t=e.target;
 if(t.dataset.in==='note'){grow(t);const d=dayEnsure(ui.sel);d.n=t.value;dayDone(ui.sel);const w=t.value.trim()?t.value.trim().split(/\s+/).length:0;const wc=$('#wc');if(wc)wc.textContent=plural(w,'word')}
