@@ -9,6 +9,7 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  actions: read
 
 concurrency:
   group: build-${{ github.ref }}
@@ -72,18 +73,40 @@ jobs:
           git -c user.name="build bot" -c user.email="actions@users.noreply.github.com" commit -qm "Build ${{ github.run_number }}: ${{ job.status }}"
           git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-log
 
-  web:
-    name: Web version (GitHub Pages)
+  web-build:
+    name: Web version build
     runs-on: ubuntu-latest
-    continue-on-error: true
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
       - run: sed -i "s/__APP_VERSION__/${{ github.run_number }}/g" www/index.html
       - uses: actions/upload-pages-artifact@v5
         with:
           path: www
+
+  web:
+    name: Web version (GitHub Pages)
+    needs: web-build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - id: deploy
         uses: actions/deploy-pages@v5
+
+      - name: Save deploy details to the ci-log-web branch
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/ci-log && cd /tmp/ci-log
+          git init -q -b ci-log-web
+          api="https://api.github.com/repos/${{ github.repository }}"
+          curl -s -H "Authorization: Bearer $GH_TOKEN" "$api/actions/runs/${{ github.run_id }}/artifacts" > artifacts.json
+          curl -s -H "Authorization: Bearer $GH_TOKEN" "$api/pages" > pages.json
+          echo "${{ job.status }} | deploy ${{ steps.deploy.outcome }} | build ${{ github.run_number }}" > status.txt
+          git add .
+          git -c user.name="build bot" -c user.email="actions@users.noreply.github.com" commit -qm "Web build ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-log-web
