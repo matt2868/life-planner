@@ -1,6 +1,12 @@
 package io.github.matt2868.lifeplanner
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -23,6 +29,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var web: WebView
     private var pageReady = false
     private var pendingAction: String? = null
+
+    private val notificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> reportPermission(granted) }
 
     private val assetLoader by lazy {
         WebViewAssetLoader.Builder()
@@ -69,7 +78,7 @@ class MainActivity : ComponentActivity() {
             allowFileAccess = false
             allowContentAccess = false
         }
-        web.addJavascriptInterface(Bridge(applicationContext), "PlannerApp")
+        web.addJavascriptInterface(Bridge(applicationContext, this), "PlannerApp")
         web.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
                 assetLoader.shouldInterceptRequest(request.url)
@@ -111,6 +120,21 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         val action = intent.getStringExtra(EXTRA_ACTION) ?: return
         if (pageReady) runAction(action) else pendingAction = action
+    }
+
+    /** Called from the page (via Bridge) when the person turns the daily reminder on. */
+    fun requestNotificationPermission() {
+        runOnUiThread {
+            val needsAsking = Build.VERSION.SDK_INT >= 33 &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            if (needsAsking) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            else reportPermission(NotificationManagerCompat.from(this).areNotificationsEnabled())
+        }
+    }
+
+    private fun reportPermission(granted: Boolean) {
+        if (::web.isInitialized) web.evaluateJavascript("window.__notifyPerm&&window.__notifyPerm($granted)", null)
     }
 
     private fun runAction(action: String) {

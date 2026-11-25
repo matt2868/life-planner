@@ -50,7 +50,11 @@ object WidgetStore {
     @Synchronized
     fun toggle(context: Context, kind: String, date: String, id: String) {
         val d = data(context) ?: return
-        val arr = if (kind == "gen") d.optJSONArray("general") else d.optJSONObject("days")?.optJSONArray(date)
+        val arr = when (kind) {
+            "gen" -> d.optJSONArray("general")
+            "work" -> d.optJSONArray("work")
+            else -> d.optJSONObject("days")?.optJSONArray(date)
+        }
         if (arr == null) return
         var found = false
         var now = false
@@ -74,6 +78,7 @@ object WidgetStore {
                 .put("at", System.currentTimeMillis())
         )
         p.edit().putString("data", d.toString()).putString("actions", actions.toString()).commit()
+        if (now && kind == "day" && date == LocalDate.now().toString()) Reminders.markFilledToday(context)
     }
 
     /** Empty means the planner hasn't been set up, so the widget shows its prompt instead. */
@@ -85,6 +90,11 @@ object WidgetStore {
         out.add(Row(HEADER, "Today"))
         val todays = items(d.optJSONObject("days")?.optJSONArray(today), "day", today, keepDone = true)
         if (todays.isEmpty()) out.add(Row(HEADER, "Nothing planned. Tap + to add a to-do.")) else out.addAll(todays)
+        val work = items(d.optJSONArray("work"), "work", "", keepDone = false)
+        if (work.isNotEmpty()) {
+            out.add(Row(HEADER, "Work"))
+            out.addAll(work)
+        }
         val general = items(d.optJSONArray("general"), "gen", "", keepDone = false)
         if (general.isNotEmpty()) {
             out.add(Row(HEADER, "General"))
