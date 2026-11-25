@@ -343,6 +343,16 @@ details.card[open]>summary{margin-bottom:8px}
 .score{font-weight:800;font-size:15px;white-space:nowrap}
 .score small{font-weight:600;color:var(--ink2);font-size:13px}
 .lnav button .dot{width:9px;height:9px}
+.ltabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none;align-items:center}
+.ltab{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 12px;border-radius:99px;border:1px solid var(--line);background:var(--bg);font-weight:600;font-size:14px;white-space:nowrap;flex:none}
+.ltab .dot{background:var(--tc)}
+.ltab .ic{width:16px;height:16px;stroke-width:2.6;color:var(--tc)}
+.ltab span{color:var(--ink2);font-weight:500}
+.ltab.on{background:color-mix(in srgb,var(--tc,var(--ink)) 16%,var(--bg));border:2px solid var(--tc,var(--ink))}
+.ltab.add{border-style:dashed;color:var(--ink2)}
+.tabtag{display:inline-flex;align-items:center;gap:4px;font-weight:600;color:var(--ink);margin-right:2px}
+.item .tabtag{margin-right:6px}
+.lrow.ticked .chk{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 /* compact day page */
 .daycol{gap:8px;padding:12px}
 .dhead h2{font-size:clamp(22px,3vw,28px)}
@@ -499,7 +509,7 @@ const UPDATE_REPO='matt2868/life-planner';
 let S=null,mode='loading',syncState='loading';
 const T0=TODAY();
 const ui={tab:'calendar',sel:T0,month:T0.slice(0,7),colorBy:'all',anim:true,gtOpen:true,
-list:null,ldone:false,tdDay:'',hsel:null,hyear:+T0.slice(0,4),lq:'',lsort:'recent',
+list:null,ltab:{},tdDay:'',hsel:null,hyear:+T0.slice(0,4),lq:'',lsort:'recent',
 sp:'month',smonth:T0.slice(0,7),syear:+T0.slice(0,4),strk:null,
 gyear:+T0.slice(0,4),wk:'month',wmonth:T0.slice(0,7),wyear:+T0.slice(0,4),snoozed:'',update:0};
 
@@ -520,7 +530,9 @@ Object.keys(st.lists).forEach((id,n)=>{const l=st.lists[id];l.id=id;l.items=Arra
 if(!['archive','tick','ordered'].includes(l.type)){l.type=OLDK[l.kind]||'tick';l.rate=l.type==='archive'?5:0;l.cby='list';
 l.items.forEach(it=>{if(it.st!=null){if(l.type==='tick'){it.done=it.st==='done';if(!it.done)it.d=''}delete it.st}if(it.x&&typeof it.x==='object'){const ex=[it.x.method,it.x.enc!=null&&it.x.enc!==''?`${Number(it.x.enc).toLocaleString('en-GB')} encounters`:''].filter(Boolean).join(' · ');if(ex)it.s=it.s?`${it.s} · ${ex}`:ex;delete it.x}});
 delete l.kind;migrated.add(id)}
-if(!l.c)l.c=[1,2,3,5,7,6,8,4][n%8];l.rate=[0,5,10].includes(+l.rate)?+l.rate:0;if(l.cby!=='rating')l.cby='list'});
+if(!l.c)l.c=[1,2,3,5,7,6,8,4][n%8];l.rate=[0,5,10].includes(+l.rate)?+l.rate:0;if(l.cby!=='rating')l.cby='tab';
+l.tabs=Array.isArray(l.tabs)?l.tabs.filter(t=>t&&t.id):[];l.tabs.forEach((t,k)=>{t.name=t.name||'Tab';t.c=+t.c||((k%8)+1)});
+l.done=l.done&&typeof l.done==='object'?l.done:{};if(!['tab','strike'].includes(l.done.mode))l.done.mode='tab';l.done.name=l.done.name||'Done';l.done.c=+l.done.c||6});
 c.listOrder=(Array.isArray(c.listOrder)?c.listOrder:[]).filter(id=>st.lists[id]);
 for(const id of Object.keys(st.lists))if(!c.listOrder.includes(id))c.listOrder.push(id);
 st.todos=st.todos&&Array.isArray(st.todos.items)?st.todos:{items:[]};st.work=st.work&&Array.isArray(st.work.items)?st.work:{items:[]};
@@ -554,12 +566,14 @@ if(rnd()<0.65){const n=2+Math.floor(rnd()*4);const used=new Set();for(let i=0;i<
 if(k===today){d.h={hb2:1};d.s={prod:4,sleep:7.5};d.n='';d.t=[{id:uid(),x:'Plan next week',d:true},{id:uid(),x:'Reply to emails',d:true},{id:uid(),x:'Food shop',d:false},{id:uid(),x:'Fix bike tyre',d:false}]}
 const mk=k.slice(0,7);(st.months[mk]=st.months[mk]||{days:{}}).days[k]=d}
 const dt=(m,dd)=>`${y}-${p2(m)}-${p2(dd)}`;
-const mkList=(id,name,type,c,rate,cby,rows)=>{st.lists[id]={id,name,type,c,rate,cby,items:rows.map(([t,s,r,d,n,done])=>({id:uid(),t,s:s||'',r:r||0,d:d||'',n:n||'',done:!!done,u:d?parseK(d).getTime():Date.now(),a:d||today}))};st.config.listOrder.push(id)};
-mkList('books','Books','archive',1,5,'rating',[['The Left Hand of Darkness','Ursula K. Le Guin',5,dt(1,24),'Better second time round.'],['Piranesi','Susanna Clarke',5,dt(2,19)],['The Overstory','Richard Powers',4,dt(3,30),'Slow start, huge payoff.'],['A Psalm for the Wild-Built','Becky Chambers',4,dt(5,4)],['Entangled Life','Merlin Sheldrake',4,dt(6,22)],['Project Hail Mary','Andy Weir',5,dt(8,9)],['The Remains of the Day','Kazuo Ishiguro',4,dt(9,14)],['Tomorrow, and Tomorrow, and Tomorrow','Gabrielle Zevin',3,dt(10,27)]]);
-mkList('films','Films','archive',8,10,'rating',[['Paddington 2','2017',9,dt(1,3)],['Past Lives','2023',8,dt(2,8)],['Perfect Days','2023',9,dt(3,15),'Quietly perfect.'],['Arrival','2016',9,dt(5,2)],['The Holdovers','2023',8,dt(7,19)],['Dune: Part Two','2024',7,dt(11,8)]]);
-mkList('presents','Present ideas','ordered',5,0,'list',[['Fountain pen','For Mum','','','A green Lamy Safari'],['Bird feeder camera','For Dad'],['Cookbook','For Sam'],['Board game night kit','For anyone']]);
-mkList('shiny','Shiny hunts','tick',7,0,'list',[['Ralts','Scarlet · Masuda method · 1,840 encounters','',dt(2,11),'',true],['Gible','Scarlet · Masuda method','',dt(7,28),'',true],['Dratini','Legends: Z-A · respawns','',dt(11,4),'',true],['Beldum','Legends: Z-A · respawns · 950 so far'],['Larvitar','Violet · mass outbreaks']]);
-mkList('places','Places to visit','tick',3,0,'list',[['Isle of Skye'],['Northumberland coast','Dark sky park too'],['Edinburgh in August','','',dt(8,15),'',true]]);
+const mkList=(id,name,type,c,rate,cby,tabs,rows,done)=>{const tb=tabs.map(([n,tc])=>({id:uid(),name:n,c:tc}));
+st.lists[id]={id,name,type,c,rate,cby,tabs:tb,done:done||{mode:'tab',name:'Done',c:6},items:rows.map(([t,s,r,d,n,dn,tab])=>({id:uid(),t,s:s||'',r:r||0,d:d||'',n:n||'',done:!!dn,tab:tab!=null&&tb[tab]?tb[tab].id:'',u:d?parseK(d).getTime():Date.now(),a:d||today}))};st.config.listOrder.push(id)};
+mkList('books','Books','archive',1,5,'rating',[],[['The Left Hand of Darkness','Ursula K. Le Guin',5,dt(1,24),'Better second time round.'],['Piranesi','Susanna Clarke',5,dt(2,19)],['The Overstory','Richard Powers',4,dt(3,30),'Slow start, huge payoff.'],['A Psalm for the Wild-Built','Becky Chambers',4,dt(5,4)],['Entangled Life','Merlin Sheldrake',4,dt(6,22)],['Project Hail Mary','Andy Weir',5,dt(8,9)],['The Remains of the Day','Kazuo Ishiguro',4,dt(9,14)],['Tomorrow, and Tomorrow, and Tomorrow','Gabrielle Zevin',3,dt(10,27)]]);
+mkList('games','Games','archive',8,5,'tab',[['Switch 2',8],['PC',1]],[['Pokémon Legends: Z-A','',4,dt(11,2),'',0,0],['Mario Kart World','',4,dt(7,12),'',0,0],['Balatro','',5,dt(2,2),'One more run.',0,1],['Outer Wilds','',5,dt(4,12),'',0,1],['Hades II','',4,dt(8,30),'',0,1]]);
+mkList('films','Films','archive',2,10,'rating',[],[['Paddington 2','2017',9,dt(1,3)],['Past Lives','2023',8,dt(2,8)],['Perfect Days','2023',9,dt(3,15),'Quietly perfect.'],['Arrival','2016',9,dt(5,2)],['The Holdovers','2023',8,dt(7,19)],['Dune: Part Two','2024',7,dt(11,8)]]);
+mkList('presents','Present ideas','ordered',5,0,'tab',[['Mum',5],['Dad',1],['Sam',3]],[['Fountain pen','','','','A green Lamy Safari',0,0],['Bird feeder camera','','','','',0,1],['Pottery class','','','','',0,0],['Hiking socks','','','','',0,1],['Cookbook','','','','',0,2],['Board game','','','','',0,2]]);
+mkList('shiny','Shiny hunts','tick',7,0,'tab',[['Scarlet',2],['Violet',7],['Legends: Z-A',3]],[['Ralts','Masuda method · 1,840 encounters','',dt(2,11),'',1,0],['Gible','Masuda method','',dt(7,28),'',1,0],['Larvitar','Mass outbreaks','','','',0,1],['Eevee','Mass outbreaks','',dt(4,3),'',1,1],['Dratini','Respawns','',dt(11,4),'',1,2],['Beldum','Respawns · 950 so far','','','',0,2]],{mode:'tab',name:'Caught',c:6});
+mkList('places','Places to visit','tick',3,0,'tab',[],[['Isle of Skye'],['Northumberland coast','Dark sky park too'],['Edinburgh in August','','',dt(8,15),'',1]],{mode:'strike',name:'Done',c:6});
 st.todos.items=[['Renew railcard',false],['Order printer ink',false],['Return library books',true],['Sort out photos from summer',false],['Book winter tyres check',false]].map(([x,dd])=>({id:uid(),x,d:dd}));
 const ci=(rs,n)=>Object.fromEntries(rs.map((r,i)=>[p2(i+1),{r,n:n?.[i]||''}]));
 st.config.goals=[
@@ -616,7 +630,8 @@ let meta=store.get(K.meta)||{shas:{},dirty:[],last:0};
 const dirty=new Set(meta.dirty||[]),seq={};
 let localT=null;
 function saveLocalNow(){clearTimeout(localT);localT=null;if(!S||mode==='example'||mode==='loading')return;if(!store.set(K.state,S))toast('This device is out of room to save the planner.')}
-function saveLocal(){clearTimeout(localT);localT=setTimeout(saveLocalNow,300)}
+let localFirst=0;
+function saveLocal(){if(!localT)localFirst=Date.now();clearTimeout(localT);localT=setTimeout(saveLocalNow,Date.now()-localFirst>1500?0:300)}
 function saveMeta(){meta.dirty=[...dirty];store.set(K.meta,meta)}
 function saveCfg(){store.set(K.set,cfg)}
 function save(path){
@@ -998,31 +1013,41 @@ function setLook(p){S.config.look={...(S.config.look||{}),...p};save('meta/confi
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{lookKey='';applyLook()});
 
 /* ---------- lists ---------- */
-const LTYPES=[['archive','Archive','Dated entries with notes and an optional score, like books, films or games.'],['tick','Tick list','Longer-term to-dos you tick off. Done items are kept below.'],['ordered','Ordered','A ranked list you drag into order, like present ideas.']];
+const LTYPES=[['archive','Archive','Dated entries with notes and an optional score, like books, films or games.'],['tick','Tick list','Longer-term to-dos you tick off, like shiny hunts.'],['ordered','Ordered','A ranked list you drag into order, like present ideas.']];
 const lType=l=>['archive','tick','ordered'].includes(l?.type)?l.type:'tick';
+const tabOf=(l,id)=>id?l.tabs.find(t=>t.id===id)||null:null;
+const doneTab=l=>lType(l)==='tick'&&l.done.mode==='tab';
+function curTab(l){const t=ui.ltab[l.id]||'all';if(t==='done')return doneTab(l)?'done':'all';return t==='all'||tabOf(l,t)?t:'all'}
+/* the items a tab shows: ticked items live only in the done tab when the list moves them there */
+function visibleIn(l,t){let it=l.items;
+if(doneTab(l)){if(t==='done')return it.filter(i=>i.done).sort((a,b)=>(b.d||'').localeCompare(a.d||''));it=it.filter(i=>!i.done)}
+return t==='all'||t==='done'?it:it.filter(i=>(i.tab||'')===t)}
 function rateHTML(l,r){r=+r||0;if(!l.rate||!r)return '';if(l.rate===10)return `<span class="score" aria-label="${r} out of 10">${r}<small>/10</small></span>`;return `<span class="stars" aria-label="${r} out of 5">${'★'.repeat(r)}<span class="off">${'★'.repeat(5-r)}</span></span>`}
-function itemTint(l,it){if(l.cby==='rating'&&l.rate){const r=+it.r||0;return r?`background:color-mix(in srgb,var(--c${l.c||1}) ${Math.round(6+34*r/l.rate)}%,var(--panel))`:''}return `background:color-mix(in srgb,var(--c${l.c||1}) 12%,var(--panel))`}
+function itemTint(l,it){if(l.cby==='rating'&&l.rate){const r=+it.r||0;return r?`background:color-mix(in srgb,var(--c${l.c||1}) ${Math.round(6+34*r/l.rate)}%,var(--panel))`:''}const tb=tabOf(l,it.tab);return `background:color-mix(in srgb,var(--c${tb?tb.c:(l.c||1)}) 13%,var(--panel))`}
+function tabTag(l,it,t){if(!l.tabs.length||(t!=='all'&&t!=='done'))return '';const tb=tabOf(l,it.tab);return tb?`<span class="tabtag"><i class="dot" style="background:var(--c${tb.c})"></i>${esc(tb.name)}</span>`:'<span class="tabtag">No tab</span>'}
 function viewLists(v){const ord=listOrder();if(!S.lists[ui.list])ui.list=ord[0]||null;
-const nav=`<nav class="lnav" aria-label="Lists">${ord.map(id=>{const l=S.lists[id],n=lType(l)==='tick'?l.items.filter(i=>!i.done).length:l.items.length;return `<button class="${ui.list===id?'on':''}" data-a="lsel" data-id="${esc(id)}"><i class="dot" style="background:var(--c${l.c||1})"></i>${esc(l.name)}<span class="n">${n}</span></button>`}).join('')}<button class="newl" data-a="list-new">${ICON.plus} New list</button></nav>`;
+const nav=`<nav class="lnav" aria-label="Lists">${ord.map(id=>{const l=S.lists[id],n=doneTab(l)?l.items.filter(i=>!i.done).length:l.items.length;return `<button class="${ui.list===id?'on':''}" data-a="lsel" data-id="${esc(id)}"><i class="dot" style="background:var(--c${l.c||1})"></i>${esc(l.name)}<span class="n">${n}</span></button>`}).join('')}<button class="newl" data-a="list-new">${ICON.plus} New list</button></nav>`;
 let body='';
 if(!ui.list)body=`<div class="empty"><p>No lists yet. Make one for anything: books you’ve read, present ideas, long-term to-dos.</p><button class="btn pri" data-a="list-new">${ICON.plus} New list</button></div>`;
-else{const l=S.lists[ui.list],ty=lType(l);
+else{const l=S.lists[ui.list],ty=lType(l),t=curTab(l);
 const head=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${ty==='archive'?`<button class="btn pri" data-a="item-new">${ICON.plus} Add</button>`:''}</div>`;
+const tabBtn=(id,label,c,extra='')=>`<button class="ltab${t===id?' on':''}" role="tab" aria-selected="${t===id}" data-a="ltab" data-t="${esc(id)}"${c?` style="--tc:var(--c${c})"`:''}>${extra}${label}<span>${visibleIn(l,id).length}</span></button>`;
+const tabs=`<div class="ltabs" role="tablist" aria-label="Tabs in ${esc(l.name)}">${tabBtn('all','All',0)}${l.tabs.map(tb=>tabBtn(tb.id,esc(tb.name),tb.c,'<i class="dot"></i>')).join('')}${doneTab(l)?tabBtn('done',esc(l.done.name),l.done.c,ICON.tick):''}<button class="ltab add" data-a="tab-new">${ICON.plus} Tab</button>${t!=='all'?'<button class="ltab add" data-a="tab-edit">Edit tab</button>':''}</div>`;
+const tname=t==='all'||t==='done'?l.name:tabOf(l,t).name;
 if(ty==='archive'){const sorts=[['recent','Newest'],['old','Oldest'],...(l.rate?[['rating','Highest rated']]:[]),['title','A to Z']];if(!sorts.some(s=>s[0]===ui.lsort))ui.lsort='recent';
-body=head+`<div class="lctl"><input id="lq" data-in="lq" type="search" placeholder="Search ${esc(l.name.toLowerCase())}" value="${esc(ui.lq)}" aria-label="Search"><select id="lsort" data-ch="lsort" aria-label="Sort">${sorts.map(([k,lb])=>`<option value="${k}"${ui.lsort===k?' selected':''}>${lb}</option>`).join('')}</select></div><div class="items" id="litems"></div>`}
-else body=head+`<form class="add top" data-f="li"><input id="li-new" placeholder="Add to ${esc(l.name)}" enterkeyhint="done" autocomplete="off" aria-label="Add to ${esc(l.name)}"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form><div id="litems"></div>`}
+body=head+tabs+`<div class="lctl"><input id="lq" data-in="lq" type="search" placeholder="Search ${esc(tname.toLowerCase())}" value="${esc(ui.lq)}" aria-label="Search"><select id="lsort" data-ch="lsort" aria-label="Sort">${sorts.map(([k,lb])=>`<option value="${k}"${ui.lsort===k?' selected':''}>${lb}</option>`).join('')}</select></div><div class="items" id="litems"></div>`}
+else body=head+tabs+(t==='done'?'':`<form class="add top" data-f="li"><input id="li-new" placeholder="Add to ${esc(tname)}" enterkeyhint="done" autocomplete="off" aria-label="Add to ${esc(tname)}"><button class="ibtn addb" aria-label="Add">${ICON.plus}</button></form>`)+'<div id="litems"></div>'}
 v.innerHTML=`<div class="pg"><div class="lview">${nav}<div class="lbody">${body}</div></div></div>`;if(ui.list)renderItems()}
-function renderItems(){const el=$('#litems');if(!el)return;const l=S.lists[ui.list];if(!l)return;const ty=lType(l);
-if(ty==='archive'){let it=l.items;const q=ui.lq.trim().toLowerCase();if(q)it=it.filter(i=>`${i.t} ${i.s||''} ${i.n||''}`.toLowerCase().includes(q));
+function renderItems(){const el=$('#litems');if(!el)return;const l=S.lists[ui.list];if(!l)return;const ty=lType(l),t=curTab(l);let it=visibleIn(l,t);
+if(ty==='archive'){const q=ui.lq.trim().toLowerCase();if(q)it=it.filter(i=>`${i.t} ${i.s||''} ${i.n||''}`.toLowerCase().includes(q));
 const by={recent:(a,b)=>(b.d||'').localeCompare(a.d||'')||(b.u||0)-(a.u||0),old:(a,b)=>(a.d||'9').localeCompare(b.d||'9'),rating:(a,b)=>(b.r||0)-(a.r||0)||(b.d||'').localeCompare(a.d||''),title:(a,b)=>a.t.localeCompare(b.t)}[ui.lsort];
-el.innerHTML=[...it].sort(by).map(i=>`<button class="item" data-a="item-edit" data-id="${esc(i.id)}" style="${itemTint(l,i)}"><span class="t">${esc(i.t)}</span><span class="r">${rateHTML(l,i.r)}</span><span class="s">${esc(i.s||'')}${i.n?`<span class="nsnip">${esc(i.n.length>110?i.n.slice(0,110).trim()+'…':i.n)}</span>`:''}</span><span class="st">${i.d?`${fmtShort(i.d)} ${i.d.slice(0,4)}`:''}</span></button>`).join('')||`<p class="empty">${q?'Nothing matches that search.':'Nothing here yet. Tap Add for the first entry.'}</p>`;return}
-if(ty==='tick'){const open=l.items.filter(i=>!i.done),done=l.items.filter(i=>i.done).sort((a,b)=>(b.d||'').localeCompare(a.d||''));
-el.innerHTML=`<ul class="litems">${open.map(i=>liRow(l,i)).join('')}</ul>${open.length?'':`<p class="muted tdempty">${done.length?'All ticked off.':'Nothing here yet.'}</p>`}${done.length?`<details class="done"${ui.ldone?' open':''}><summary>Done (${done.length})</summary><ul class="litems">${done.map(i=>liRow(l,i)).join('')}</ul></details>`:''}`;
-const dt=$('details.done',el);if(dt)dt.addEventListener('toggle',()=>{ui.ldone=dt.open});return}
-el.innerHTML=l.items.length?`<ol class="litems" id="rank">${l.items.map((i,n)=>liRow(l,i,n+1)).join('')}</ol><p class="meta">Drag the handle to put them in order.</p>`:'<p class="muted tdempty">Nothing here yet.</p>';
+el.innerHTML=[...it].sort(by).map(i=>`<button class="item" data-a="item-edit" data-id="${esc(i.id)}" style="${itemTint(l,i)}"><span class="t">${esc(i.t)}</span><span class="r">${rateHTML(l,i.r)}</span><span class="s">${tabTag(l,i,t)}${esc(i.s||'')}${i.n?`<span class="nsnip">${esc(i.n.length>110?i.n.slice(0,110).trim()+'…':i.n)}</span>`:''}</span><span class="st">${i.d?`${fmtShort(i.d)} ${i.d.slice(0,4)}`:''}</span></button>`).join('')||`<p class="empty">${q?'Nothing matches that search.':'Nothing here yet. Tap Add for the first entry.'}</p>`;return}
+if(ty==='tick'){el.innerHTML=it.length?`<ul class="litems">${it.map(i=>liRow(l,i,0,t)).join('')}</ul>`:`<p class="muted tdempty">${t==='done'?'Nothing ticked off yet.':l.items.length?'All ticked off.':'Nothing here yet.'}</p>`;return}
+el.innerHTML=it.length?`<ol class="litems" id="rank">${it.map((i,n)=>liRow(l,i,n+1,t)).join('')}</ol><p class="meta">Drag the handle to put them in order.</p>`:'<p class="muted tdempty">Nothing here yet.</p>';
 bindRank(el)}
-function liRow(l,i,rank){const ty=lType(l),note=i.n?(i.n.length>70?i.n.slice(0,70).trim()+'…':i.n):'';
-return `<li class="lrow${i.done?' done':''}" data-id="${esc(i.id)}" style="${itemTint(l,i)}">${ty==='tick'?`<button class="chk" data-a="li-tog" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="${i.done?'Mark not done':'Tick off'}">${ICON.tick}</button>`:`<span class="rk">${rank}</span>`}<button class="lmain" data-a="item-edit" data-id="${esc(i.id)}"><span class="lt">${esc(i.t)}</span>${i.s||note?`<span class="ls">${esc([i.s,note].filter(Boolean).join(' · '))}</span>`:''}${i.done&&i.d?`<span class="ls">Done ${fmtShort(i.d)}</span>`:''}</button>${rateHTML(l,i.r)}${ty==='ordered'?`<button class="grip" type="button" data-id="${esc(i.id)}" aria-label="Move ${esc(i.t)}: use the arrow keys">${ICON.grip}</button>`:''}</li>`}
+function liRow(l,i,rank,t){const ty=lType(l),note=i.n?(i.n.length>70?i.n.slice(0,70).trim()+'…':i.n):'',strike=ty==='tick'&&i.done&&!doneTab(l);
+const sub=[tabTag(l,i,t),esc(i.s||''),esc(note),i.done&&i.d?`${doneTab(l)?esc(l.done.name):'Done'} ${fmtShort(i.d)}`:''].filter(Boolean).join(' · ');
+return `<li class="lrow${strike?' done':''}${i.done?' ticked':''}" data-id="${esc(i.id)}" style="${itemTint(l,i)}">${ty==='tick'?`<button class="chk" data-a="li-tog" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="${i.done?'Untick':'Tick off'}">${ICON.tick}</button>`:`<span class="rk">${rank}</span>`}<button class="lmain" data-a="item-edit" data-id="${esc(i.id)}"><span class="lt">${esc(i.t)}</span>${sub?`<span class="ls">${sub}</span>`:''}</button>${rateHTML(l,i.r)}${ty==='ordered'?`<button class="grip" type="button" data-id="${esc(i.id)}" aria-label="Move ${esc(i.t)}: use the arrow keys">${ICON.grip}</button>`:''}</li>`}
 function bindRank(el){const list=$('#rank',el);if(!list)return;
 list.addEventListener('pointerdown',e=>{const g=e.target.closest('.grip');if(!g)return;e.preventDefault();const row=g.closest('li');list.setPointerCapture(e.pointerId);row.classList.add('drag');
 const move=ev=>{const y=ev.clientY,prev=row.previousElementSibling,next=row.nextElementSibling;
@@ -1034,10 +1059,13 @@ list.addEventListener('keydown',e=>{const g=e.target.closest('.grip');if(!g||!['
 if(e.key==='ArrowUp'&&row.previousElementSibling)list.insertBefore(row,row.previousElementSibling);else if(e.key==='ArrowDown'&&row.nextElementSibling)list.insertBefore(row.nextElementSibling,row);
 renumber(list);saveRank(list);g.focus()})}
 function renumber(list){[...list.children].forEach((li,i)=>{const rk=$('.rk',li);if(rk)rk.textContent=i+1})}
-function saveRank(list){const l=S.lists[ui.list];if(!l)return;const map=new Map(l.items.map(i=>[i.id,i]));const items=[...list.children].map(li=>map.get(li.dataset.id)).filter(Boolean);
-for(const i of l.items)if(!items.includes(i))items.push(i);
-if(items.map(i=>i.id).join()===l.items.map(i=>i.id).join())return;l.items=items;save('lists/'+l.id)}
-function liAdd(f){const l=S.lists[ui.list],inp=$('#li-new',f),x=inp.value.trim();if(!l||!x)return;l.items.push({id:uid(),t:x,s:'',n:'',r:0,d:'',u:Date.now(),a:TODAY()});save('lists/'+l.id);render();$('#li-new')?.focus()}
+/* reorder only the items on show, putting them back into the slots they held in the whole list */
+function saveRank(list){const l=S.lists[ui.list];if(!l)return;const ids=[...list.children].map(li=>li.dataset.id),set=new Set(ids),slots=[];
+l.items.forEach((it,i)=>{if(set.has(it.id))slots.push(i)});if(slots.length!==ids.length)return;
+const map=new Map(l.items.map(i=>[i.id,i])),next=l.items.slice();ids.forEach((id,k)=>{next[slots[k]]=map.get(id)});
+if(next.map(i=>i.id).join()===l.items.map(i=>i.id).join())return;l.items=next;save('lists/'+l.id)}
+function liAdd(f){const l=S.lists[ui.list],inp=$('#li-new',f),x=inp.value.trim();if(!l||!x)return;const t=curTab(l);
+l.items.push({id:uid(),t:x,s:'',n:'',r:0,d:'',tab:t==='all'||t==='done'?'':t,u:Date.now(),a:TODAY()});save('lists/'+l.id);render();$('#li-new')?.focus()}
 
 /* ---------- stats ---------- */
 function statsRange(){const t=TODAY();let from,to,label;
@@ -1170,46 +1198,65 @@ function closeSheet(){const ov=$('#ov');ov.classList.remove('open');ov.innerHTML
 $('#ov').addEventListener('click',e=>{if(e.target.id==='ov')closeSheet()});
 function armed(btn,txt){if(btn.classList.contains('armed'))return true;btn.classList.add('armed');btn.dataset.txt=btn.textContent;btn.textContent=txt||'Tap again to confirm';setTimeout(()=>{if(btn.isConnected){btn.classList.remove('armed');btn.textContent=btn.dataset.txt}},5000);return false}
 function segPick(sheet,sel,attr,cb){$$(sel,sheet).forEach(b=>b.addEventListener('click',()=>{const on=!b.classList.contains('on')||!b.closest('[data-toggle]');$$(sel,sheet).forEach(x=>x.classList.remove('on'));if(on)b.classList.add('on');cb(on?b.dataset[attr]:null)}))}
-function itemSheet(l,item){const ty=lType(l);const it=item?clone(item):{id:uid(),t:'',s:'',r:0,d:ty==='archive'?TODAY():'',n:'',a:TODAY()};
+const colourSeg=(id,cur)=>`<div class="seg" id="${id}">${range(1,8).map(i=>`<button type="button" data-c="${i}" class="${cur===i?'on':''}" style="--tc:var(--c${i});${cur===i?'':`background:color-mix(in srgb,var(--c${i}) 30%,var(--bg))`}" aria-label="Colour ${i}"><i class="dot" style="background:var(--c${i})"></i></button>`).join('')}</div>`;
+function bindColour(sh,id,set){$$(`#${id} button`,sh).forEach(b=>b.addEventListener('click',()=>{set(+b.dataset.c);$$(`#${id} button`,sh).forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.style.background=on?'':`color-mix(in srgb,var(--c${x.dataset.c}) 30%,var(--bg))`})}))}
+function itemSheet(l,item){const ty=lType(l),t=curTab(l);const it=item?clone(item):{id:uid(),t:'',s:'',r:0,d:ty==='archive'?TODAY():'',n:'',tab:t==='all'||t==='done'?'':t,a:TODAY()};
 const others=listOrder().filter(id=>id!==l.id);
 const body=`<form id="itf"><div class="f"><label for="it-t">Title</label><input id="it-t" value="${esc(it.t)}" required autocomplete="off"></div>
 <div class="f"><label for="it-s">Detail</label><input id="it-s" value="${esc(it.s||'')}" autocomplete="off" placeholder="${ty==='archive'?'Author, director, platform…':'Optional'}"></div>
+${l.tabs.length?`<div class="f"><label for="it-tab">Tab</label><select id="it-tab"><option value="">No tab</option>${l.tabs.map(tb=>`<option value="${esc(tb.id)}"${(it.tab||'')===tb.id?' selected':''}>${esc(tb.name)}</option>`).join('')}</select></div>`:''}
 ${l.rate?`<div class="f"><span class="lb">${l.rate===10?'Score':'Rating'}</span><div class="seg ratebtns" id="it-r" data-toggle>${range(1,l.rate).map(i=>`<button type="button" data-r="${i}" class="${it.r===i?'on':''}" aria-label="${i} out of ${l.rate}">${l.rate===5?i+'★':i}</button>`).join('')}</div><span class="hint">Tap the selected one again to clear it.</span></div>`:''}
-${ty==='archive'||(ty==='tick'&&it.done)?`<div class="f"><label for="it-d">${ty==='archive'?'Date':'Done on'}</label><input id="it-d" type="date" value="${esc(it.d||'')}"></div>`:''}
+${ty==='archive'||(ty==='tick'&&it.done)?`<div class="f"><label for="it-d">${ty==='archive'?'Date':'Ticked off on'}</label><input id="it-d" type="date" value="${esc(it.d||'')}"></div>`:''}
 <div class="f"><label for="it-n">Notes</label><textarea id="it-n" rows="4">${esc(it.n||'')}</textarea></div>
 ${item&&others.length?`<div class="f"><label for="it-mv">Move to another list</label><select id="it-mv"><option value="">Keep in ${esc(l.name)}</option>${others.map(id=>`<option value="${esc(id)}">${esc(S.lists[id].name)}</option>`).join('')}</select></div>`:''}
 <div class="acts">${item?'<button type="button" class="btn danger" id="it-del">Delete</button><span class="sp"></span>':''}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">Save</button></div></form>`;
-openSheet(item?'Edit':'Add to '+l.name,body,sh=>{
+openSheet(item?'Edit':'Add to '+(t!=='all'&&t!=='done'?tabOf(l,t).name:l.name),body,sh=>{
 segPick(sh,'#it-r button','r',v=>{it.r=v?+v:0});
 const del=$('#it-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del))return;const L=S.lists[l.id];if(L){L.items=L.items.filter(x=>x.id!==it.id);L.del=L.del||{};L.del[it.id]=Date.now()}save('lists/'+l.id);closeSheet();render();toast('Deleted')});
 $('#itf',sh).addEventListener('submit',e=>{e.preventDefault();it.t=$('#it-t',sh).value.trim();if(!it.t){$('#it-t',sh).focus();return}
-it.s=$('#it-s',sh).value.trim();it.n=$('#it-n',sh).value.trim();const di=$('#it-d',sh);if(di)it.d=di.value;it.u=Date.now();
+it.s=$('#it-s',sh).value.trim();it.n=$('#it-n',sh).value.trim();const di=$('#it-d',sh);if(di)it.d=di.value;const ts=$('#it-tab',sh);if(ts)it.tab=ts.value;it.u=Date.now();
 const L=S.lists[l.id];if(!L){closeSheet();toast('That list was deleted on another device');return}
 const dest=$('#it-mv',sh)?.value;
-if(dest&&S.lists[dest]){L.items=L.items.filter(x=>x.id!==it.id);L.del=L.del||{};L.del[it.id]=Date.now();const D2=S.lists[dest];const moved={...it,id:uid()};if(lType(D2)==='archive'&&!moved.d)moved.d=TODAY();D2.items.push(moved);save('lists/'+dest);save('lists/'+l.id);closeSheet();render();toast(`Moved to ${D2.name}`);return}
+if(dest&&S.lists[dest]){L.items=L.items.filter(x=>x.id!==it.id);L.del=L.del||{};L.del[it.id]=Date.now();const D2=S.lists[dest];const moved={...it,id:uid(),tab:''};if(lType(D2)==='archive'&&!moved.d)moved.d=TODAY();D2.items.push(moved);save('lists/'+dest);save('lists/'+l.id);closeSheet();render();toast(`Moved to ${D2.name}`);return}
 const i=L.items.findIndex(x=>x.id===it.id);if(i>=0)L.items[i]=it;else L.items.push(it);save('lists/'+l.id);closeSheet();render()})})}
 function listSheet(l){const isNew=!l,used=new Set(listOrder().map(id=>S.lists[id].c));
-const cur=l?{name:l.name,type:lType(l),rate:l.rate||0,cby:l.cby||'list',c:l.c||1}:{name:'',type:'archive',rate:0,cby:'list',c:range(1,8).find(x=>!used.has(x))||1};
+const cur=l?{name:l.name,type:lType(l),rate:l.rate||0,cby:l.cby||'tab',c:l.c||1,done:{...(l.done||{mode:'tab',name:'Done',c:l.c||6})}}:{name:'',type:'archive',rate:0,cby:'tab',c:range(1,8).find(x=>!used.has(x))||1,done:{mode:'tab',name:'Done',c:6}};
 const body=`<form id="lf"><div class="f"><label for="l-n">Name</label><input id="l-n" value="${esc(cur.name)}" required autocomplete="off" placeholder="Books, present ideas, shiny hunts…"></div>
-<div class="f"><span class="lb">Kind of list</span><div class="seg" id="l-ty">${LTYPES.map(([k,lb])=>`<button type="button" data-ty="${k}" class="${cur.type===k?'on':''}">${lb}</button>`).join('')}</div><span class="hint" id="l-desc"></span></div>
-<div class="f"><span class="lb">Colour</span><div class="seg" id="l-col">${range(1,8).map(i=>`<button type="button" data-c="${i}" class="${cur.c===i?'on':''}" style="--tc:var(--c${i});${cur.c===i?'':`background:color-mix(in srgb,var(--c${i}) 30%,var(--bg))`}" aria-label="Colour ${i}"><i class="dot" style="background:var(--c${i})"></i></button>`).join('')}</div></div>
-<div class="f"><span class="lb">Ratings</span><div class="seg" id="l-rate">${[[0,'Off'],[5,'5 stars'],[10,'Out of 10']].map(([k,lb])=>`<button type="button" data-rate="${k}" class="${cur.rate===k?'on':''}">${lb}</button>`).join('')}</div></div>
-<div class="f" id="l-cbyf"><span class="lb">Colour items by</span><div class="seg" id="l-cby">${[['list','List colour'],['rating','Rating']].map(([k,lb])=>`<button type="button" data-cby="${k}" class="${cur.cby===k?'on':''}">${lb}</button>`).join('')}</div><span class="hint">Rating shades each item deeper the higher it’s rated.</span></div>
+<div class="f"><span class="lb">Kind of list</span><div class="seg" id="l-ty">${LTYPES.map(([k,lb])=>`<button type="button" data-ty="${k}">${lb}</button>`).join('')}</div><span class="hint" id="l-desc"></span></div>
+<div class="f" id="l-donef"><span class="lb">Ticked items</span><div class="seg" id="l-done">${[['tab','Move to their own tab'],['strike','Stay, crossed out']].map(([k,lb])=>`<button type="button" data-dm="${k}">${lb}</button>`).join('')}</div><div class="frow" id="l-donetab"><div class="f" style="margin:0"><label for="l-donen">Name of that tab</label><input id="l-donen" value="${esc(cur.done.name)}" placeholder="Done, Caught, Finished…" autocomplete="off"></div></div></div>
+<div class="f"><span class="lb">List colour</span>${colourSeg('l-col',cur.c)}<span class="hint">Items take their tab’s colour, or this one if they have no tab.</span></div>
+<div class="f"><span class="lb">Ratings</span><div class="seg" id="l-rate">${[[0,'Off'],[5,'5 stars'],[10,'Out of 10']].map(([k,lb])=>`<button type="button" data-rate="${k}">${lb}</button>`).join('')}</div></div>
+<div class="f" id="l-cbyf"><span class="lb">Colour items by</span><div class="seg" id="l-cby">${[['tab','Tab colour'],['rating','Rating']].map(([k,lb])=>`<button type="button" data-cby="${k}">${lb}</button>`).join('')}</div><span class="hint">Rating shades each item deeper the higher it’s rated.</span></div>
 <div class="acts">${isNew?'':`<button type="button" class="btn danger" id="l-del">Delete list</button><button type="button" class="btn" id="l-up">Move up</button><span class="sp"></span>`}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Create':'Save'}</button></div></form>`;
 openSheet(isNew?'New list':'Edit list',body,sh=>{
-const upd=()=>{$('#l-desc',sh).textContent=(LTYPES.find(t=>t[0]===cur.type)||LTYPES[0])[2];$('#l-cbyf',sh).hidden=!cur.rate;
-$$('#l-ty button',sh).forEach(b=>b.classList.toggle('on',b.dataset.ty===cur.type));$$('#l-rate button',sh).forEach(b=>b.classList.toggle('on',+b.dataset.rate===cur.rate));$$('#l-cby button',sh).forEach(b=>b.classList.toggle('on',b.dataset.cby===cur.cby))};upd();
+const upd=()=>{$('#l-desc',sh).textContent=(LTYPES.find(x=>x[0]===cur.type)||LTYPES[0])[2];$('#l-cbyf',sh).hidden=!cur.rate;$('#l-donef',sh).hidden=cur.type!=='tick';$('#l-donetab',sh).hidden=cur.done.mode!=='tab';
+$$('#l-ty button',sh).forEach(b=>b.classList.toggle('on',b.dataset.ty===cur.type));$$('#l-rate button',sh).forEach(b=>b.classList.toggle('on',+b.dataset.rate===cur.rate));$$('#l-cby button',sh).forEach(b=>b.classList.toggle('on',b.dataset.cby===cur.cby));$$('#l-done button',sh).forEach(b=>b.classList.toggle('on',b.dataset.dm===cur.done.mode))};upd();
 $$('#l-ty button',sh).forEach(b=>b.addEventListener('click',()=>{cur.type=b.dataset.ty;upd()}));
 $$('#l-rate button',sh).forEach(b=>b.addEventListener('click',()=>{cur.rate=+b.dataset.rate;upd()}));
 $$('#l-cby button',sh).forEach(b=>b.addEventListener('click',()=>{cur.cby=b.dataset.cby;upd()}));
-$$('#l-col button',sh).forEach(b=>b.addEventListener('click',()=>{cur.c=+b.dataset.c;$$('#l-col button',sh).forEach(x=>{const on=x===b;x.classList.toggle('on',on);x.style.background=on?'':`color-mix(in srgb,var(--c${x.dataset.c}) 30%,var(--bg))`})}));
+$$('#l-done button',sh).forEach(b=>b.addEventListener('click',()=>{cur.done.mode=b.dataset.dm;upd()}));
+bindColour(sh,'l-col',c=>{cur.c=c});
 const del=$('#l-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del,`Delete it and ${plural(l.items.length,'item')}? Tap again`))return;delete S.lists[l.id];S.config.listOrder=S.config.listOrder.filter(x=>x!==l.id);save('lists/'+l.id);save('meta/config');ui.list=null;closeSheet();render();toast('List deleted')});
 const up=$('#l-up',sh);if(up)up.addEventListener('click',()=>{const o=S.config.listOrder,i=o.indexOf(l.id);if(i>0){[o[i-1],o[i]]=[o[i],o[i-1]];save('meta/config');render();toast('Moved up')}});
-$('#lf',sh).addEventListener('submit',e=>{e.preventDefault();const nm=$('#l-n',sh).value.trim();if(!nm){$('#l-n',sh).focus();return}cur.name=nm;
-if(isNew){const id=uid();S.lists[id]={id,...cur,items:[]};S.config.listOrder.push(id);ui.list=id;save('meta/config');save('lists/'+id)}
+$('#lf',sh).addEventListener('submit',e=>{e.preventDefault();const nm=$('#l-n',sh).value.trim();if(!nm){$('#l-n',sh).focus();return}cur.name=nm;cur.done.name=$('#l-donen',sh).value.trim()||'Done';
+if(isNew){const id=uid();S.lists[id]={id,...cur,tabs:[],items:[]};S.config.listOrder.push(id);ui.list=id;save('meta/config');save('lists/'+id)}
 else{const L=S.lists[l.id];if(L){Object.assign(L,cur);if(cur.rate)L.items.forEach(i=>{if(i.r>cur.rate)i.r=cur.rate});save('lists/'+l.id)}}
 closeSheet();render()})})}
-
+function tabSheet(l,id){const isDone=id==='done',isNew=!id,real=id&&!isDone?tabOf(l,id):null;
+const tb=isDone?{name:l.done.name,c:l.done.c}:real?{name:real.name,c:real.c}:{name:'',c:range(1,8).find(x=>!l.tabs.some(t=>t.c===x))||1};
+const n=real?l.items.filter(i=>i.tab===real.id).length:0,idx=real?l.tabs.indexOf(real):-1;
+const body=`<form id="tbf"><div class="f"><label for="tb-n">Name</label><input id="tb-n" value="${esc(tb.name)}" required autocomplete="off" placeholder="${isDone?'Done, Caught, Finished…':'Scarlet, Switch 2, Mum…'}"></div>
+<div class="f"><span class="lb">Colour</span>${colourSeg('tb-col',tb.c)}</div>
+${isDone?'<p class="hint">Ticked items move here. Untick one to send it back to its tab.</p>':''}
+<div class="acts">${real?`<button type="button" class="btn danger" id="tb-del">Delete tab</button>${idx>0?'<button type="button" class="btn" id="tb-left">Move left</button>':''}<span class="sp"></span>`:''}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Add tab':'Save'}</button></div></form>`;
+openSheet(isNew?`New tab in ${l.name}`:isDone?'Ticked items tab':'Edit tab',body,sh=>{
+bindColour(sh,'tb-col',c=>{tb.c=c});
+const L=()=>S.lists[l.id];
+const del=$('#tb-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del,n?`Delete it? Its ${plural(n,'item')} stay in the list. Tap again`:'Tap again to delete'))return;const x=L();if(!x)return;x.tabs=x.tabs.filter(t=>t.id!==real.id);const now=Date.now();x.items.forEach(i=>{if(i.tab===real.id){i.tab='';i.u=now}});ui.ltab[x.id]='all';save('lists/'+x.id);closeSheet();render()});
+const left=$('#tb-left',sh);if(left)left.addEventListener('click',()=>{const x=L(),i=x.tabs.findIndex(t=>t.id===real.id);if(i>0){[x.tabs[i-1],x.tabs[i]]=[x.tabs[i],x.tabs[i-1]];save('lists/'+x.id);closeSheet();render()}});
+$('#tbf',sh).addEventListener('submit',e=>{e.preventDefault();const nm=$('#tb-n',sh).value.trim();if(!nm){$('#tb-n',sh).focus();return}const x=L();if(!x)return;
+if(isDone){x.done.name=nm;x.done.c=tb.c}else if(real){const t2=tabOf(x,real.id);if(t2){t2.name=nm;t2.c=tb.c}}else{const nid=uid();x.tabs.push({id:nid,name:nm,c:tb.c});ui.ltab[x.id]=nid}
+save('lists/'+x.id);closeSheet();render()})})}
 const typeLabel=t=>t.type==='scale'?`Score 1 to ${t.max}`:t.type==='check'?'Yes or no':`Number${t.unit?' in '+t.unit:''}${t.target?`, target ${fmtNum(t.target)}`:''}`;
 function settingsSheet(){const c=S.config,lk=c.look||{},pal=lk.palette||'ink',ap=lk.appearance||'';
 const body=`<section class="sset"><h3>Look</h3><div class="f"><span class="lb">Colour</span><div class="swatches">${PALETTES.map(([k,lb,col])=>`<button class="swatch${pal===k?' on':''}" data-a="look-pal" data-v="${k}" aria-pressed="${pal===k}"><i style="background:${col}"></i>${lb}</button>`).join('')}</div></div><div class="f" style="margin:0"><span class="lb">Appearance</span><div class="segbar" role="group" aria-label="Appearance">${[['','Match phone'],['light','Light'],['dark','Dark']].map(([k,lb])=>`<button class="${ap===k?'on':''}" data-a="look-ap" data-v="${k}">${lb}</button>`).join('')}</div></div></section><section class="sset"><h3>Trackers</h3><p>The things you score each day. Archiving hides a tracker but keeps its history; deleting removes it and its scores.</p><ul class="tl2">${c.trackers.map((t,i)=>`<li class="${t.archived?'arch':''}"><i class="dot" style="background:var(--c${t.c})"></i><span class="tn" style="flex:1">${esc(t.name)}<small>${esc(typeLabel(t))}${t.archived?' · archived':''}</small></span>${i?`<button class="ibtn" data-a="t-up" data-id="${esc(t.id)}" aria-label="Move ${esc(t.name)} up">${ICON.up}</button>`:''}<button class="btn sm" data-a="t-edit" data-id="${esc(t.id)}">Edit</button></li>`).join('')}</ul><button class="btn" data-a="t-new">${ICON.plus} Add tracker</button></section>
@@ -1323,7 +1370,10 @@ wopen:b=>openWrapped(b.dataset.k,b.dataset.v),
 'look-pal':b=>{setLook({palette:b.dataset.v});$$('[data-a=look-pal]').forEach(x=>{const on=x.dataset.v===b.dataset.v;x.classList.toggle('on',on);x.setAttribute('aria-pressed',on)})},
 'look-ap':b=>{setLook({appearance:b.dataset.v});$$('[data-a=look-ap]').forEach(x=>x.classList.toggle('on',x.dataset.v===b.dataset.v))},
 wclose:()=>closeWrapped(),
-lsel:b=>{ui.list=b.dataset.id;ui.lq='';ui.ldone=false;render()},
+lsel:b=>{ui.list=b.dataset.id;ui.lq='';render()},
+ltab:b=>{ui.ltab[ui.list]=b.dataset.t;render()},
+'tab-new':()=>{const l=S.lists[ui.list];if(l)tabSheet(l,null)},
+'tab-edit':()=>{const l=S.lists[ui.list];if(!l)return;const t=curTab(l);if(t!=='all')tabSheet(l,t)},
 'li-tog':b=>{const l=S.lists[ui.list],it=l&&l.items.find(x=>x.id===b.dataset.id);if(!it)return;it.done=!it.done;it.d=it.done?TODAY():'';it.u=Date.now();save('lists/'+l.id);render()},
 'item-new':()=>itemSheet(S.lists[ui.list]),
 'item-edit':b=>{const l=S.lists[ui.list];const it=l.items.find(x=>x.id===b.dataset.id);if(it)itemSheet(l,it)},
