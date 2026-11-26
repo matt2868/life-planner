@@ -1,0 +1,25 @@
+{
+  "total_count": 1,
+  "artifacts": [
+    {
+      "id": 15108141290,
+      "node_id": "MDg6QXJ0aWZhY3QxNTEwODE0MTI5MA==",
+      "name": "github-pages",
+      "size_in_bytes": 76977,
+      "url": "https://api.github.com/repos/matt2868/life-planner/actions/artifacts/15108141290",
+      "archive_download_url": "https://api.github.com/repos/matt2868/life-planner/actions/artifacts/15108141290/zip",
+      "expired": false,
+      "digest": "sha256:754adfd3dc10bfd4d47bd25de43b612c13f5ab0c9c5a88d2244bd325503e3226",
+      "created_at": "2026-11-26T10:33:00Z",
+      "updated_at": "2026-11-26T10:33:00Z",
+      "expires_at": "2026-11-27T10:32:59Z",
+      "workflow_run": {
+        "id": 45802349478,
+        "repository_id": 1471577323,
+        "head_repository_id": 1471577323,
+        "head_branch": "main",
+        "head_sha": "28eb3e5388e897e0183e46702263cd9cf4c6b738"
+      }
+    }
+  ]
+}

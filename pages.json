@@ -1,0 +1,16 @@
+{
+  "url": "https://api.github.com/repos/matt2868/life-planner/pages",
+  "status": null,
+  "cname": null,
+  "custom_404": false,
+  "html_url": "https://matt2868.github.io/life-planner/",
+  "build_type": "workflow",
+  "source": {
+    "branch": "main",
+    "path": "/"
+  },
+  "public": true,
+  "protected_domain_state": null,
+  "pending_domain_unverified_at": null,
+  "https_enforced": true
+}
