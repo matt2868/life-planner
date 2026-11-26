@@ -32,6 +32,11 @@ class Bridge(private val context: Context, activity: MainActivity) {
     fun notificationsAllowed(): Boolean = NotificationManagerCompat.from(context).areNotificationsEnabled()
 
     @JavascriptInterface
+    fun haptic() {
+        activityRef.get()?.haptic()
+    }
+
+    @JavascriptInterface
     fun setChrome(dark: Boolean, color: Int) {
         activityRef.get()?.setChrome(dark, color)
     }

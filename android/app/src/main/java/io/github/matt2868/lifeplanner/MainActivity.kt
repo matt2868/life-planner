@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -156,6 +157,18 @@ class MainActivity : ComponentActivity() {
             WindowInsetsControllerCompat(window, root).apply {
                 isAppearanceLightStatusBars = !dark
                 isAppearanceLightNavigationBars = !dark
+            }
+        }
+    }
+
+    /** A short tap of the phone's vibration, used when ticking things off. */
+    fun haptic() {
+        runOnUiThread {
+            if (::web.isInitialized) {
+                web.performHapticFeedback(
+                    if (Build.VERSION.SDK_INT >= 30) HapticFeedbackConstants.CONFIRM
+                    else HapticFeedbackConstants.VIRTUAL_KEY
+                )
             }
         }
     }

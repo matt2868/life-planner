@@ -158,7 +158,7 @@ a.btn.pri{color:var(--acc-ink)}
 .chk{width:26px;height:26px;border-radius:8px;border:2px solid var(--ink2);background:none;display:grid;place-items:center;color:transparent;flex:none;padding:0}
 .chk .ic{width:18px;height:18px;stroke-width:2.6}
 .todo li.done .chk{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.todo li.done .tx{color:var(--ink2);text-decoration:line-through}
+.todo li.done .tx{color:var(--ink2)}
 .todo li.moved .tx{color:var(--ink2)}
 .todo li.moved .chk{border-style:dashed;opacity:.6}
 .tx{flex:1;overflow-wrap:anywhere;padding:8px 0}
@@ -339,7 +339,7 @@ details.card[open]>summary{margin-bottom:8px}
 .item .nsnip{display:block;margin-top:2px;color:var(--ink2);font-size:14px}
 .litems{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .lrow{display:flex;align-items:center;gap:10px;padding:4px 6px 4px 12px;border-radius:12px;min-height:52px;background:var(--panel)}
-.lrow.done .lt{text-decoration:line-through;color:var(--ink2)}
+.lrow.done .lt{color:var(--ink2)}
 .lrow .chk{flex:none}
 .lrow.done .chk{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .lmain{flex:1;min-width:0;display:grid;gap:1px;border:0;background:none;padding:8px 0;text-align:left}
@@ -418,6 +418,57 @@ details.card[open]>summary{margin-bottom:8px}
 .dsec .add .ibtn{width:40px;height:40px}
 .dsec textarea{min-height:84px;overflow:hidden}
 .addb{background:var(--acc);color:var(--acc-ink)}
+.cbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 10px}
+.cday{display:flex;align-items:center;gap:2px}
+.cdl{border:0;background:none;font:inherit;font-weight:700;padding:8px 6px;min-width:6.5em;color:var(--ink)}
+.csess{margin:0;flex:1 1 220px}
+.csess .dot{margin-right:6px}
+.crow{padding-right:8px}
+.cctl{display:flex;align-items:center;gap:6px;flex:none}
+.cctl .ibtn{width:40px;height:40px;border-radius:50%}
+.cdec{background:var(--bg);color:var(--ink)}
+.cdec:disabled{opacity:.35}
+.cn{min-width:2ch;text-align:center;font-size:20px;font-weight:800;color:var(--ink2);font-variant-numeric:tabular-nums}
+.cn.on{color:var(--ink)}
+.cn.bump{animation:cbump .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes cbump{0%{transform:scale(1)}45%{transform:scale(1.35)}100%{transform:scale(1)}}
+.crange{margin:0 0 10px}
+.tile .v.sm{font-size:clamp(20px,3vw,26px)}
+.scols .col .sk{display:flex;flex-direction:column;justify-content:flex-end;gap:2px;width:100%;height:100%}
+.scols .col .sk i{display:block;width:100%;flex:none}
+.scols .col .sk i:first-child{border-radius:4px 4px 0 0}
+.scols .col:hover .sk i{filter:brightness(1.12)}
+.clegend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;margin:0 0 6px}
+.clegend span{display:inline-flex;align-items:center;gap:6px}
+.clegend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.crank{display:grid;gap:2px}
+.crk{display:grid;grid-template-columns:minmax(6em,10em) 1fr auto;align-items:center;gap:10px;border:0;background:none;font:inherit;color:inherit;text-align:left;padding:8px 4px;border-radius:10px}
+.crk:hover{background:var(--panel2)}
+.crk .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crk .cbar2{display:flex;gap:2px;height:12px}
+.crk .cbar2 i{display:block;height:100%}
+.crk .cbar2 i:last-child{border-radius:0 4px 4px 0}
+.crk .v{font-weight:800;font-variant-numeric:tabular-nums;min-width:2.5ch;text-align:right}
+.cis h4{margin:16px 0 6px;font-size:15px}
+.cis .tiles{margin-bottom:12px}
+.crec{list-style:none;margin:0;padding:0}
+.crec li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.crec li:first-child{border-top:0}
+.stk{background:linear-gradient(currentColor,currentColor) no-repeat 0 58%/0 1.5px;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:background-size .2s ease-in}
+.todo li.done .stk,.lrow.done .stk{background-size:100% 1.5px}
+.chk{transition:background-color .18s,border-color .18s,color .18s}
+.todo li.ticking .chk,.lrow.ticking .chk{background:var(--ink);border-color:var(--ink);color:var(--bg);animation:chkpop .38s cubic-bezier(.34,1.56,.64,1)}
+.ticking .chk .ic path{stroke-dasharray:21;stroke-dashoffset:21;animation:tickdraw .26s .1s ease-out forwards}
+.ticking .tx,.ticking .lt{color:var(--ink2);transition:color .3s .1s}
+.ticking .stk{transition:background-size .3s .12s cubic-bezier(.3,.7,.4,1)}
+.ticking.settled .chk,.ticking.settled .chk .ic path,.ticking.settled .stk{animation:none;transition:none;stroke-dashoffset:0}
+.todo li.unticking .chk,.lrow.unticking .chk{background:none;border-color:var(--ink2);color:transparent}
+.todo li.unticking .stk,.lrow.unticking .stk{background-size:0 1.5px}
+.landed{animation:landed .55s ease-out}
+@keyframes chkpop{0%{transform:scale(1)}35%{transform:scale(.8)}70%{transform:scale(1.14)}100%{transform:scale(1)}}
+@keyframes tickdraw{to{stroke-dashoffset:0}}
+@keyframes landed{0%{opacity:0;transform:translateY(-6px)}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.chk,.stk{transition:none}.landed{animation:none}}
 .plusb{width:40px;height:40px;border-radius:50%}
 .plusb svg{width:20px;height:20px}
 .ch .plusb{width:32px;height:32px;margin:-4px 0}
@@ -542,7 +593,7 @@ l:'<svg class="ic" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>'
 r:'<svg class="ic" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg>',
 up:'<svg class="ic" viewBox="0 0 24 24"><path d="M6 14.5l6-6 6 6"/></svg>',
 plus:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
-tick:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+tick:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',minus:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
 grip:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 9h14M5 15h14"/></svg>'};
 
 /* ---------- old list kinds, only used to convert lists made before list types existed ---------- */
@@ -556,7 +607,7 @@ const UPDATE_REPO='matt2868/life-planner';
 let S=null,mode='loading',syncState='loading';
 const T0=TODAY();
 const ui={tab:'calendar',sel:T0,month:T0.slice(0,7),colorBy:'all',anim:true,gtOpen:true,
-list:null,ltab:{},lstate:{},tdDay:'',adding:null,hsel:'all',hweek:'',hyear:+T0.slice(0,4),lq:'',lsort:'recent',
+list:null,ltab:{},lstate:{},tdDay:'',adding:null,cday:'',csess:null,crange:'30',hsel:'all',hweek:'',hyear:+T0.slice(0,4),lq:'',lsort:'recent',
 sp:'month',smonth:T0.slice(0,7),syear:+T0.slice(0,4),strk:null,
 gyear:+T0.slice(0,4),wk:'month',wmonth:T0.slice(0,7),wyear:+T0.slice(0,4),snoozed:'',update:0};
 
@@ -574,13 +625,14 @@ st.config=st.config||{};const c=st.config;
 c.trackers=Array.isArray(c.trackers)?c.trackers:[];c.goals=Array.isArray(c.goals)?c.goals:[];c.habits=Array.isArray(c.habits)?c.habits:[];c.habits.forEach(h=>{h.n=Math.max(1,+h.n||1);if(!PER_OK.includes(h.per))h.per='week'});
 st.lists=st.lists&&typeof st.lists==='object'?st.lists:{};
 Object.keys(st.lists).forEach((id,n)=>{const l=st.lists[id];l.id=id;l.items=Array.isArray(l.items)?l.items:[];
-if(!['archive','tick','ordered'].includes(l.type)){l.type=OLDK[l.kind]||'tick';l.rate=l.type==='archive'?5:0;l.cby='list';
+if(!['archive','tick','ordered','count'].includes(l.type)){l.type=OLDK[l.kind]||'tick';l.rate=l.type==='archive'?5:0;l.cby='list';
 l.items.forEach(it=>{if(it.st!=null){if(l.type==='tick'){it.done=it.st==='done';if(!it.done)it.d=''}delete it.st}if(it.x&&typeof it.x==='object'){const ex=[it.x.method,it.x.enc!=null&&it.x.enc!==''?`${Number(it.x.enc).toLocaleString('en-GB')} encounters`:''].filter(Boolean).join(' · ');if(ex)it.s=it.s?`${it.s} · ${ex}`:ex;delete it.x}});
 delete l.kind;migrated.add(id)}
 if(!l.c)l.c=[1,2,3,5,7,6,8,4][n%8];l.rate=[0,5,10].includes(+l.rate)?+l.rate:0;if(l.cby!=='rating')l.cby='tab';
 l.tabs=Array.isArray(l.tabs)?l.tabs.filter(t=>t&&t.id):[];l.tabs.forEach((t,k)=>{t.name=t.name||'Tab';t.c=+t.c||((k%8)+1)});
 l.done=l.done&&typeof l.done==='object'?l.done:{};if(!['tab','strike'].includes(l.done.mode))l.done.mode='tab';l.done.name=l.done.name||'Done';l.done.c=+l.done.c||6;
 l.states=l.states&&typeof l.states==='object'?l.states:{};l.states.todo=l.states.todo||'To do';l.states.done=l.states.done||'Done';
+l.sess=Array.isArray(l.sess)&&l.sess.length===2?l.sess.map((x,k)=>String(x||'').trim()||['Morning','Evening'][k]):['Morning','Evening'];if(l.type==='count')l.rate=0;
 if(l.type==='archive'&&l.items.some(it=>it.done==null)){l.items.forEach(it=>{if(it.done==null)it.done=!!it.d});migrated.add(id)}});
 c.listOrder=(Array.isArray(c.listOrder)?c.listOrder:[]).filter(id=>st.lists[id]);
 for(const id of Object.keys(st.lists))if(!c.listOrder.includes(id))c.listOrder.push(id);
@@ -625,6 +677,9 @@ st.lists.films.items.push(...[['Seven Samurai','1954'],['Spirited Away','2001'],
 st.lists.games.items.push({id:uid(),t:'Disco Elysium',s:'',r:0,d:'',n:'',done:false,tab:st.lists.games.tabs[1].id,u:Date.now(),a:today});st.lists.games.states={todo:'Backlog',done:'Played'};
 mkList('presents','Present ideas','ordered',5,0,'tab',[['Mum',5],['Dad',1],['Sam',3]],[['Fountain pen','','','','A green Lamy Safari',0,0],['Bird feeder camera','','','','',0,1],['Pottery class','','','','',0,0],['Hiking socks','','','','',0,1],['Cookbook','','','','',0,2],['Board game','','','','',0,2]]);
 mkList('shiny','Shiny hunts','tick',7,0,'tab',[['Scarlet',2],['Violet',7],['Legends: Z-A',3]],[['Ralts','Masuda method · 1,840 encounters','',dt(2,11),'',1,0],['Gible','Masuda method','',dt(7,28),'',1,0],['Larvitar','Mass outbreaks','','','',0,1],['Eevee','Mass outbreaks','',dt(4,3),'',1,1],['Dratini','Respawns','',dt(11,4),'',1,2],['Beldum','Respawns · 950 so far','','','',0,2]],{mode:'tab',name:'Caught',c:6});
+mkList('walks','Spotted on walks','count',6,0,'tab',[['Birds',6],['Mammals',2]],[['Robin','','','','',0,0],['Grey heron','','','','',0,0],['Red kite','','','','',0,0],['Roe deer','','','','',0,1],['Hedgehog','','','','',0,1]]);
+{const W=st.lists.walks;W.sess=['Morning','Evening'];const odds=[[.8,.55],[.35,.2],[.25,.3],[.12,.4],[.01,.3]];
+for(let n=0;n<120;n++){const k=addDays(today,-n);W.items.forEach((it,i)=>{const v=[0,1].map(x=>rnd()<odds[i][x]?1+Math.floor(rnd()*(i?2:4)):0);if(v[0]||v[1])(it.c=it.c||{})[k]=v})}}
 mkList('places','Places to visit','tick',3,0,'tab',[],[['Isle of Skye'],['Northumberland coast','Dark sky park too'],['Edinburgh in August','','',dt(8,15),'',1]],{mode:'strike',name:'Done',c:6});
 st.todos.items=[['Renew railcard',false],['Order printer ink',false],['Return library books',true],['Sort out photos from summer',false],['Book winter tyres check',false]].map(([x,dd])=>({id:uid(),x,d:dd}));
 const ci=(rs,n)=>Object.fromEntries(rs.map((r,i)=>[p2(i+1),{r,n:n?.[i]||''}]));
@@ -665,7 +720,7 @@ const listOrder=()=>S.config.listOrder.filter(id=>S.lists[id]);
 /* ---------- goals ---------- */
 function goalUnit(g,n){const one=n===1;if(g.kind==='list'){return (S.lists[g.listId]?.name||'items').toLowerCase()}if(g.kind==='tracker')return one?'day':'days';return g.unit||''}
 function goalVal(g,mk){const pre=mk||String(g.year);
-if(g.kind==='list'){const l=S.lists[g.listId];return l?l.items.filter(i=>i.done&&i.d&&i.d.startsWith(pre)).length:0}
+if(g.kind==='list'){const l=S.lists[g.listId];if(!l)return 0;if(lType(l)==='count')return l.items.reduce((a,i)=>{for(const [k,v] of Object.entries(i.c||{}))if(k.startsWith(pre))a+=(+v[0]||0)+(+v[1]||0);return a},0);return l.items.filter(i=>i.done&&i.d&&i.d.startsWith(pre)).length}
 if(g.kind==='tracker'){const t=trk(g.trackerId);if(!t)return 0;let c=0;for(const [k2,m] of Object.entries(S.months)){if(!k2.startsWith(pre.slice(0,7)))continue;for(const d of Object.values(m.days||{}))if(good(t,val(d,t),g.threshold))c++}return c}
 if(g.kind==='manual'){const ci=g.checkins||{};if(mk)return +(ci[mk.slice(5)]?.v)||0;return Object.values(ci).reduce((a,c)=>a+(+c.v||0),0)}
 return null}
@@ -918,10 +973,26 @@ if(t.type==='scale')ctl=`<div class="seg${dk}${(t.max||5)>5?' ten':''}" style="-
 else if(t.type==='check')ctl=`<div class="seg yn${dk}" style="--tc:var(--c${t.c})" role="group" aria-label="${nm}"><button data-a="score" data-t="${id}" data-v="n" class="${v===false?'on':''}" aria-pressed="${v===false}">No</button><button data-a="score" data-t="${id}" data-v="y" class="${v===true?'on':''}" aria-pressed="${v===true}">Yes</button></div>`;
 else ctl=`<div class="num"><button class="ibtn" data-a="numstep" data-t="${id}" data-d="-1" aria-label="Less ${nm}">−</button><input id="num-${id}" data-in="num" data-t="${id}" type="number" inputmode="decimal" step="${t.step||0.5}" min="0" value="${v??''}" placeholder="–" aria-label="${nm}${t.unit?' in '+esc(t.unit):''}"><button class="ibtn" data-a="numstep" data-t="${id}" data-d="1" aria-label="More ${nm}">+</button><span class="unit">${esc(t.unit||'')}${t.target?` <span class="muted">/ ${fmtNum(t.target)}</span>`:''}</span></div>`;
 return `<div class="trow"><span class="tn"><i class="dot" style="background:var(--c${t.c})"></i>${nm}</span>${ctl}</div>`}
-function todoLi(it,kind,k){const dk=k?` data-k="${k}"`:'';return `<li class="${it.d?'done':''}${it.m?' moved':''}" data-id="${esc(it.id)}"><button class="chk" data-a="${kind}-tog" data-id="${esc(it.id)}"${dk} aria-pressed="${!!it.d}" aria-label="${it.d?'Mark not done':'Mark done'}"${it.m?' disabled':''}>${ICON.tick}</button><span class="tx">${esc(it.x)}${it.m?` <em>moved to ${/^\d/.test(it.m)?fmtShort(it.m):it.m==='work'?'Work':'General'}</em>`:''}</span><button class="del" data-a="${kind}-del" data-id="${esc(it.id)}"${dk} aria-label="Delete">${ICON.x}</button></li>`}
+function todoLi(it,kind,k){const dk=k?` data-k="${k}"`:'',tk=ticking.get(it.id);return `<li class="${it.d||tk?'done':''}${it.m?' moved':''}${tk?' ticking settled':''}" data-id="${esc(it.id)}"><button class="chk" data-a="${kind}-tog" data-id="${esc(it.id)}"${dk} aria-pressed="${!!it.d}" aria-label="${it.d?'Mark not done':'Mark done'}"${it.m?' disabled':''}>${ICON.tick}</button><span class="tx"><span class="stk">${esc(it.x)}</span>${it.m?` <em>moved to ${/^\d/.test(it.m)?fmtShort(it.m):it.m==='work'?'Work':'General'}</em>`:''}</span><button class="del" data-a="${kind}-del" data-id="${esc(it.id)}"${dk} aria-label="Delete">${ICON.x}</button></li>`}
 function setScore(tid,v){const d=dayEnsure(ui.sel);if(v==null)delete d.s[tid];else d.s[tid]=v;dayDone(ui.sel)}
 function pickDay(k){ui.sel=k;if(k.slice(0,7)!==ui.month){ui.month=k.slice(0,7);ui.anim=true}renderCal();renderDay()}
 
+/* ---------- tick animation ---------- */
+const RMO=matchMedia('(prefers-reduced-motion: reduce)'),ticking=new Map();
+function haptic(){try{if(APP&&typeof APP.haptic==='function')APP.haptic();else if(navigator.vibrate)navigator.vibrate(8)}catch(e){}}
+function collapse(li,done){const h=li.offsetHeight;li.style.overflow='hidden';
+const a=li.animate([{height:h+'px',minHeight:h+'px',opacity:1},{height:'0px',minHeight:'0px',opacity:0,paddingTop:'0px',paddingBottom:'0px',borderTopWidth:'0px'}],{duration:260,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});a.onfinish=done;a.oncancel=done}
+function landed(id){requestAnimationFrame(()=>{const el=$(`li[data-id="${CSS.escape(id)}"]`);if(el&&!el.closest('details:not([open])')){el.classList.add('landed');setTimeout(()=>el.classList.remove('landed'),650)}})}
+/* btn: the tick box; on: ticking rather than unticking; leaves: the row moves to another section; commit: changes the data and redraws */
+function tickFx(btn,on,leaves,commit){const li=btn.closest('li'),id=li&&li.dataset.id;
+if(!li||!id||RMO.matches){commit();return}
+if(ticking.has(id))return;
+if(on)haptic();
+if(!on&&!leaves){commit();return}
+let fired=false;const fin=()=>{if(fired)return;fired=true;ticking.delete(id);commit();if(leaves)landed(id)};
+if(on){ticking.set(id,true);li.classList.add('ticking','done','ticked');btn.setAttribute('aria-pressed','true')}else li.classList.add('unticking');
+if(!leaves){setTimeout(fin,420);return}
+setTimeout(()=>{if(!li.isConnected){fin();return}collapse(li,fin)},on?400:140)}
 /* ---------- add buttons ---------- */
 let lastAddClose={key:'',t:0};
 function plusBtn(key,label,act='add-open'){return `<button class="ibtn addb plusb" data-a="${act}" data-key="${esc(key)}" aria-label="${esc(label)}">${ICON.plus}</button>`}
@@ -938,7 +1009,8 @@ v.innerHTML=`<div class="tdview"><section class="tpanel"><div class="tph"><h2 cl
 sortable($('#td-day',v),ids=>reorderDay(k,ids));for(const kind of ['wk','gt'])sortable($('#td-'+kind,v),ids=>reorderList(kind,ids))}
 function reorderDay(k,ids){const d=dayGet(k);if(d){const next=reorderSubset(d.t,ids);if(next){d.t=next;dayDone(k)}}refreshDay()}
 function reorderList(kind,ids){const key=TLK[kind],L=S[key],next=reorderSubset(L.items,ids);if(next){L.items=next;save('meta/'+key)}render()}
-function listTog(kind,id){const key=TLK[kind],it=S[key].items.find(x=>x.id===id);if(!it)return;it.d=!it.d;it.u=Date.now();if(it.d)it.dAt=it.u;else delete it.dAt;save('meta/'+key);render()}
+function tickList(kind,b){const id=b.dataset.id,it=S[TLK[kind]].items.find(x=>x.id===id);if(!it)return;const on=!it.d;tickFx(b,on,true,()=>listTog(kind,id,on))}
+function listTog(kind,id,on){const key=TLK[kind],it=S[key].items.find(x=>x.id===id);if(!it)return;it.d=on==null?!it.d:on;it.u=Date.now();if(it.d)it.dAt=it.u;else delete it.dAt;save('meta/'+key);render()}
 function listDel(kind,id){const key=TLK[kind],L=S[key];L.del=L.del||{};L.del[id]=Date.now();L.items=L.items.filter(x=>x.id!==id);save('meta/'+key);render()}
 function listAdd(kind,f){const inp=$(`#${kind}-new`,f),x=inp.value.trim();if(!x)return;const key=TLK[kind];S[key].items.push({id:uid(),x,d:false,u:Date.now()});save('meta/'+key);render();$(`#${kind}-new`)?.focus()}
 function saveMigrated(){if(mode==='example')return migrated.clear();migrated.forEach(id=>{if(S.lists[id])save('lists/'+id)});migrated.clear()}
@@ -1086,8 +1158,8 @@ function setLook(p){S.config.look={...(S.config.look||{}),...p};save('meta/confi
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{lookKey='';applyLook()});
 
 /* ---------- lists ---------- */
-const LTYPES=[['archive','Archive'],['tick','Tick list'],['ordered','Ordered']];
-const lType=l=>['archive','tick','ordered'].includes(l?.type)?l.type:'tick';
+const LTYPES=[['archive','Archive'],['tick','Tick list'],['ordered','Ordered'],['count','Counter']];
+const lType=l=>['archive','tick','ordered','count'].includes(l?.type)?l.type:'tick';
 const tabOf=(l,id)=>id?l.tabs.find(t=>t.id===id)||null:null;
 const doneTab=l=>lType(l)==='tick'&&l.done.mode==='tab';
 function curTab(l){const t=ui.ltab[l.id]||'all';if(t==='done')return doneTab(l)?'done':'all';return t==='all'||tabOf(l,t)?t:'all'}
@@ -1105,6 +1177,13 @@ const cnt=l=>doneTab(l)||lType(l)==='archive'?l.items.filter(i=>!i.done).length:
 const nav=`<nav class="lnav" aria-label="Lists">${ord.map(id=>{const l=S.lists[id];return `<button class="${ui.list===id?'on':''}" data-a="lsel" data-id="${esc(id)}"><i class="dot" style="background:var(--c${l.c||1})"></i><span class="ln">${esc(l.name)}</span><span class="n">${cnt(l)}</span></button>`}).join('')}<button class="newl" data-a="list-new">${ICON.plus} New list</button></nav>`;
 let body='';
 if(ui.list){const l=S.lists[ui.list],ty=lType(l),t=curTab(l),st=ty==='archive'?arState(l):'';
+if(ty==='count'){const md=ui.lstate[l.id]==='stats'?'stats':'count';
+const ch=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${md==='count'?plusBtn('li:'+l.id,'Add to '+l.name):''}</div>`;
+const cs=`<div class="segbar" role="group" aria-label="View"><button class="${md==='count'?'on':''}" data-a="lstate" data-s="count">Count</button><button class="${md==='stats'?'on':''}" data-a="lstate" data-s="stats">Stats</button></div>`;
+const ctb=(id,label,c,extra='',real=false)=>`<button class="ltab${t===id?' on':''}" role="tab" aria-selected="${t===id}" data-a="ltab" data-t="${esc(id)}"${real?` data-id="${esc(id)}"`:''}${c?` style="--tc:var(--c${c})"`:''}>${extra}${label}<span>${visibleIn(l,id).length}</span></button>`;
+const ctabs=`<div class="ltabs" id="ltabs" role="tablist" aria-label="Tabs in ${esc(l.name)}">${ctb('all','All',0)}${l.tabs.map(tb=>ctb(tb.id,esc(tb.name),tb.c,'<i class="dot"></i>',true)).join('')}<button class="ltab add" data-a="tab-new" aria-label="New tab">${ICON.plus}</button>${t!=='all'?'<button class="ltab add" data-a="tab-edit">Edit tab</button>':''}</div>`;
+body=md==='stats'?ch+cs+countStats(l):ch+cs+cBar(l)+ctabs+'<div id="litems"></div>'+addForm('li:'+l.id,'li','li-new','Add to '+(t==='all'?l.name:tabOf(l,t).name))}
+else{
 const head=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${ty==='archive'&&st==='done'?plusBtn('','Add to '+l.states.done,'ar-log'):curTab(l)==='done'?'':plusBtn('li:'+l.id,'Add to '+(ty==='archive'?l.states.todo:l.name))}</div>`;
 const states=ty==='archive'?`<div class="segbar" role="group" aria-label="Section">${[['todo',l.states.todo],['done',l.states.done]].map(([k,lb])=>`<button class="${st===k?'on':''}" data-a="lstate" data-s="${k}">${esc(lb)} <span class="muted">${l.items.filter(i=>k==='done'?i.done:!i.done).length}</span></button>`).join('')}</div>`:'';
 const tabBtn=(id,label,c,extra='',real=false)=>`<button class="ltab${t===id?' on':''}" role="tab" aria-selected="${t===id}" data-a="ltab" data-t="${esc(id)}"${real?` data-id="${esc(id)}"`:''}${c?` style="--tc:var(--c${c})"`:''}>${extra}${label}<span>${visibleIn(l,id).length}</span></button>`;
@@ -1113,7 +1192,7 @@ const tname=t==='all'||t==='done'?l.name:tabOf(l,t).name;
 const quick=addForm('li:'+l.id,'li','li-new','Add to '+tname);
 if(ty==='archive'&&st==='done'){const sorts=[['recent','Newest'],['old','Oldest'],...(l.rate?[['rating','Highest rated']]:[]),['title','A to Z']];if(!sorts.some(s=>s[0]===ui.lsort))ui.lsort='recent';
 body=head+states+tabs+`<div class="lctl"><input id="lq" data-in="lq" type="search" placeholder="Search" value="${esc(ui.lq)}" aria-label="Search"><select id="lsort" data-ch="lsort" aria-label="Sort">${sorts.map(([k,lb])=>`<option value="${k}"${ui.lsort===k?' selected':''}>${lb}</option>`).join('')}</select></div><div class="items" id="litems"></div>`}
-else body=head+states+tabs+'<div id="litems"></div>'+(t==='done'?'':quick)}
+else body=head+states+tabs+'<div id="litems"></div>'+(t==='done'?'':quick)}}
 v.innerHTML=`<div class="pg"><div class="lview">${nav}<div class="lbody">${body}</div></div></div>`;
 sortable($('.lnav',v),ids=>{S.config.listOrder=reorderIds(S.config.listOrder,ids);save('meta/config');render()});
 if(ui.list){const l=S.lists[ui.list];sortable($('#ltabs',v),ids=>{const next=reorderSubset(l.tabs,ids);if(next){l.tabs=next;save('lists/'+l.id)}render()});renderItems()}}
@@ -1121,6 +1200,7 @@ function renderItems(){const el=$('#litems');if(!el)return;const l=S.lists[ui.li
 if(ty==='archive'&&arState(l)==='done'){const q=ui.lq.trim().toLowerCase();if(q)it=it.filter(i=>`${i.t} ${i.s||''} ${i.n||''}`.toLowerCase().includes(q));
 const by={recent:(a,b)=>(b.d||'').localeCompare(a.d||'')||(b.u||0)-(a.u||0),old:(a,b)=>(a.d||'9').localeCompare(b.d||'9'),rating:(a,b)=>(b.r||0)-(a.r||0)||(b.d||'').localeCompare(a.d||''),title:(a,b)=>a.t.localeCompare(b.t)}[ui.lsort];
 el.innerHTML=[...it].sort(by).map(i=>`<button class="item" data-a="item-edit" data-id="${esc(i.id)}" style="${itemTint(l,i)}"><span class="t">${esc(i.t)}</span><span class="r">${rateHTML(l,i.r)}</span><span class="s">${tabTag(l,i,t)}${esc(i.s||'')}${i.n?`<span class="nsnip">${esc(i.n.length>110?i.n.slice(0,110).trim()+'…':i.n)}</span>`:''}</span><span class="st">${i.d?`${fmtShort(i.d)} ${i.d.slice(0,4)}`:''}</span></button>`).join('');return}
+if(ty==='count'){el.innerHTML=it.length?`<ul class="litems" id="lrows">${it.map(i=>cRow(l,i,t)).join('')}</ul>`:'';const cl=$('#lrows',el);if(cl)sortable(cl,ids=>{const next=reorderSubset(l.items,ids);if(next){l.items=next;save('lists/'+l.id)}renderItems()});return}
 const tag=ty==='ordered'?'ol':'ul';
 el.innerHTML=it.length?`<${tag} class="litems" id="lrows">${it.map((i,n)=>liRow(l,i,n+1,t)).join('')}</${tag}>`:'';
 const list=$('#lrows',el);if(!list)return;
@@ -1133,10 +1213,69 @@ function liRow(l,i,rank,t){const ty=lType(l),note=i.n?(i.n.length>70?i.n.slice(0
 const sub=[tabTag(l,i,t),esc(i.s||''),esc(note),ty==='tick'&&i.done&&i.d?fmtShort(i.d):''].filter(Boolean).join(' · ');
 const lead=ty==='tick'?`<button class="chk" data-a="li-tog" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="${i.done?'Untick':'Tick off'}">${ICON.tick}</button>`:ty==='ordered'?`<span class="rk">${rank}</span>`:'';
 const tail=ty==='archive'?`<button class="markd" data-a="ar-done" data-id="${esc(i.id)}">${ICON.tick}${esc(l.states.done)}</button>`:ty==='ordered'?`<button class="grip" type="button" aria-label="Move ${esc(i.t)}">${ICON.grip}</button>`:'';
-return `<li class="lrow${strike?' done':''}${i.done?' ticked':''}" data-id="${esc(i.id)}" style="${itemTint(l,i)}">${lead}<button class="lmain" data-a="item-edit" data-id="${esc(i.id)}"><span class="lt">${esc(i.t)}</span>${sub?`<span class="ls">${sub}</span>`:''}</button>${rateHTML(l,i.r)}${tail}</li>`}
+const tk=ticking.get(i.id);return `<li class="lrow${strike||tk?' done':''}${i.done||tk?' ticked':''}${tk?' ticking settled':''}" data-id="${esc(i.id)}" style="${itemTint(l,i)}">${lead}<button class="lmain" data-a="item-edit" data-id="${esc(i.id)}"><span class="lt"><span class="stk">${esc(i.t)}</span></span>${sub?`<span class="ls">${sub}</span>`:''}</button>${rateHTML(l,i.r)}${tail}</li>`}
 function renumber(list){[...list.children].forEach((li,i)=>{const rk=$('.rk',li);if(rk)rk.textContent=i+1})}
 function liAdd(f){const l=S.lists[ui.list],inp=$('#li-new',f),x=inp.value.trim();if(!l||!x)return;const t=curTab(l);
 l.items.push({id:uid(),t:x,s:'',n:'',r:0,d:'',done:false,tab:t==='all'||t==='done'?'':t,u:Date.now(),a:TODAY()});save('lists/'+l.id);render();$('#li-new')?.focus()}
+/* ---------- counter lists ---------- */
+const cntOf=(i,k)=>{const v=i.c&&i.c[k];return v?[+v[0]||0,+v[1]||0]:[0,0]};
+function cSum(i,from,to){let a=0,b=0,days=0;for(const [k,v] of Object.entries(i.c||{})){if(k<from||k>to)continue;const x=+v[0]||0,y=+v[1]||0;a+=x;b+=y;if(x+y)days++}return {a,b,t:a+b,days}}
+const cDay=()=>ui.cday&&ui.cday<=TODAY()?ui.cday:TODAY();
+const cSess=()=>ui.csess!=null?ui.csess:(new Date().getHours()<13?0:1);
+const SCOL=['var(--c4)','var(--c7)'];
+const wdDay=k=>`${WD3[wdMon(k)]} ${fmtShort(k)}`;
+function cBump(l,id,delta){const k=cDay(),s=cSess(),it=l.items.find(x=>x.id===id);if(!it)return;it.c=it.c&&typeof it.c==='object'?it.c:{};
+const v=cntOf(it,k);if(delta<0&&!v[s])return;v[s]=Math.max(0,v[s]+delta);if(v[0]||v[1])it.c[k]=v;else delete it.c[k];it.u=Date.now();save('lists/'+l.id);
+if(delta>0)haptic();render();const n=$(`#lrows li[data-id="${CSS.escape(id)}"] .cn`);if(n){n.classList.remove('bump');void n.offsetWidth;n.classList.add('bump')}}
+function cBar(l){const k=cDay(),s=cSess(),today=TODAY();const tot=[0,0];l.items.forEach(i=>{const v=cntOf(i,k);tot[0]+=v[0];tot[1]+=v[1]});
+return `<div class="cbar"><div class="cday"><button class="ibtn" data-a="cprev" aria-label="Previous day">${ICON.l}</button><button class="cdl" data-a="ctoday">${k===today?'Today':esc(wdDay(k))}</button><button class="ibtn" data-a="cnext" aria-label="Next day"${k>=today?' disabled':''}>${ICON.r}</button></div>
+<div class="segbar csess" role="group" aria-label="Time of day">${l.sess.map((n,i)=>`<button class="${s===i?'on':''}" data-a="csess" data-s="${i}" aria-pressed="${s===i}"><i class="dot" style="background:${SCOL[i]}"></i>${esc(n)} <span class="muted">${tot[i]}</span></button>`).join('')}</div></div>`}
+function cRow(l,i,t){const k=cDay(),s=cSess(),v=cntOf(i,k)[s],all=cSum(i,'0000','9999');
+const sub=[tabTag(l,i,t),esc(i.s||''),all.t?`${fmtNum(all.t)} in all`:''].filter(Boolean).join(' · ');
+return `<li class="lrow crow" data-id="${esc(i.id)}" style="${itemTint(l,i)}"><button class="lmain" data-a="c-item" data-id="${esc(i.id)}"><span class="lt">${esc(i.t)}</span>${sub?`<span class="ls">${sub}</span>`:''}</button>
+<div class="cctl"><button class="ibtn cdec" data-a="c-dec" data-id="${esc(i.id)}" aria-label="One fewer ${esc(i.t)}"${v?'':' disabled'}>${ICON.minus}</button><span class="cn${v?' on':''}">${v}</span><button class="ibtn addb cinc" data-a="c-inc" data-id="${esc(i.id)}" aria-label="One more ${esc(i.t)}">${ICON.plus}</button></div></li>`}
+function cRange(l){const today=TODAY(),R=ui.crange||'30';let from;
+if(R==='30')from=addDays(today,-29);else if(R==='year')from=`${today.slice(0,4)}-01-01`;
+else{from=today;l.items.forEach(i=>Object.keys(i.c||{}).forEach(k=>{if(k<from)from=k}))}
+return {R,from,to:today}}
+/* stacked columns: morning at the bottom, evening on top, with a 2px gap */
+function stackCols(pts,xl){const max=Math.max(1,...pts.map(p=>p.a+p.b));const h=x=>x?Math.max(2.5,x/max*100):0;
+return `<div class="cols scols"><span class="ymax">${fmtNum(max)}</span>${pts.map(p=>`<span class="col" data-tip="${esc(p.tip)}"><span class="sk">${p.b?`<i style="height:${h(p.b)}%;background:${SCOL[1]}"></i>`:''}${p.a?`<i style="height:${h(p.a)}%;background:${SCOL[0]}"></i>`:''}</span></span>`).join('')}</div><div class="xl">${xl.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`}
+function legend2(l,a,b){const t=a+b;return `<div class="clegend">${[a,b].map((x,i)=>`<span><i style="background:${SCOL[i]}"></i>${esc(l.sess[i])} <b>${fmtNum(x)}</b>${t?` <span class="muted">${Math.round(x/t*100)}%</span>`:''}</span>`).join('')}</div>`}
+/* totals per day, or per month for longer ranges */
+function cSeries(items,from,to,l){const per={};items.forEach(i=>{for(const [k,v] of Object.entries(i.c||{})){if(k<from||k>to)continue;const p=per[k]||(per[k]=[0,0]);p[0]+=+v[0]||0;p[1]+=+v[1]||0}});
+const days=Math.round((parseK(to)-parseK(from))/864e5)+1,pts=[],xl=[];
+if(days<=45){for(let i=0;i<days;i++){const k=addDays(from,i),p=per[k]||[0,0];pts.push({a:p[0],b:p[1],tip:`${wdDay(k)}: ${l.sess[0]} ${p[0]} · ${l.sess[1]} ${p[1]}`});xl.push(i%7===0?fmtShort(k):'')}}
+else{const months=[];for(let mk=from.slice(0,7);mk<=to.slice(0,7);mk=addMonths(mk,1))months.push(mk);
+months.forEach((mk,n)=>{let a=0,b=0;for(const [k,p] of Object.entries(per))if(k.startsWith(mk)){a+=p[0];b+=p[1]}pts.push({a,b,tip:`${MON3[+mk.slice(5)-1]} ${mk.slice(0,4)}: ${l.sess[0]} ${a} · ${l.sess[1]} ${b}`});xl.push(months.length<=12?MON[+mk.slice(5)-1][0]:(n%3===0?MON3[+mk.slice(5)-1]:''))})}
+return {per,pts,xl}}
+function countStats(l){const {R,from,to}=cRange(l);
+const seg=`<div class="segbar crange" role="group" aria-label="Period">${[['30','Last 30 days'],['year','This year'],['all','All time']].map(([k,lb])=>`<button class="${R===k?'on':''}" data-a="crange" data-r="${k}">${lb}</button>`).join('')}</div>`;
+const {per,pts,xl}=cSeries(l.items,from,to,l);
+let A=0,B=0,days=0,best=null;for(const [k,p] of Object.entries(per)){A+=p[0];B+=p[1];if(p[0]+p[1]){days++;if(!best||p[0]+p[1]>best.v)best={k,v:p[0]+p[1]}}}
+const rows=l.items.map(i=>({i,s:cSum(i,from,to)})).filter(x=>x.s.t).sort((x,y)=>y.s.t-x.s.t);
+const tiles=`<div class="tiles"><div class="tile"><div class="l">Total</div><div class="v">${fmtNum(A+B)}</div><div class="s">${days?`${fmtNum(Math.round((A+B)/days*10)/10)} per day counted`:'none yet'}</div></div>
+<div class="tile"><div class="l">Days counted</div><div class="v">${days}</div><div class="s">${R==='30'?'of the last 30':R==='year'?'this year':'so far'}</div></div>
+<div class="tile"><div class="l">Different things</div><div class="v">${rows.length}</div><div class="s">of ${l.items.length}</div></div>
+<div class="tile"><div class="l">Best day</div><div class="v">${best?best.v:'–'}</div><div class="s">${best?esc(wdDay(best.k))+(R!=='30'?' '+best.k.slice(0,4):''):'none yet'}</div></div></div>`;
+const top=rows[0]?rows[0].s.t:1;
+const rank=rows.length?`<div class="crank">${rows.map(({i,s})=>`<button class="crk" data-a="c-item" data-id="${esc(i.id)}"><span class="nm">${esc(i.t)}</span><span class="cbar2">${s.a?`<i style="width:${s.a/top*100}%;background:${SCOL[0]}"></i>`:''}${s.b?`<i style="width:${s.b/top*100}%;background:${SCOL[1]}"></i>`:''}</span><span class="v">${fmtNum(s.t)}</span></button>`).join('')}</div>`:'';
+return `${seg}${tiles}<div class="card"><div class="ch"><h3>Over time</h3></div>${legend2(l,A,B)}${stackCols(pts,xl)}</div>${rank?`<div class="card"><div class="ch"><h3>Most counted</h3><span class="cnt">${R==='30'?'last 30 days':R==='year'?'this year':'all time'}</span></div>${rank}</div>`:''}`}
+/* one thing's own stats */
+function countItemSheet(l,id){const it=l.items.find(x=>x.id===id);if(!it)return;const today=TODAY();
+const ks=Object.keys(it.c||{}).filter(k=>{const v=cntOf(it,k);return v[0]+v[1]>0}).sort();
+const all=cSum(it,'0000','9999');let best=null;ks.forEach(k=>{const v=cntOf(it,k),t=v[0]+v[1];if(!best||t>best.v)best={k,v:t}});
+const from=addMonths(today.slice(0,7),-11)+'-01',{pts,xl}=cSeries([it],from,today,l);
+const ago=k=>{const n=Math.round((parseK(today)-parseK(k))/864e5);return n===0?'today':n===1?'yesterday':`${n} days ago`};
+const tiles=`<div class="tiles"><div class="tile"><div class="l">Total</div><div class="v">${fmtNum(all.t)}</div><div class="s">on ${plural(all.days,'day')}</div></div>
+<div class="tile"><div class="l">Last seen</div><div class="v sm">${ks.length?esc(fmtShort(ks.at(-1))):'–'}</div><div class="s">${ks.length?ago(ks.at(-1)):'not yet'}</div></div>
+<div class="tile"><div class="l">First seen</div><div class="v sm">${ks.length?esc(fmtShort(ks[0])):'–'}</div><div class="s">${ks.length?ks[0].slice(0,4):''}</div></div>
+<div class="tile"><div class="l">Best day</div><div class="v sm">${best?best.v:'–'}</div><div class="s">${best?esc(fmtShort(best.k)+(best.k.slice(0,4)!==today.slice(0,4)?' '+best.k.slice(0,4):'')):''}</div></div></div>`;
+const recent=ks.slice(-8).reverse().map(k=>{const v=cntOf(it,k);return `<li><span>${esc(wdDay(k))}${k.slice(0,4)!==today.slice(0,4)?' '+k.slice(0,4):''}</span><span class="muted">${l.sess.map((n,i)=>v[i]?`${esc(n)} ${v[i]}`:'').filter(Boolean).join(' · ')}</span></li>`}).join('');
+const body=`<div class="cis">${it.s?`<p class="muted">${esc(it.s)}</p>`:''}${tiles}${all.t?legend2(l,all.a,all.b):''}
+<h4>Last 12 months</h4>${stackCols(pts,xl)}${recent?`<h4>Recent days</h4><ul class="crec">${recent}</ul>`:''}
+<div class="acts"><button type="button" class="btn" id="ci-edit">Edit details</button><span class="sp"></span><button type="button" class="btn pri" data-a="close">Done</button></div></div>`;
+openSheet(it.t,body,sh=>{$('#ci-edit',sh).addEventListener('click',()=>{closeSheet();itemSheet(l,it)})})}
 
 /* ---------- drag to reorder (press and hold, or drag a handle) ---------- */
 let dragJust=0;
@@ -1145,7 +1284,7 @@ function sortable(list,onDone){if(!list||list._sortable)return;list._sortable=1;
 let timer=0,row=null,sx=0,sy=0,pid=null,on=false;
 const horiz=()=>{const cs=getComputedStyle(list);return cs.display.includes('flex')&&cs.flexDirection.startsWith('row')};
 const begin=()=>{timer=0;if(!row)return;on=true;row.classList.add('drag');list.classList.add('sorting');try{list.setPointerCapture(pid)}catch(e){}try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}};
-list.addEventListener('pointerdown',e=>{if(e.button>0)return;let r=e.target;while(r&&r.parentElement!==list)r=r.parentElement;if(!r||!r.dataset||!r.dataset.id)return;row=r;sx=e.clientX;sy=e.clientY;pid=e.pointerId;
+list.addEventListener('pointerdown',e=>{if(e.button>0||e.target.closest('.cctl'))return;let r=e.target;while(r&&r.parentElement!==list)r=r.parentElement;if(!r||!r.dataset||!r.dataset.id)return;row=r;sx=e.clientX;sy=e.clientY;pid=e.pointerId;
 if(e.target.closest('.grip')){e.preventDefault();begin();return}clearTimeout(timer);timer=setTimeout(begin,420)});
 list.addEventListener('pointermove',e=>{if(!on){if(timer&&Math.hypot(e.clientX-sx,e.clientY-sy)>8){clearTimeout(timer);timer=0;row=null}return}
 const h=horiz(),p=h?e.clientX:e.clientY,prev=sib(row,-1),next=sib(row,1);
@@ -1329,17 +1468,18 @@ if(!item){it.t=$('#dn-t',sh).value.trim();if(!it.t){$('#dn-t',sh).focus();return
 it.d=$('#it-d',sh).value||TODAY();it.n=$('#dn-n',sh).value.trim();it.done=true;it.u=Date.now();
 const i=x.items.findIndex(y=>y.id===it.id);if(i>=0)x.items[i]=it;else x.items.push(it);save('lists/'+l.id);closeSheet();render()})})}
 function listSheet(l){const isNew=!l,used=new Set(listOrder().map(id=>S.lists[id].c));
-const cur=l?{name:l.name,type:lType(l),rate:l.rate||0,cby:l.cby||'tab',c:l.c||1,done:{...(l.done||{mode:'tab',name:'Done',c:l.c||6})},states:{...(l.states||{todo:'To do',done:'Done'})}}:{name:'',type:'archive',rate:0,cby:'tab',c:range(1,8).find(x=>!used.has(x))||1,done:{mode:'tab',name:'Done',c:6},states:{todo:'To do',done:'Done'}};
+const cur=l?{name:l.name,type:lType(l),rate:l.rate||0,cby:l.cby||'tab',c:l.c||1,done:{...(l.done||{mode:'tab',name:'Done',c:l.c||6})},states:{...(l.states||{todo:'To do',done:'Done'})},sess:[...(l.sess||['Morning','Evening'])]}:{name:'',type:'archive',rate:0,cby:'tab',c:range(1,8).find(x=>!used.has(x))||1,done:{mode:'tab',name:'Done',c:6},states:{todo:'To do',done:'Done'},sess:['Morning','Evening']};
 const body=`<form id="lf"><div class="f"><label for="l-n">Name</label><input id="l-n" value="${esc(cur.name)}" required autocomplete="off"></div>
 <div class="f"><span class="lb">Kind</span><div class="seg" id="l-ty">${LTYPES.map(([k,lb])=>`<button type="button" data-ty="${k}">${lb}</button>`).join('')}</div></div>
 <div class="frow" id="l-statesf"><div class="f"><label for="l-s1">Not done</label><input id="l-s1" value="${esc(cur.states.todo)}" autocomplete="off"></div><div class="f"><label for="l-s2">Done</label><input id="l-s2" value="${esc(cur.states.done)}" autocomplete="off"></div></div>
+<div class="frow" id="l-sessf"><div class="f"><label for="l-m">Counted in the</label><input id="l-m" value="${esc(cur.sess[0])}" autocomplete="off"></div><div class="f"><label for="l-e">and the</label><input id="l-e" value="${esc(cur.sess[1])}" autocomplete="off"></div></div>
 <div class="f" id="l-donef"><span class="lb">Ticked items</span><div class="seg" id="l-done">${[['tab','Own tab'],['strike','Crossed out']].map(([k,lb])=>`<button type="button" data-dm="${k}">${lb}</button>`).join('')}</div><input id="l-donen" value="${esc(cur.done.name)}" autocomplete="off" aria-label="Name of the ticked tab"></div>
 <div class="f"><span class="lb">Colour</span>${colourSeg('l-col',cur.c)}</div>
-<div class="f"><span class="lb">Ratings</span><div class="seg" id="l-rate">${[[0,'Off'],[5,'5 stars'],[10,'Out of 10']].map(([k,lb])=>`<button type="button" data-rate="${k}">${lb}</button>`).join('')}</div></div>
+<div class="f" id="l-ratef"><span class="lb">Ratings</span><div class="seg" id="l-rate">${[[0,'Off'],[5,'5 stars'],[10,'Out of 10']].map(([k,lb])=>`<button type="button" data-rate="${k}">${lb}</button>`).join('')}</div></div>
 <div class="f" id="l-cbyf"><span class="lb">Colour items by</span><div class="seg" id="l-cby">${[['tab','Tab'],['rating','Rating']].map(([k,lb])=>`<button type="button" data-cby="${k}">${lb}</button>`).join('')}</div></div>
 <div class="acts">${isNew?'':'<button type="button" class="btn danger" id="l-del">Delete list</button><span class="sp"></span>'}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Create':'Save'}</button></div></form>`;
 openSheet(isNew?'New list':'Edit list',body,sh=>{
-const upd=()=>{$('#l-cbyf',sh).hidden=!cur.rate;$('#l-donef',sh).hidden=cur.type!=='tick';$('#l-donen',sh).hidden=cur.done.mode!=='tab';$('#l-statesf',sh).hidden=cur.type!=='archive';
+const upd=()=>{if(cur.type==='count')cur.rate=0;$('#l-ratef',sh).hidden=cur.type==='count';$('#l-sessf',sh).hidden=cur.type!=='count';$('#l-cbyf',sh).hidden=!cur.rate;$('#l-donef',sh).hidden=cur.type!=='tick';$('#l-donen',sh).hidden=cur.done.mode!=='tab';$('#l-statesf',sh).hidden=cur.type!=='archive';
 $$('#l-ty button',sh).forEach(b=>b.classList.toggle('on',b.dataset.ty===cur.type));$$('#l-rate button',sh).forEach(b=>b.classList.toggle('on',+b.dataset.rate===cur.rate));$$('#l-cby button',sh).forEach(b=>b.classList.toggle('on',b.dataset.cby===cur.cby));$$('#l-done button',sh).forEach(b=>b.classList.toggle('on',b.dataset.dm===cur.done.mode))};upd();
 $$('#l-ty button',sh).forEach(b=>b.addEventListener('click',()=>{cur.type=b.dataset.ty;upd()}));
 $$('#l-rate button',sh).forEach(b=>b.addEventListener('click',()=>{cur.rate=+b.dataset.rate;upd()}));
@@ -1348,7 +1488,7 @@ $$('#l-done button',sh).forEach(b=>b.addEventListener('click',()=>{cur.done.mode
 bindColour(sh,'l-col',c=>{cur.c=c});
 const del=$('#l-del',sh);if(del)del.addEventListener('click',()=>{if(!armed(del,`Delete ${plural(l.items.length,'item')}? Tap again`))return;delete S.lists[l.id];S.config.listOrder=S.config.listOrder.filter(x=>x!==l.id);save('lists/'+l.id);save('meta/config');ui.list=null;closeSheet();render()});
 $('#lf',sh).addEventListener('submit',e=>{e.preventDefault();const nm=$('#l-n',sh).value.trim();if(!nm){$('#l-n',sh).focus();return}cur.name=nm;cur.done.name=$('#l-donen',sh).value.trim()||'Done';
-cur.states={todo:$('#l-s1',sh).value.trim()||'To do',done:$('#l-s2',sh).value.trim()||'Done'};
+cur.states={todo:$('#l-s1',sh).value.trim()||'To do',done:$('#l-s2',sh).value.trim()||'Done'};cur.sess=[$('#l-m',sh).value.trim()||'Morning',$('#l-e',sh).value.trim()||'Evening'];if(cur.type==='count'){cur.rate=0;cur.cby='tab'}
 if(isNew){const id=uid();S.lists[id]={id,...cur,tabs:[],items:[]};S.config.listOrder.push(id);ui.list=id;save('meta/config');save('lists/'+id)}
 else{const L=S.lists[l.id];if(L){if(cur.type==='archive'&&L.type!=='archive')L.items.forEach(i=>{if(i.done==null)i.done=!!i.d});Object.assign(L,cur);if(cur.rate)L.items.forEach(i=>{if(i.r>cur.rate)i.r=cur.rate});save('lists/'+l.id)}}
 closeSheet();render()})})}
@@ -1457,10 +1597,11 @@ colorby:b=>{ui.colorBy=b.dataset.id;renderCal()},
 score:b=>{const t=trk(b.dataset.t);if(!t)return;const cur=val(dayGet(ui.sel),t);let v=b.dataset.v==='y'?true:b.dataset.v==='n'?false:+b.dataset.v;if(cur===v)v=null;setScore(t.id,v);renderCal();renderDay()},
 'score-clear':b=>{setScore(b.dataset.t,null);renderCal();renderDay()},
 numstep:b=>{const t=trk(b.dataset.t);if(!t)return;const cur=val(dayGet(ui.sel),t);const st=t.step||0.5;let v=cur==null?(t.target||st):Math.max(0,Math.round((cur+st*+b.dataset.d)*1000)/1000);setScore(t.id,v);renderCal();renderDay()},
-'td-tog':b=>{const k=b.dataset.k||ui.sel,d=dayEnsure(k),it=d.t.find(x=>x.id===b.dataset.id);if(it){it.d=!it.d;dayDone(k);refreshDay()}},
+'td-tog':b=>{const k=b.dataset.k||ui.sel,id=b.dataset.id,it=dayEnsure(k).t.find(x=>x.id===id);if(!it)return;const on=!it.d;
+tickFx(b,on,false,()=>{const i2=dayEnsure(k).t.find(x=>x.id===id);if(i2){i2.d=on;dayDone(k)}refreshDay()})},
 'td-del':b=>{const k=b.dataset.k||ui.sel,d=dayEnsure(k);d.t=d.t.filter(x=>x.id!==b.dataset.id);dayDone(k);refreshDay()},
 carry:b=>{const tk=b.dataset.to||ui.sel,from=dayEnsure(b.dataset.k),to=dayEnsure(tk);const u=from.t.filter(x=>!x.d&&!x.m);u.forEach(x=>{x.m=tk;to.t.push({id:uid(),x:x.x,d:false})});dayDone(b.dataset.k);dayDone(tk);refreshDay();toast(`Brought over ${plural(u.length,'to-do')}`)},
-'gt-tog':b=>listTog('gt',b.dataset.id),'wk-tog':b=>listTog('wk',b.dataset.id),
+'gt-tog':b=>tickList('gt',b),'wk-tog':b=>tickList('wk',b),
 'gt-del':b=>listDel('gt',b.dataset.id),'wk-del':b=>listDel('wk',b.dataset.id),
 'lt-clear':b=>{const key=TLK[b.dataset.kind],L=S[key],now=Date.now();L.del=L.del||{};L.items.filter(x=>x.d).forEach(x=>{L.del[x.id]=now});L.items=L.items.filter(x=>!x.d);save('meta/'+key);render()},
 tdprev:()=>{ui.tdDay=addDays(ui.tdDay||TODAY(),-1);render()},
@@ -1470,6 +1611,10 @@ hday:b=>{const h=hab(b.dataset.id);if(!h)return;const multi=h.per==='day'&&(h.n|
 hplus:b=>{const h=hab(b.dataset.id);if(!h)return;const multi=h.per==='day'&&(h.n||1)>1;setHabit(TODAY(),h.id,n=>multi?n+1:(n?0:1));render()},
 hminus:b=>{const h=hab(b.dataset.id);if(!h)return;setHabit(TODAY(),h.id,n=>n-1);render()},
 'add-open':b=>{const key=b.dataset.key;if(lastAddClose.key===key&&Date.now()-lastAddClose.t<600)return;ui.adding=key;if(ui.tab==='calendar')renderDay();else render();focusAdd(key)},
+'c-inc':b=>{const l=S.lists[ui.list];if(l)cBump(l,b.dataset.id,1)},'c-dec':b=>{const l=S.lists[ui.list];if(l)cBump(l,b.dataset.id,-1)},
+'c-item':b=>{const l=S.lists[ui.list];if(l)countItemSheet(l,b.dataset.id)},
+cprev:()=>{ui.cday=addDays(cDay(),-1);render()},cnext:()=>{const n=addDays(cDay(),1);ui.cday=n>TODAY()?'':n;render()},ctoday:()=>{ui.cday='';render()},
+csess:b=>{ui.csess=+b.dataset.s;render()},crange:b=>{ui.crange=b.dataset.r;render()},
 hsel:b=>{ui.hsel=b.dataset.id;render();if(b.dataset.scroll)setTimeout(()=>$('#hbottom')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'}),30)},
 hwprev:()=>{ui.hweek=addDays(ui.hweek||pStart('week',TODAY()),-7);render()},
 hwnext:()=>{const n=addDays(ui.hweek||pStart('week',TODAY()),7);ui.hweek=n>pStart('week',TODAY())?'':n;render()},
@@ -1489,7 +1634,8 @@ lsel:b=>{ui.list=b.dataset.id;ui.lq='';render()},
 ltab:b=>{ui.ltab[ui.list]=b.dataset.t;render()},
 'tab-new':()=>{const l=S.lists[ui.list];if(l)tabSheet(l,null)},
 'tab-edit':()=>{const l=S.lists[ui.list];if(!l)return;const t=curTab(l);if(t!=='all')tabSheet(l,t)},
-'li-tog':b=>{const l=S.lists[ui.list],it=l&&l.items.find(x=>x.id===b.dataset.id);if(!it)return;it.done=!it.done;it.d=it.done?TODAY():'';it.u=Date.now();save('lists/'+l.id);render()},
+'li-tog':b=>{const l=S.lists[ui.list],id=b.dataset.id,it=l&&l.items.find(x=>x.id===id);if(!it)return;const on=!it.done;
+tickFx(b,on,doneTab(l),()=>{const x=S.lists[l.id],i2=x&&x.items.find(y=>y.id===id);if(i2){i2.done=on;i2.d=on?TODAY():'';i2.u=Date.now();save('lists/'+l.id)}render()})},
 'item-new':()=>itemSheet(S.lists[ui.list]),
 'item-edit':b=>{const l=S.lists[ui.list];const it=l.items.find(x=>x.id===b.dataset.id);if(it)itemSheet(l,it)},
 'list-new':()=>listSheet(null),
