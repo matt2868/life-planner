@@ -12,6 +12,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -157,6 +158,34 @@ class MainActivity : ComponentActivity() {
             WindowInsetsControllerCompat(window, root).apply {
                 isAppearanceLightStatusBars = !dark
                 isAppearanceLightNavigationBars = !dark
+            }
+        }
+    }
+
+    /**
+     * Bedside mode keeps the screen on and dim, and lets the planner show on top of the lock
+     * screen: lock the phone, wake it, and the to-do lists are there without unlocking.
+     */
+    fun setBedside(level: Float) {
+        runOnUiThread {
+            val on = level >= 0f
+            if (Build.VERSION.SDK_INT >= 27) setShowWhenLocked(on)
+            else {
+                @Suppress("DEPRECATION")
+                if (on) window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+                else window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED)
+            }
+            if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            window.attributes = window.attributes.apply {
+                screenBrightness = if (on) level.coerceIn(0.01f, 1f)
+                else WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+            }
+            WindowInsetsControllerCompat(window, root).apply {
+                if (on) {
+                    systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    hide(WindowInsetsCompat.Type.systemBars())
+                } else show(WindowInsetsCompat.Type.systemBars())
             }
         }
     }

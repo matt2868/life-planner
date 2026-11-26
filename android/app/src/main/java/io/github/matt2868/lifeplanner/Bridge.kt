@@ -31,6 +31,12 @@ class Bridge(private val context: Context, activity: MainActivity) {
     @JavascriptInterface
     fun notificationsAllowed(): Boolean = NotificationManagerCompat.from(context).areNotificationsEnabled()
 
+    /** Bedside mode: a level from 0 to 1 sets the screen brightness and keeps the screen on over the lock screen; below 0 turns it off. */
+    @JavascriptInterface
+    fun setBedside(level: Double) {
+        activityRef.get()?.setBedside(level.toFloat())
+    }
+
     @JavascriptInterface
     fun haptic() {
         activityRef.get()?.haptic()

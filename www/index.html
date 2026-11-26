@@ -418,6 +418,29 @@ details.card[open]>summary{margin-bottom:8px}
 .dsec .add .ibtn{width:40px;height:40px}
 .dsec textarea{min-height:84px;overflow:hidden}
 .addb{background:var(--acc);color:var(--acc-ink)}
+.bed{position:fixed;inset:0;z-index:90;background:#000;color:#8d9097;overflow:auto;-webkit-user-select:none;user-select:none}
+.bed[hidden]{display:none}
+html.bedside body{overflow:hidden;background:#000}
+.bed .bin{max-width:1100px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 28px 40px;transition:transform 2s ease;opacity:.72}
+.bed.bright .bin{opacity:1;color:#c9ccd2}
+.bed .btop{text-align:center;margin-bottom:22px}
+.bed .bclock{border:0;background:none;color:inherit;font:600 clamp(64px,13vw,120px)/1 Fraunces,Georgia,serif;letter-spacing:-.02em;font-variant-numeric:tabular-nums;padding:0}
+.bed .bdate{margin:6px 0 0;font-size:18px}
+.bed .bcols{display:grid;gap:22px 34px}
+@media(min-width:700px){.bed .bcols{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.bed h3{font:600 22px/1.2 Fraunces,Georgia,serif;margin:0 0 6px;color:inherit;border-bottom:1px solid #222;padding-bottom:8px}
+.bed h3 span{font:500 15px Figtree,system-ui,sans-serif;opacity:.7;margin-left:4px}
+.bed ul{list-style:none;margin:0;padding:0}
+.bed li{display:flex;align-items:center;gap:12px;min-height:46px;font-size:19px}
+.bed li.done span{opacity:.45;text-decoration:line-through}
+.bed .bchk{width:26px;height:26px;border-radius:8px;border:2px solid #555;background:none;color:transparent;flex:none;display:grid;place-items:center;padding:0}
+.bed .bchk .ic{width:18px;height:18px;stroke-width:2.6}
+.bed li.done .bchk{background:#555;border-color:#555;color:#000}
+.bed .bx{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;width:44px;height:44px;border:0;background:none;color:#444;display:grid;place-items:center}
+.shtag{font:600 13px/1 var(--sans,inherit);font-family:Figtree,system-ui,sans-serif;color:var(--ink2);background:var(--panel);border-radius:999px;padding:5px 9px;margin-left:10px;vertical-align:middle}
+.shh{margin:18px 0 6px;font-size:15px}
+.shf{display:grid;gap:8px}
+.shtxt{margin:4px 0}
 .cbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 10px}
 .cday{display:flex;align-items:center;gap:2px}
 .cdl{border:0;background:none;font:inherit;font-weight:700;padding:8px 6px;min-width:6.5em;color:var(--ink)}
@@ -550,12 +573,13 @@ details.done summary{cursor:pointer;color:var(--ink2);font-weight:600;font-size:
     <button data-a="tab" data-t="stats"><svg class="ic" viewBox="0 0 24 24"><path d="M3.5 20.5h17M6.5 20.5v-6M11 20.5V8M15.5 20.5v-9M20 20.5V4.5"/></svg><span>Stats</span></button>
     <button data-a="tab" data-t="goals"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.2"/></svg><span>Goals</span></button>
   </nav>
-  <div class="tools"><button class="ibtn" data-a="settings" aria-label="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg></button></div>
+  <div class="tools"><button class="ibtn" data-a="bed-on" aria-label="Bedside mode"><svg class="ic" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button><button class="ibtn" data-a="settings" aria-label="Settings"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg></button></div>
   <div id="banner"></div>
   <main id="view"></main>
 </div>
 <div id="ov" class="ov"></div>
 <div id="wov" class="wov" role="dialog" aria-modal="true" aria-label="Wrapped"></div>
+<div id="bed" class="bed" hidden></div>
 <div id="tip" class="tip" role="tooltip"></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script>
@@ -632,7 +656,7 @@ if(!l.c)l.c=[1,2,3,5,7,6,8,4][n%8];l.rate=[0,5,10].includes(+l.rate)?+l.rate:0;i
 l.tabs=Array.isArray(l.tabs)?l.tabs.filter(t=>t&&t.id):[];l.tabs.forEach((t,k)=>{t.name=t.name||'Tab';t.c=+t.c||((k%8)+1)});
 l.done=l.done&&typeof l.done==='object'?l.done:{};if(!['tab','strike'].includes(l.done.mode))l.done.mode='tab';l.done.name=l.done.name||'Done';l.done.c=+l.done.c||6;
 l.states=l.states&&typeof l.states==='object'?l.states:{};l.states.todo=l.states.todo||'To do';l.states.done=l.states.done||'Done';
-l.sess=Array.isArray(l.sess)&&l.sess.length===2?l.sess.map((x,k)=>String(x||'').trim()||['Morning','Evening'][k]):['Morning','Evening'];if(l.type==='count')l.rate=0;
+l.shared=!!l.shared;l.sess=Array.isArray(l.sess)&&l.sess.length===2?l.sess.map((x,k)=>String(x||'').trim()||['Morning','Evening'][k]):['Morning','Evening'];if(l.type==='count')l.rate=0;
 if(l.type==='archive'&&l.items.some(it=>it.done==null)){l.items.forEach(it=>{if(it.done==null)it.done=!!it.d});migrated.add(id)}});
 c.listOrder=(Array.isArray(c.listOrder)?c.listOrder:[]).filter(id=>st.lists[id]);
 for(const id of Object.keys(st.lists))if(!c.listOrder.includes(id))c.listOrder.push(id);
@@ -766,6 +790,11 @@ return {...((a.u||0)>=(b.u||0)?a:b),items,del}}
 function mergeInto(path,remote,keepLocal){const cur=docData(path);setDoc(path,clone(keepLocal&&cur?mergeDoc(path,cur,remote):remote))}
 
 /* ---------- GitHub sync ---------- */
+/* shared lists live in a second repo; each list file there is lists/<id>.json */
+const shCfg=()=>cfg.shared&&cfg.shared.repo?{repo:cfg.shared.repo,token:cfg.shared.token||cfg.token,branch:cfg.shared.branch||'main'}:null;
+const SS=()=>meta.sshas||(meta.sshas={});
+let sharedErr='';
+function isShared(p){if(!p.startsWith('lists/'))return false;const l=S.lists[p.slice(6)];return l?!!l.shared:!!SS()[FILE(p)]}
 const FILE=p=>p.startsWith('meta/')?p.slice(5)+'.json':p+'.json';
 function PATH(f){if(f==='config.json')return 'meta/config';if(f==='todos.json')return 'meta/todos';if(f==='work.json')return 'meta/work';const m=/^(lists|months)\/([A-Za-z0-9_.~-]+)\.json$/.exec(f);return m?m[1]+'/'+m[2]:null}
 const b64e=s=>{const b=new TextEncoder().encode(s);let x='';for(let i=0;i<b.length;i+=0x8000)x+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(x)};
@@ -793,12 +822,26 @@ for(const [f,sha] of Object.entries(files)){
 if(meta.shas[f]===sha)continue;
 const b=await gh('git/blobs/'+sha);if(!b.ok)throw await ghFail(b);
 let remote=null;try{remote=JSON.parse(b64d((await b.json()).content))}catch(e){}
-if(remote&&typeof remote==='object'){const p=PATH(f);mergeInto(p,remote,dirty.has(p));changed=true}
+if(remote&&typeof remote==='object'){const p=PATH(f);if(!isShared(p)){mergeInto(p,remote,dirty.has(p));changed=true}}
 meta.shas[f]=sha}
-for(const f of Object.keys(meta.shas))if(!(f in files)){const p=PATH(f);delete meta.shas[f];if(p&&!dirty.has(p)){removeDoc(p);changed=true}}
+for(const f of Object.keys(meta.shas))if(!(f in files)){const p=PATH(f);delete meta.shas[f];if(p&&!dirty.has(p)&&!isShared(p)){removeDoc(p);changed=true}}
 meta.last=Date.now();saveMeta();
 if(changed){S=normalize(S);saveLocalNow();widgetSync()}
 return {empty:!('config.json' in files),changed}}
+async function pullShared(){const c=shCfg();if(!c)return false;
+const r=await gh(`git/trees/${encodeURIComponent(c.branch)}?recursive=1`,{},c);
+if(r.status===409)return false;
+if(!r.ok)throw await ghFail(r);
+const j=await r.json(),files={};
+for(const t of j.tree||[])if(t.type==='blob'&&/^lists\/[A-Za-z0-9_.~-]+\.json$/.test(t.path))files[t.path]=t.sha;
+let changed=false;
+for(const [f,sha] of Object.entries(files)){if(SS()[f]===sha)continue;
+const b=await gh('git/blobs/'+sha,{},c);if(!b.ok)throw await ghFail(b);
+let remote=null;try{remote=JSON.parse(b64d((await b.json()).content))}catch(e){}
+if(remote&&typeof remote==='object'){remote.shared=true;const p=PATH(f),id=p.slice(6);mergeInto(p,remote,dirty.has(p));S.lists[id].shared=true;if(!S.config.listOrder.includes(id)){S.config.listOrder.push(id);save('meta/config')}changed=true}
+SS()[f]=sha}
+for(const f of Object.keys(SS()))if(!(f in files)){const p=PATH(f);delete SS()[f];const l=p&&S.lists[p.slice(6)];if(l&&l.shared&&!dirty.has(p)){removeDoc(p);changed=true}}
+saveMeta();if(changed){S=normalize(S);saveLocalNow();widgetSync()}return changed}
 let pushT=null,pushing=false,pushAgain=false,fails=0;
 function schedulePush(ms=2500){clearTimeout(pushT);pushT=setTimeout(pushAll,ms);if(!['saving','auth','noaccess','offline'].includes(syncState))setSync('pending')}
 async function pushAll(){clearTimeout(pushT);pushT=null;
@@ -810,18 +853,22 @@ try{for(const p of [...dirty]){const s0=seq[p]||0;await pushOne(p);if((seq[p]||0
 fails=0;meta.last=Date.now();saveMeta();setSync(dirty.size?'pending':'saved');renderBanner()}
 catch(e){syncFailed(e)}
 finally{pushing=false;if(pushAgain){pushAgain=false;if(dirty.size&&mode==='github')schedulePush(800)}}}
-async function pushOne(p){const f=FILE(p);
-for(let i=0;i<4;i++){const data=docData(p),sha=meta.shas[f];let r;
-if(data==null){if(!sha)return;r=await gh('contents/'+f,{method:'DELETE',body:{message:'Remove '+f,sha}});if(r.ok||r.status===404){delete meta.shas[f];return}}
-else{const body={message:commitMsg(p),content:b64e(JSON.stringify(data,null,1))};if(sha)body.sha=sha;r=await gh('contents/'+f,{method:'PUT',body});if(r.ok){meta.shas[f]=(await r.json()).content.sha;return}}
-if(r.status===409||r.status===422){await refetch(f);continue}
+async function pushOne(p){const f=FILE(p),shared=isShared(p),c=shared?shCfg():cfg;if(!c)return;const shas=shared?SS():meta.shas;
+for(let i=0;i<4;i++){const data=docData(p),sha=shas[f];let r;
+if(data==null){if(!sha)return;r=await gh('contents/'+f,{method:'DELETE',body:{message:'Remove '+f,sha}},c);if(r.ok||r.status===404){delete shas[f];return}}
+else{const body={message:commitMsg(p),content:b64e(JSON.stringify(data,null,1))};if(sha)body.sha=sha;r=await gh('contents/'+f,{method:'PUT',body},c);
+if(r.ok){shas[f]=(await r.json()).content.sha;
+/* a list just moved to the shared repo: remove its old copy from the personal one */
+if(shared&&meta.shas[f]){const d=await gh('contents/'+f,{method:'DELETE',body:{message:'Move '+f+' to shared lists',sha:meta.shas[f]}});if(d.ok||d.status===404)delete meta.shas[f]}
+return}}
+if(r.status===409||r.status===422){await refetch(f,c,shas);continue}
 throw await ghFail(r)}
 throw GhErr(409,'conflict')}
-async function refetch(f){const r=await gh('contents/'+f+'?ref='+encodeURIComponent(cfg.branch||'main'));
-if(r.status===404){delete meta.shas[f];return}
+async function refetch(f,c=cfg,shas=meta.shas){const r=await gh('contents/'+f+'?ref='+encodeURIComponent(c.branch||'main'),{},c);
+if(r.status===404){delete shas[f];return}
 if(!r.ok)throw await ghFail(r);
 const j=await r.json();let remote=null;try{remote=JSON.parse(b64d(j.content))}catch(e){}
-meta.shas[f]=j.sha;const p=PATH(f);if(remote&&typeof remote==='object'&&p){mergeInto(p,remote,true);S=normalize(S);saveLocalNow()}}
+shas[f]=j.sha;const p=PATH(f);if(remote&&typeof remote==='object'&&p){if(shas!==meta.shas)remote.shared=true;mergeInto(p,remote,true);S=normalize(S);saveLocalNow()}}
 function syncFailed(e){const st=e?.status;
 if(st===401){setSync('auth');renderBanner();return}
 if(st===403&&/not accessible|permission/i.test(e.message||'')){setSync('noaccess');renderBanner();return}
@@ -829,6 +876,8 @@ setSync(st===0?'offline':'error');
 if(++fails<8){clearTimeout(pushT);pushT=setTimeout(pushAll,Math.min(120000,3000*2**fails))}}
 async function syncNow(){if(mode!=='github')return;
 try{if(!['auth','noaccess'].includes(syncState))setSync('saving');const res=await pull();
+let shc=false;if(shCfg()){try{shc=await pullShared();sharedErr=''}catch(e){sharedErr=e.status===401?'GitHub didn’t accept the token for shared lists.':e.status===404||e.status===403?'Can’t see the shared repo. Check the token has access to it.':'Couldn’t reach the shared repo.'}}
+if(shc)res.changed=true;
 if(res.empty&&!hasPlanner(S)){S=blankState();for(const p of allPaths(S)){dirty.add(p);seq[p]=(seq[p]||0)+1}saveMeta();saveLocalNow();widgetSync()}
 if(res.changed||res.empty)softRender();
 await pushAll();if(!dirty.size){fails=0;setSync('saved')}renderBanner();if(!syncNow.done&&hasPlanner(S)&&meta.last){syncNow.done=true;pruneDone();saveMigrated();maybeWrapPopup()}if(meta.last)rolloverCheck()}
@@ -857,8 +906,16 @@ function setSync(s){syncState=s;const el=$('#sync');if(!el)return;
 const map={loading:['Loading…','var(--ink2)'],example:['Example data','var(--c4)'],local:['On this device','var(--c1)'],pending:['Saving…','var(--c4)'],saving:['Syncing…','var(--c4)'],saved:['Synced','var(--c6)'],offline:['Offline','var(--ink2)'],error:['Sync failed','var(--bad)'],auth:['Token expired','var(--bad)'],noaccess:['Can’t save','var(--bad)']};
 const [tx,c]=map[s]||map.loading;el.textContent=tx;el.style.setProperty('--sd',c);el.title=mode==='github'?`Syncing with ${cfg.repo}. Tap to sync now.`:''}
 function ago(t){const s=(Date.now()-t)/1000;if(s<60)return 'just now';if(s<3600)return `${Math.round(s/60)} min ago`;if(s<86400)return `${Math.round(s/3600)} h ago`;return fmtShort(ymd(new Date(t)))}
+function sharedSection(){const c=shCfg();
+if(c)return `<h4 class="shh">Shared lists</h4><p>Sharing with <b>${esc(c.repo)}</b>.</p>${sharedErr?`<p class="err">${esc(sharedErr)}</p>`:''}<div class="row"><button class="btn" data-a="sh-off">Stop sharing on this device</button></div>`;
+return `<h4 class="shh">Shared lists</h4><form id="shf" class="shf" data-f="shared"><input id="sh-repo" placeholder="owner/shared-repo" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Shared repo"><input id="sh-tok" type="password" placeholder="Token, if different" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Token for the shared repo"><button class="btn">Connect</button></form><p class="err" id="sh-err" hidden></p>`}
+async function connectShared(repoIn,tokIn){const repo=parseRepo(repoIn);if(!repo)throw 'Enter the repo as owner/name.';if(repo===cfg.repo)throw 'Use a different repo from your own planner.';
+const c={repo,token:String(tokIn||'').trim()||cfg.token};let r;try{r=await gh('',{},c)}catch(e){throw 'Couldn’t reach GitHub.'}
+if(r.status===401)throw 'GitHub didn’t accept that token.';if(!r.ok)throw 'That token can’t see this repo. Check the name, and that the token was given access to it.';
+const j=await r.json();if(j.permissions&&!j.permissions.push)throw TOKEN_RW;
+cfg.shared={repo,token:String(tokIn||'').trim(),branch:j.default_branch||'main'};meta.sshas={};saveCfg();saveMeta();await syncNow();if(sharedErr)throw sharedErr}
 function syncSection(){
-if(mode==='github')return `<p>Syncing with <b>${esc(cfg.repo)}</b>.${meta.last?` Last synced ${esc(ago(meta.last))}.`:''}${dirty.size?` ${plural(dirty.size,'file')} waiting to upload.`:''}</p><div class="row"><button class="btn" data-a="sync-now">Sync now</button><button class="btn" data-a="setup">Change repo or token</button><button class="btn danger" data-a="unsync">Stop syncing</button></div>`;
+if(mode==='github')return `<p>Syncing with <b>${esc(cfg.repo)}</b>.${meta.last?` Last synced ${esc(ago(meta.last))}.`:''}${dirty.size?` ${plural(dirty.size,'file')} waiting to upload.`:''}</p><div class="row"><button class="btn" data-a="sync-now">Sync now</button><button class="btn" data-a="setup">Change repo or token</button><button class="btn danger" data-a="unsync">Stop syncing</button></div>${sharedSection()}`;
 if(mode==='local')return `<p>On this device only.</p><button class="btn pri" data-a="setup">Sync with GitHub</button>`;
 return `<button class="btn pri" data-a="setup">Set up my planner</button>`}
 function setupSheet(first){
@@ -899,7 +956,7 @@ softRender()}
 async function checkUpdate(){if(!APP||!/^\d+$/.test(APP_VERSION))return;try{const r=await fetch(`https://api.github.com/repos/${UPDATE_REPO}/releases/latest`,{cache:'no-store'});if(!r.ok)return;const j=await r.json();const n=parseInt(String(j.tag_name||'').replace(/\D/g,''),10);if(n>+APP_VERSION){ui.update=n;renderBanner()}}catch(e){}}
 window.__resume=()=>{applyWidgetActions();if(mode==='github')syncNow();checkDay();if(mode==='local')rolloverCheck()};
 window.__pause=()=>{saveLocalNow();if(mode==='github'&&dirty.size)pushAll()};
-window.__back=()=>{if($('#wov').classList.contains('open')){closeWrapped();return true}if($('#ov').classList.contains('open')){closeSheet();return true}if(ui.tab!=='calendar'){ui.tab='calendar';history.replaceState(null,'','#calendar');render();return true}return false};
+window.__back=()=>{if(bed.on){bedOff();return true}if($('#wov').classList.contains('open')){closeWrapped();return true}if($('#ov').classList.contains('open')){closeSheet();return true}if(ui.tab!=='calendar'){ui.tab='calendar';history.replaceState(null,'','#calendar');render();return true}return false};
 window.__openAdd=kind=>{closeSheet();closeWrapped();ui.tab='todo';history.replaceState(null,'','#todo');ui.tdDay=TODAY();ui.adding=kind==='work'?'wk':kind==='gen'?'gt':'td:'+TODAY();render();const id=kind==='work'?'#wk-new':kind==='gen'?'#gt-new':'#td-new';setTimeout(()=>{const i=$(id);if(i){i.scrollIntoView({block:'center'});i.focus()}},80)};
 
 /* ---------- boot ---------- */
@@ -922,7 +979,7 @@ const tb=$(`#tabs button[data-t="${ui.tab}"]`);if(tb)tb.setAttribute('aria-curre
 const v=$('#view');v.dataset.view=ui.tab;
 if(!S||(mode==='github'&&!hasPlanner(S)&&!meta.last)){renderBanner();const bad=['offline','error','auth','noaccess'].includes(syncState);v.innerHTML=`<div class="loading"><p class="muted">${bad?'Couldn’t load your planner from GitHub yet.':'Loading your planner from GitHub…'}</p>${bad?'<button class="btn pri" data-a="sync-now">Try again</button><button class="btn" data-a="setup">Check repo and token</button>':''}</div>`;return}
 renderBanner();
-({calendar:viewCalendar,todo:viewTodo,habits:viewHabits,lists:viewLists,stats:viewStats,goals:viewGoals}[ui.tab]||viewCalendar)(v)}
+({calendar:viewCalendar,todo:viewTodo,habits:viewHabits,lists:viewLists,stats:viewStats,goals:viewGoals}[ui.tab]||viewCalendar)(v);if(bed.on)bedRender()}
 function renderBanner(){const b=$('#banner');if(!b)return;let h='';
 if(ui.update)h+=`<div class="bn ex"><span>Version ${ui.update} of the app is ready to install.</span><a class="btn sm pri" href="https://github.com/${UPDATE_REPO}/releases/latest/download/life-planner.apk">Download</a></div>`;
 if(S&&mode==='example')h+=`<div class="bn ex"><span>Example data</span><button class="btn sm pri" data-a="setup">Set up my planner</button></div>`;
@@ -977,6 +1034,24 @@ function todoLi(it,kind,k){const dk=k?` data-k="${k}"`:'',tk=ticking.get(it.id);
 function setScore(tid,v){const d=dayEnsure(ui.sel);if(v==null)delete d.s[tid];else d.s[tid]=v;dayDone(ui.sel)}
 function pickDay(k){ui.sel=k;if(k.slice(0,7)!==ui.month){ui.month=k.slice(0,7);ui.anim=true}renderCal();renderDay()}
 
+/* ---------- bedside mode: a dim, always-on view of the three to-do lists ---------- */
+const bed={on:false,bright:false,lock:null,clockT:0,driftT:0};
+function bedRender(){const el=$('#bed');if(!el||!bed.on)return;const k=TODAY(),d=dayGet(k),now=new Date();
+const day=(d?d.t:[]).filter(x=>!x.m),work=S.work.items.filter(x=>!x.d),gen=S.todos.items.filter(x=>!x.d);
+const li=(it,kind)=>`<li class="${it.d?'done':''}"><button class="bchk" data-a="bed-tog" data-kind="${kind}" data-id="${esc(it.id)}" aria-pressed="${!!it.d}" aria-label="${it.d?'Mark not done':'Mark done'}">${ICON.tick}</button><span>${esc(it.x)}</span></li>`;
+const col=(title,items,kind)=>`<section><h3>${title}${items.length?` <span>${kind==='td'?`${items.filter(x=>x.d).length}/${items.length}`:items.length}</span>`:''}</h3><ul>${items.map(it=>li(it,kind)).join('')}</ul></section>`;
+el.innerHTML=`<div class="bin"><div class="btop"><button class="bclock" data-a="bed-bright" aria-label="Brighter or dimmer">${p2(now.getHours())}:${p2(now.getMinutes())}</button><p class="bdate">${WDP[wdMon(k)].replace(/s$/,'')} ${fmtDay(k)}</p></div>
+<div class="bcols">${col('Today',day,'td')}${col('Work',work,'wk')}${col('General',gen,'gt')}</div></div><button class="bx" data-a="bed-off" aria-label="Leave bedside mode">${ICON.x}</button>`;
+el.classList.toggle('bright',bed.bright)}
+function bedDrift(){const b=$('#bed .bin');if(b)b.style.transform=`translate(${Math.round(Math.random()*24-12)}px,${Math.round(Math.random()*24-12)}px)`}
+async function bedWake(on){try{if(on&&!APP&&navigator.wakeLock)bed.lock=await navigator.wakeLock.request('screen');else if(!on&&bed.lock){await bed.lock.release();bed.lock=null}}catch(e){}}
+function bedOn(){if(!S)return;bed.on=true;const el=$('#bed');el.hidden=false;D.documentElement.classList.add('bedside');bedRender();
+try{if(APP&&typeof APP.setBedside==='function')APP.setBedside(bed.bright?0.3:0.03);if(APP&&typeof APP.setChrome==='function')APP.setChrome(true,0xff000000|0)}catch(e){}
+bedWake(true);clearInterval(bed.clockT);bed.clockT=setInterval(()=>{bedRender();bedDrift()},30000);
+try{el.requestFullscreen&&!APP&&el.requestFullscreen().catch(()=>{})}catch(e){}}
+function bedOff(){if(!bed.on)return;bed.on=false;clearInterval(bed.clockT);const el=$('#bed');el.hidden=true;el.innerHTML='';D.documentElement.classList.remove('bedside');
+try{if(APP&&typeof APP.setBedside==='function')APP.setBedside(-1)}catch(e){}bedWake(false);try{if(D.fullscreenElement)D.exitFullscreen()}catch(e){}lookKey='';applyLook();render()}
+D.addEventListener('visibilitychange',()=>{if(bed.on&&D.visibilityState==='visible'){bedWake(true);bedRender()}});
 /* ---------- tick animation ---------- */
 const RMO=matchMedia('(prefers-reduced-motion: reduce)'),ticking=new Map();
 function haptic(){try{if(APP&&typeof APP.haptic==='function')APP.haptic();else if(navigator.vibrate)navigator.vibrate(8)}catch(e){}}
@@ -1178,13 +1253,13 @@ const nav=`<nav class="lnav" aria-label="Lists">${ord.map(id=>{const l=S.lists[i
 let body='';
 if(ui.list){const l=S.lists[ui.list],ty=lType(l),t=curTab(l),st=ty==='archive'?arState(l):'';
 if(ty==='count'){const md=ui.lstate[l.id]==='stats'?'stats':'count';
-const ch=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${md==='count'?plusBtn('li:'+l.id,'Add to '+l.name):''}</div>`;
+const ch=`<div class="lhead"><h2 class="serif">${esc(l.name)}${l.shared?'<span class="shtag">Shared</span>':''}</h2><button class="btn" data-a="list-edit">Edit list</button>${md==='count'?plusBtn('li:'+l.id,'Add to '+l.name):''}</div>`;
 const cs=`<div class="segbar" role="group" aria-label="View"><button class="${md==='count'?'on':''}" data-a="lstate" data-s="count">Count</button><button class="${md==='stats'?'on':''}" data-a="lstate" data-s="stats">Stats</button></div>`;
 const ctb=(id,label,c,extra='',real=false)=>`<button class="ltab${t===id?' on':''}" role="tab" aria-selected="${t===id}" data-a="ltab" data-t="${esc(id)}"${real?` data-id="${esc(id)}"`:''}${c?` style="--tc:var(--c${c})"`:''}>${extra}${label}<span>${visibleIn(l,id).length}</span></button>`;
 const ctabs=`<div class="ltabs" id="ltabs" role="tablist" aria-label="Tabs in ${esc(l.name)}">${ctb('all','All',0)}${l.tabs.map(tb=>ctb(tb.id,esc(tb.name),tb.c,'<i class="dot"></i>',true)).join('')}<button class="ltab add" data-a="tab-new" aria-label="New tab">${ICON.plus}</button>${t!=='all'?'<button class="ltab add" data-a="tab-edit">Edit tab</button>':''}</div>`;
 body=md==='stats'?ch+cs+countStats(l):ch+cs+cBar(l)+ctabs+'<div id="litems"></div>'+addForm('li:'+l.id,'li','li-new','Add to '+(t==='all'?l.name:tabOf(l,t).name))}
 else{
-const head=`<div class="lhead"><h2 class="serif">${esc(l.name)}</h2><button class="btn" data-a="list-edit">Edit list</button>${ty==='archive'&&st==='done'?plusBtn('','Add to '+l.states.done,'ar-log'):curTab(l)==='done'?'':plusBtn('li:'+l.id,'Add to '+(ty==='archive'?l.states.todo:l.name))}</div>`;
+const head=`<div class="lhead"><h2 class="serif">${esc(l.name)}${l.shared?'<span class="shtag">Shared</span>':''}</h2><button class="btn" data-a="list-edit">Edit list</button>${ty==='archive'&&st==='done'?plusBtn('','Add to '+l.states.done,'ar-log'):curTab(l)==='done'?'':plusBtn('li:'+l.id,'Add to '+(ty==='archive'?l.states.todo:l.name))}</div>`;
 const states=ty==='archive'?`<div class="segbar" role="group" aria-label="Section">${[['todo',l.states.todo],['done',l.states.done]].map(([k,lb])=>`<button class="${st===k?'on':''}" data-a="lstate" data-s="${k}">${esc(lb)} <span class="muted">${l.items.filter(i=>k==='done'?i.done:!i.done).length}</span></button>`).join('')}</div>`:'';
 const tabBtn=(id,label,c,extra='',real=false)=>`<button class="ltab${t===id?' on':''}" role="tab" aria-selected="${t===id}" data-a="ltab" data-t="${esc(id)}"${real?` data-id="${esc(id)}"`:''}${c?` style="--tc:var(--c${c})"`:''}>${extra}${label}<span>${visibleIn(l,id).length}</span></button>`;
 const tabs=`<div class="ltabs" id="ltabs" role="tablist" aria-label="Tabs in ${esc(l.name)}">${tabBtn('all','All',0)}${l.tabs.map(tb=>tabBtn(tb.id,esc(tb.name),tb.c,'<i class="dot"></i>',true)).join('')}${doneTab(l)?tabBtn('done',esc(l.done.name),l.done.c,ICON.tick):''}<button class="ltab add" data-a="tab-new" aria-label="New tab">${ICON.plus}</button>${t!=='all'?'<button class="ltab add" data-a="tab-edit">Edit tab</button>':''}</div>`;
@@ -1264,13 +1339,14 @@ return `${seg}${tiles}<div class="card"><div class="ch"><h3>Over time</h3></div>
 /* one thing's own stats */
 function countItemSheet(l,id){const it=l.items.find(x=>x.id===id);if(!it)return;const today=TODAY();
 const ks=Object.keys(it.c||{}).filter(k=>{const v=cntOf(it,k);return v[0]+v[1]>0}).sort();
-const all=cSum(it,'0000','9999');let best=null;ks.forEach(k=>{const v=cntOf(it,k),t=v[0]+v[1];if(!best||t>best.v)best={k,v:t}});
+const all=cSum(it,'0000','9999'),wd=[0,0,0,0,0,0,0];ks.forEach(k=>{const v=cntOf(it,k);wd[wdMon(k)]+=v[0]+v[1]});const wbest=Math.max(...wd),wi=wbest?wd.indexOf(wbest):-1;
+const WDF=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const from=addMonths(today.slice(0,7),-11)+'-01',{pts,xl}=cSeries([it],from,today,l);
 const ago=k=>{const n=Math.round((parseK(today)-parseK(k))/864e5);return n===0?'today':n===1?'yesterday':`${n} days ago`};
 const tiles=`<div class="tiles"><div class="tile"><div class="l">Total</div><div class="v">${fmtNum(all.t)}</div><div class="s">on ${plural(all.days,'day')}</div></div>
 <div class="tile"><div class="l">Last seen</div><div class="v sm">${ks.length?esc(fmtShort(ks.at(-1))):'–'}</div><div class="s">${ks.length?ago(ks.at(-1)):'not yet'}</div></div>
 <div class="tile"><div class="l">First seen</div><div class="v sm">${ks.length?esc(fmtShort(ks[0])):'–'}</div><div class="s">${ks.length?ks[0].slice(0,4):''}</div></div>
-<div class="tile"><div class="l">Best day</div><div class="v sm">${best?best.v:'–'}</div><div class="s">${best?esc(fmtShort(best.k)+(best.k.slice(0,4)!==today.slice(0,4)?' '+best.k.slice(0,4):'')):''}</div></div></div>`;
+<div class="tile"><div class="l">Most common day</div><div class="v sm">${wi>=0?WDF[wi]:'–'}</div><div class="s">${wi>=0?`${fmtNum(wbest)} seen on ${WDF[wi]}s`:''}</div></div></div>`;
 const recent=ks.slice(-8).reverse().map(k=>{const v=cntOf(it,k);return `<li><span>${esc(wdDay(k))}${k.slice(0,4)!==today.slice(0,4)?' '+k.slice(0,4):''}</span><span class="muted">${l.sess.map((n,i)=>v[i]?`${esc(n)} ${v[i]}`:'').filter(Boolean).join(' · ')}</span></li>`}).join('');
 const body=`<div class="cis">${it.s?`<p class="muted">${esc(it.s)}</p>`:''}${tiles}${all.t?legend2(l,all.a,all.b):''}
 <h4>Last 12 months</h4>${stackCols(pts,xl)}${recent?`<h4>Recent days</h4><ul class="crec">${recent}</ul>`:''}
@@ -1474,14 +1550,16 @@ const body=`<form id="lf"><div class="f"><label for="l-n">Name</label><input id=
 <div class="frow" id="l-statesf"><div class="f"><label for="l-s1">Not done</label><input id="l-s1" value="${esc(cur.states.todo)}" autocomplete="off"></div><div class="f"><label for="l-s2">Done</label><input id="l-s2" value="${esc(cur.states.done)}" autocomplete="off"></div></div>
 <div class="frow" id="l-sessf"><div class="f"><label for="l-m">Counted in the</label><input id="l-m" value="${esc(cur.sess[0])}" autocomplete="off"></div><div class="f"><label for="l-e">and the</label><input id="l-e" value="${esc(cur.sess[1])}" autocomplete="off"></div></div>
 <div class="f" id="l-donef"><span class="lb">Ticked items</span><div class="seg" id="l-done">${[['tab','Own tab'],['strike','Crossed out']].map(([k,lb])=>`<button type="button" data-dm="${k}">${lb}</button>`).join('')}</div><input id="l-donen" value="${esc(cur.done.name)}" autocomplete="off" aria-label="Name of the ticked tab"></div>
+${shCfg()?`<div class="f"><span class="lb">Who sees it</span>${l&&l.shared?'<p class="muted shtxt">Shared</p>':`<div class="seg" id="l-sh"><button type="button" data-sh="0">Just me</button><button type="button" data-sh="1">Shared</button></div>`}</div>`:''}
 <div class="f"><span class="lb">Colour</span>${colourSeg('l-col',cur.c)}</div>
 <div class="f" id="l-ratef"><span class="lb">Ratings</span><div class="seg" id="l-rate">${[[0,'Off'],[5,'5 stars'],[10,'Out of 10']].map(([k,lb])=>`<button type="button" data-rate="${k}">${lb}</button>`).join('')}</div></div>
 <div class="f" id="l-cbyf"><span class="lb">Colour items by</span><div class="seg" id="l-cby">${[['tab','Tab'],['rating','Rating']].map(([k,lb])=>`<button type="button" data-cby="${k}">${lb}</button>`).join('')}</div></div>
-<div class="acts">${isNew?'':'<button type="button" class="btn danger" id="l-del">Delete list</button><span class="sp"></span>'}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Create':'Save'}</button></div></form>`;
+<div class="acts">${isNew?'':`<button type="button" class="btn danger" id="l-del">${l.shared?'Delete for everyone':'Delete list'}</button><span class="sp"></span>`}<button type="button" class="btn" data-a="close">Cancel</button><button class="btn pri">${isNew?'Create':'Save'}</button></div></form>`;
 openSheet(isNew?'New list':'Edit list',body,sh=>{
 const upd=()=>{if(cur.type==='count')cur.rate=0;$('#l-ratef',sh).hidden=cur.type==='count';$('#l-sessf',sh).hidden=cur.type!=='count';$('#l-cbyf',sh).hidden=!cur.rate;$('#l-donef',sh).hidden=cur.type!=='tick';$('#l-donen',sh).hidden=cur.done.mode!=='tab';$('#l-statesf',sh).hidden=cur.type!=='archive';
 $$('#l-ty button',sh).forEach(b=>b.classList.toggle('on',b.dataset.ty===cur.type));$$('#l-rate button',sh).forEach(b=>b.classList.toggle('on',+b.dataset.rate===cur.rate));$$('#l-cby button',sh).forEach(b=>b.classList.toggle('on',b.dataset.cby===cur.cby));$$('#l-done button',sh).forEach(b=>b.classList.toggle('on',b.dataset.dm===cur.done.mode))};upd();
 $$('#l-ty button',sh).forEach(b=>b.addEventListener('click',()=>{cur.type=b.dataset.ty;upd()}));
+cur.shared=!!(l&&l.shared);const shs=()=>$$('#l-sh button',sh).forEach(b=>b.classList.toggle('on',+b.dataset.sh===+cur.shared));shs();$$('#l-sh button',sh).forEach(b=>b.addEventListener('click',()=>{cur.shared=b.dataset.sh==='1';shs()}));
 $$('#l-rate button',sh).forEach(b=>b.addEventListener('click',()=>{cur.rate=+b.dataset.rate;upd()}));
 $$('#l-cby button',sh).forEach(b=>b.addEventListener('click',()=>{cur.cby=b.dataset.cby;upd()}));
 $$('#l-done button',sh).forEach(b=>b.addEventListener('click',()=>{cur.done.mode=b.dataset.dm;upd()}));
@@ -1583,6 +1661,7 @@ setup:()=>setupSheet(mode==='example'),
 'use-local':()=>{if(mode==='example'){S=blankState();ui.sel=TODAY();ui.month=ui.sel.slice(0,7);ui.colorBy='all'}cfg={mode:'local'};saveCfg();mode='local';saveLocalNow();setSync('local');closeSheet();render();widgetSync();toast('Your planner is ready')},
 'sync-now':async()=>{if(mode!=='github'){settingsSheet();return}await syncNow();render();toast(syncState==='saved'?'Synced':syncState==='offline'?'You’re offline. Changes are saved on this device.':'Couldn’t sync just now')},
 syncchip:()=>{if(mode==='github')A['sync-now']();else settingsSheet()},
+'sh-off':b=>{if(!armed(b))return;for(const id of Object.keys(S.lists))if(S.lists[id].shared){delete S.lists[id];dirty.delete('lists/'+id)}cfg.shared=null;meta.sshas={};saveCfg();saveMeta();saveLocalNow();closeSheet();render()},
 unsync:b=>{if(!armed(b))return;cfg={mode:'local',repo:cfg.repo};saveCfg();mode='local';dirty.clear();meta={shas:{},dirty:[],last:0};saveMeta();saveLocalNow();setSync('local');closeSheet();render();toast('Sync is off. Your planner stays on this device.')},
 snooze:()=>{const d=dueCheckins();if(d)ui.snoozed=d.mk;renderBanner()},
 'ci-start':()=>{const d=dueCheckins();if(!d)return;checkinSheet(d.goals.map(g=>({g,m:d.mk.slice(5)})),0)},
@@ -1615,6 +1694,10 @@ hminus:b=>{const h=hab(b.dataset.id);if(!h)return;setHabit(TODAY(),h.id,n=>n-1);
 'c-item':b=>{const l=S.lists[ui.list];if(l)countItemSheet(l,b.dataset.id)},
 cprev:()=>{ui.cday=addDays(cDay(),-1);render()},cnext:()=>{const n=addDays(cDay(),1);ui.cday=n>TODAY()?'':n;render()},ctoday:()=>{ui.cday='';render()},
 csess:b=>{ui.csess=+b.dataset.s;render()},crange:b=>{ui.crange=b.dataset.r;render()},
+'bed-on':()=>bedOn(),'bed-off':()=>bedOff(),
+'bed-bright':()=>{bed.bright=!bed.bright;try{if(APP&&typeof APP.setBedside==='function')APP.setBedside(bed.bright?0.3:0.03)}catch(e){}bedRender()},
+'bed-tog':b=>{const id=b.dataset.id,kind=b.dataset.kind;let it;if(kind==='td'){const d=dayEnsure(TODAY());it=d.t.find(x=>x.id===id);if(it){it.d=!it.d;dayDone(TODAY())}}else{it=S[TLK[kind]].items.find(x=>x.id===id);if(it){listTog(kind,id,!it.d);return}}
+if(it&&it.d)haptic();bedRender()},
 hsel:b=>{ui.hsel=b.dataset.id;render();if(b.dataset.scroll)setTimeout(()=>$('#hbottom')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'}),30)},
 hwprev:()=>{ui.hweek=addDays(ui.hweek||pStart('week',TODAY()),-7);render()},
 hwnext:()=>{const n=addDays(ui.hweek||pStart('week',TODAY()),7);ui.hweek=n>pStart('week',TODAY())?'':n;render()},
@@ -1660,7 +1743,8 @@ wcopy:async()=>{const tx=wrapText();try{await navigator.clipboard.writeText(tx);
 'bk-paste':b=>{let o;try{o=JSON.parse($('#bk-text').value)}catch(e){toast('That isn’t valid backup text');return}if(!armed(b))return;restore(o)}};
 function scrollDeck(dir){const dk=$('#deck');if(!dk)return;const cs=[...dk.children];const x=dk.scrollLeft;let i=cs.findIndex(c=>c.offsetLeft-dk.offsetLeft>=x-4);if(i<0)i=0;const n=Math.max(0,Math.min(cs.length-1,i+dir));cs[n].scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'nearest',inline:'start'})}
 D.addEventListener('click',e=>{if(Date.now()-dragJust<450){e.preventDefault();e.stopPropagation();return}const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const f=A[b.dataset.a];if(f){e.preventDefault();f(b,e)}});
-const FORMS={
+const FORMS={shared:async f=>{const er=$('#sh-err'),bt=$('button',f);er.hidden=true;bt.disabled=true;
+try{await connectShared($('#sh-repo',f).value,$('#sh-tok',f).value);closeSheet();toast('Shared lists connected');render()}catch(e){er.textContent=String(e);er.hidden=false}finally{bt.disabled=false}},
 td:f=>{const inp=$('#td-new',f),x=inp.value.trim();if(!x)return;const k=f.dataset.k||ui.sel,d=dayEnsure(k);d.t.push({id:uid(),x,d:false});dayDone(k);refreshDay();$('#td-new')?.focus()},
 gt:f=>listAdd('gt',f),wk:f=>listAdd('wk',f),li:f=>liAdd(f)};
 D.addEventListener('focusout',e=>{const i=e.target;if(!(i instanceof HTMLInputElement)||!i.matches('form.add[data-key] input'))return;const f=i.closest('form');setTimeout(()=>{if(!f.isConnected||f.contains(D.activeElement)||i.value.trim())return;if(ui.adding===f.dataset.key){ui.adding=null;lastAddClose={key:f.dataset.key,t:Date.now()}}f.remove()},150)});
